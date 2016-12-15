@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612151229
+  \ Version 0.0.0+201612151259
 
   \ }}} ---------------------------------------------------------
   \ Functions {{{
@@ -199,7 +199,7 @@ stop
 : panel  ( -- )
 
   wipePanel
-  charset 0
+  0 charset
 
   print #0;pen white;\
     at 0,0;fn option$("Información",1,1);\
@@ -263,7 +263,7 @@ stop
 
   do
 
-    for w=1 to 80
+    81 1 do
       let k=code inkey$
       if k=110 or k=11 \ "n" or up -- north
         if possibleNorth then \
@@ -289,10 +289,10 @@ stop
       else if k=70:let quit=true:exit do \ "F" XXX TODO lowercase
       endif
 
-      #if not (tics mod 5) then redrawShip
-      if w=40 or w=80 then redrawShip
+      \ if not (tics mod 5) then redrawShip  \ XXX OLD
+      i 40 = i 80 = or if  redrawShip  then 
 
-    next w
+    loop
 
     \ XXX TODO increase the probability every day?
     if not fn between(0,80) then storm
@@ -317,16 +317,16 @@ stop
   seaAndSky
 
   \ Disembarking scene
-  charset 1
+  1 charset
   print pen green; paper blue;\
     at 8,31;":";\
     at 9,27;"HI :\::";\
     at 10,25;"F\::\::\::\::\::\::";\
     at 11,23;"JK\::\::\::\::\::\::\::"
-  for z=0 to 20
-    print pen yellow; paper blue;at 11,z;" <>"
-    10 pause
-  next z
+  yellow ink blue paper
+  21 0 do
+    i 11 at-xy ." <>"  10 pause
+  loop
 
   let aboard=false
   if seaMap(shipPos)=treasureIsland then \
@@ -342,11 +342,12 @@ stop
 
 : trade  ( -- )
 
-  charset 1
+  1 charset
   \ XXX TODO factor out:
-  for z=3 to 15
-    print at z,0; pen black; paper yellow;fn blankLine$
-  next z
+  black ink  yellow paper
+  16 3 do
+    0 i at-xy fn blankLine$ type
+  loop
   drawNative
   nativeSpeechBalloon
   palm2 4,4
@@ -587,7 +588,7 @@ stop
   
   endif
   
-  charset 1
+  1 charset
   100 pause \ XXX OLD
   
   ;
@@ -717,44 +718,45 @@ stop
   ;
 
 : drawLeftWaves  ( -- )
-  for z=3 to 15
-    print at z,0; pen white; paper blue;"  "
-  next z
+  white ink blue paper
+  16 3 do
+    0 i at-xy ."  "
+  loop
   print at 6,0; pen white; paper blue;"mn";at 10,0;"kl";at 13,0;"k";at 4,0;"m";at 8,1;"l"
   if islandMap(iPos+6)<>1 then \
-    charset 2
+    2 charset
     print at 3,2; pen yellow; paper blue;"A"
-    charset 1
+    1 charset
   if islandMap(iPos+6)=1 then \
-    charset 2
+    2 charset
     print at 4,2; pen yellow; paper blue;"A"
-    charset 1
+    1 charset
   if islandMap(iPos-6)=1 then \
-    charset 2
+    2 charset
     print at 13,2; pen yellow; paper blue;"C"
-    charset 1
+    1 charset
   ;
 
 : drawRightWaves  ( -- )
-
-  for z=3 to 15
-    print at z,30; pen white; paper blue;"  "
-  next z
+  white ink  blue paper
+  16 3 do
+    30 i at-xy ."  "
+  loop
   print at 6,30; pen white; paper blue;"mn";at 10,30;"kl";at 13,31;"k";at 4,30;"m";at 8,31;"l"
-  charset 2
+  2 charset
   if islandMap(iPos+6)=1 then \
     print at 4,29; pen yellow; paper blue;"B"
   if islandMap(iPos-6)=1 then \
     print at 13,29; pen yellow; paper blue;"D"
   if islandMap(iPos+6)<>1 then \
     print at 3,29; pen yellow; paper blue;"B"
-  charset 1
+  1 charset
 
   ;
 
 : drawVillage  ( -- )
 
-  charset 2
+  2 charset
 
   print pen green;paper yellow;\
     at 5,6;" S\::T    ST   S\::T";\
@@ -776,7 +778,7 @@ stop
     at 6,17;"YX";\
     at 6,26;"Z"
 
-  charset 1
+  1 charset
 
   ;
 
@@ -794,25 +796,25 @@ stop
 : drawSupplies  ( -- )
 
   \ XXX TODO draw graphics depending on the actual ammount
-  charset 2
+  2 charset
   print at 12,14; pen black; paper yellow;"90  9099 0009"
-  charset 1
+  1 charset
 
   ;
 
 : drawSnake  ( -- )
-  charset 2
+  2 charset
   print pen black;paper yellow;\
     at 12,14; "xy"
-  charset 1
+  1 charset
   ;
 
 : drawDubloons  ( coins -- )
 
-  charset 2
+  2 charset
   print pen black;paper yellow;\
     at 12,12; "vw vw vw vw vw vw vw vw"(to coins*3)
-  charset 1
+  1 charset
 
   ;
 
@@ -875,9 +877,7 @@ stop
     \ XXX TODO inform about how many injured?
     s" La bala alcanza su objetivo. Esto desmoraliza a la tripulación." message
     let morale=morale-2
-    for z=1 to fn between(2,3)
-      manInjured
-    next z
+    2 3 between 1+ 1 ?do  manInjured  loop
   endif
   seconds 5
   wipeMessage
@@ -904,39 +904,45 @@ stop
 
 : battleScenery  ( -- )
 
-  window:paper blue:cls:charset 0: 
+  window:paper blue:cls:0 charset: 
   print at 21,10; pen white; paper red;" Munición = ";ammo
-  for z=0 to 21: print at z,0; pen black; paper yellow;"________ ": next z
-  print at 2,0; pen black; paper white;"1";at 9,0;"2";at 16,0;"3"
-  for z=3 to 17 step 7
-    charset 2: print at z-1,4; pen black; paper yellow;"1";at z,4;"2";at z+1,4;"3"
-    charset 1:print at z,6; pen red; paper yellow;"cde";at z+1,6;"fg";at z+1,1;"hi"
-  next z
-  let m=6: let n=20
-  for z=1 to 30
-    drawWave
-  next z
 
-  ;
+  black ink yellow paper
+  22 0 do  0 i at-xy  ." ________ "  loop
+
+  print at 2,0; pen black; paper white;"1";at 9,0;"2";at 16,0;"3"
+
+  18 3 do 
+    black ink  2 charset  4 i 1- at-xy '1' emit
+                          4 i    at-xy '2' emit
+                          4 1 1+ at-xy '3' emit
+    red ink    1 charset  6 i    at-xy ." cde"
+                          6 i 1+ at-xy ." fg"
+                          1 i 1+ at-xy ." hi"
+  7 +loop
+
+  let m=6: let n=20
+  31 1 do  drawWave  loop  ;
 
 : fire  ( y -- )
 
   local z
 
   let ammo=ammo-1
-  charset 0
+  0 charset
   print at 21,22; pen white; paper red;ammo
-  charset 1
+  1 charset
   print at y-1,9; pen yellow; paper blue;"+";at y+1,9;"-"
   moveEnemyShip
   print at y-1,9; pen yellow; paper blue;" ";at y+1,9;" "
   print at y,9; pen yellow; paper blue;" j"
   moveEnemyShip
-  for z=9 to 30
+  31 9 do
+    \ XXX TODO -- `z` is the loop index:
     print at y,z; pen yellow; paper blue;" j"
     if m=y and z=n or m=y-1 and z=n or m=y-2 and z=n then sunk
     if m=y and z=n+1 or m=y-1 and z=n+1 or m=y-2 and z=n+1 then sunk
-  next z
+  loop
   print at y,30; paper blue;"  "
 
   ;
@@ -1075,14 +1081,12 @@ stop
     let cash=cash+dub
   endif
 
-  charset 2
-  for z=10 to 13
-    print at z,8; paper yellow; pen black;"t   "
-  next z
+  2 charset  black ink  yellow paper yellow
+  14 10 do  8 i at-xy ." t   "  loop
   print \
     at 9,8; paper yellow; pen black;"u";\
     at 10,9; paper black; pen white;"nop";at 11,9;"qrs"
-  charset 1
+  1 charset
 
   label L6897
 
@@ -1117,14 +1121,13 @@ stop
 
 : rain  ( -- )
   local z
-  charset 1
-  for z=1 to 70
+  1 charset
+  71 1 do
     rainDrops ";"
     rainDrops "]"
     rainDrops "["
     if not rnd(3) then redrawShip
-  next z
-  ;
+  loop  ;
 
 : rainDrops  ( c$ -- )
   print pen white; paper 5;\
@@ -1143,9 +1146,9 @@ stop
   redrawShip
 
   \ XXX INFORMER
-  \   charset 0
+  \   0 charset
   \   print at 0,0;shipPos,seaMap(shipPos)
-  \   charset 1
+  \   1 charset
  
   seaPicture seaMap(shipPos)
 
@@ -1352,7 +1355,7 @@ stop
 
 defproc drawTreasureIsland 
 
-  charset 1
+  1 charset
   print pen green;paper blue;\
     at 7,16;"A A   HI";\
     at 8,13;"F\::\::\::B\::\::\::B\::\::B\::\::\::C";\
@@ -1373,7 +1376,7 @@ defproc drawTreasureIsland
     message "Llegas nuevamente a la isla de "+islandName$+"."
   else \
     message "Has encontrado la perdida isla de "+islandName$+"..."
-  charset 1
+  1 charset
 
   ;
 
@@ -1432,7 +1435,7 @@ defproc drawTreasureIsland
   saveScreen
   cls #
   window
-  charset 0
+  0 charset
   ;
 
 : reportEnd  ( -- )
@@ -1466,7 +1469,8 @@ defproc mainReport
     at 1,0;fn centered$("Informe de tripulación");\
     at 4,nameCol;"Nombre";\
     at 4,dataCol;"Condición"
-  for z=1 to men
+  men 1+ 1 do
+    \ XXX TODO -- `z` is the loop index:
     print \
       pen white;\
       at z+5,nameCol;fn name$(z);\
@@ -1474,7 +1478,7 @@ defproc mainReport
       paper staminaPap(stamina(z)+1);\
       bright staminaBri(stamina(z)+1);\
       at z+5,dataCol;fn upper1$(stamina$(stamina(z)+1))
-  next z
+  loop
   reportEnd
   ;
 
@@ -1501,7 +1505,7 @@ defproc mainReport
 : runAground  ( -- )
 
   wipeMessage:\ \ XXX TODO remove?
-  charset 1
+  1 charset
   wipeSea
   drawFarIslands
   bottomReef
@@ -1551,13 +1555,12 @@ defproc mainReport
 
 : seaWaves  ( -- )
   local z
-  charset 1
-  for z=1 to 15
+  1 charset
+  16 1 do
     print paper blue;pen cyan;\
       at fn between(4,graphicWinBottom),fn between(1,28);"kl";\
       at fn between(4,graphicWinBottom),fn between(1,28);"mn"
-  next z
-  ;
+  loop  ;
 
 : seaAndSky  ( -- )
   graphicWindow:\ \ XXX TMP needed, because the wipePanel before the calling
@@ -1575,7 +1578,7 @@ defproc mainReport
 : sunAndClouds  ( sunny -- )
 
   default sunny=true
-  charset 2
+  2 charset
   print paper 5;bright sunny;\
     at 0,26; pen yellow; "AB";\
     at 1,26;"CD"
@@ -1587,7 +1590,7 @@ defproc mainReport
     at 1,cloud0X;"IJKL";\
     at 0,cloud1X;"MNO";\
     at 1,cloud1X;"PQR"
-  charset 1
+  1 charset
 
   ;
 
@@ -1621,17 +1624,19 @@ defproc mainReport
 
 
   \ Reefs around the sea map
-  for i=1 to 16: let seaMap(i)=reef: next i \ north
-  for i=120 to locations: let seaMap(i)=reef: next i \ south
-  for i=30 to 105 step 15: let seaMap(i)=reef: next i \ east
-  for i=31 to 106 step 15: let seaMap(i)=reef: next i \ west
+  \ XXX TODO -- `i` is the loop index:
+  17 1 do  let seaMap(i)=reef  loop  \ north
+  locations 1+ 120 do  let seaMap(i)=reef  loop  \ south
+  106 30 do step 15 let seaMap(i)=reef 15 +loop  \ east
+  107 32 do  let seaMap(i)=reef 15 +loop \ west
 
   \ Normal islands
-  for i=17 to 119
+  120 17 do
+    \ XXX TODO -- `i` is the loop index:
     if seaMap(i)<>reef then \
       let seaMap(i)=fn between (2,21)  \ random type
       \ XXX 21 is shark; these are picture types
-  next i
+  loop
 
   \ Treasure island
   let \
@@ -1664,9 +1669,10 @@ defproc mainReport
   loop
   dim damage$(damageLevels,damageMaxLen)
   restore damageData
-  for i=1 to damageLevels
+  damageLevels +1 do
+    \ XXX TODO -- `i` is the loop index:
     read damage$(i)
-  next i
+  loop
 
   \ Island map
   dim islandMap(30)
@@ -1707,9 +1713,10 @@ defproc mainReport
   \ Villages
   restore villageNamesData
   dim village$(10,9)
-  for i=1 to 10
+  11 1 do
+    \ XXX TODO -- `i` is the loop index:
     read village$(i)
-  next i
+  loop
 
   \ Cardinal points
   dim cardinal$(4,5)
@@ -1753,11 +1760,13 @@ defproc mainReport
   loop
   dim names$(names,nameMaxLen)
   restore menNamesData
-  for name=1 to names
-    read names$(name)
-  next name
+  names 1+ 1 do
+    \ XXX TODO -- `i` is the loop index:
+    read names$(i)
+  loop
   dim name$(men,nameMaxLen)
-  for man=1 to men
+  men 1+ 1 do
+    \ XXX TODO -- `man` is the loop index:
     begin
       let \
         name=fn between(1,names),\
@@ -1766,7 +1775,7 @@ defproc mainReport
     let \
       name$(man)=i$,\
       names$(name)=""
-  next man
+  loop
 
   ;
 
@@ -1778,9 +1787,10 @@ defproc mainReport
   let minStamina=0
   let maxStamina=4
   dim stamina(men)
-  for i=1 to men
+  men 1+ 1 do
+    \ XXX TODO -- `i` is the loop index:
     let stamina(i)=maxStamina
-  next i
+  loop
 
   \ Stamina labels (1-5)
   dim \
@@ -1789,9 +1799,10 @@ defproc mainReport
     staminaPap(5),\
     staminaBri(5)
   restore staminaData
-  for i=1 to 5
+  6 1 do
+    \ XXX TODO -- `i` is the loop index:
     read stamina$(i),staminaPen(i),staminaPap(i),staminaBri(i)
-  next i
+  loop
 
   \ Stamina colors (one string char per level)
   let \
@@ -1907,18 +1918,20 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   local w,z
 
   \ XXX TMP erase the map -- do better
-  for z=1 to 30
+  31 1 do
+    \ XXX TODO -- `z` is the loop index:
     let islandMap(z)=0
-  next z
+  loop
 
   restore islandData
-  for z=1 to 18
+  19 1 do
     read w:let islandMap(w)=coast
-  next z
+  loop
 
-  for z=8 to 23
+  24 8 do
+    \ XXX TODO -- `z` is the loop index:
     if islandMap(z)<>coast then let islandMap(z)=fn between(2,5)
-  next z
+  loop
 
   let \
     islandMap(fn between(20,23))=nativeVillage,\
@@ -1938,23 +1951,25 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   cls #
   sunnySky
   wipeIsland
-  charset 2
+  2 charset
   print pen green; paper yellow;\
     at 3,0; " 5     6       45     6       5"
-  for z=0 to 24 step 8
+  25 0 do
+    \ XXX TODO -- `z` is the loop index:
     print pen black; paper yellow;\
       at 3,z+3;":\#127";\
       at 4,z+2;":\::\::\#127";\
       at 5,z+1;":\::\::\::\::\#127";\
       at 6,z;":\::\::\::\::\::\::\#127"
-  next z
-  charset 0
+  8 +loop
+  0 charset
   print at 7,0; pen white; paper red;"   1       2       3       4    "
   
   \ XXX TODO improve with LOAD or POKE
-  for z=8 to 21
+  22 8 do
+    \ XXX TODO -- `z` is the loop index:
     print at z,0; pen white; paper black;fn blankLine$
-  next z
+  loop
 
   sailorAndCaptain
   
@@ -1967,7 +1982,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   
   sailorSays "¿Qué árbol, capitán?"
   print at 15,23;"? "
-  digitTo option: charset 0: print at 15,23; paper black;option: beep .2,30
+  digitTo option: 0 charset: print at 15,23; paper black;option: beep .2,30
   trees
   seconds  2:
   if option=tree then let find=find+1
@@ -1975,22 +1990,23 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   \ XXX TODO better, with letters  
   print at 14,7; paper black;"Izquierda Derecha";at 16,8;"I=1  D=2 ";at 15,23;"? "
   digitTo option
-  charset 0
+  0 charset
   print at 15,23; paper black;option: beep .2,30
   seconds  2
   if option=turn then let find=find+1
 
   wipeIsland
-  for z=3 to 7
+  8 3 do
+    \ XXX TODO -- `z` is the loop index:
     print paper yellow;pen black;\
       at z,1;z-2;"  ";village$(z-2);\
       at z,12;z+3;"  ";village$(z+3)
-  next z
+  loop
   print at 7,12; pen black; paper yellow;"0  ";village$(10)
-  charset 2
+  2 charset
   print at 5,27; pen green; paper yellow;"S\::T";at 6,27;"VUW"
   
-  charset 0
+  0 charset
   print at 14,7; paper black;" Poblado  ";at 13,7;"¿Cuál";at 16,8;" capitán.";at 15,23;"? "
   digitTo option
   print at 15,23; paper black;option: beep .2,30
@@ -2019,12 +2035,12 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
       at 14,7;" equivocado ";\
       at 16,7;"capitán!"
   seconds  2
-  charset 1
+  1 charset
 
   ;
 
 : sailorAndCaptain  ( -- )
-  charset 1
+  1 charset
   print pen cyan; paper black;\
     at 17,0;\
     " xy";tab 28;"pq"'\
@@ -2055,21 +2071,20 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   ;
 
 : wipeSailorSpeech  ( -- )
-  \ XXX TODO better; use WINDOW and CLS 1
-  local z
-  for z=12 to 18
-    print at z,6;"            "
-  next z
-  ;
+  19 12 do
+    6 i at-xy ."            "
+  loop  ;
 
 : trees  ( -- )
   local z
   wipeIsland
   print pen black;paper yellow;\
     at 7,0;" 1       2       3       4"
-  charset 1
-  for z=2 to 26 step 8:palm2 3,z:next z
-  ;
+  1 charset
+  27 2 do
+    \ XXX TODO -- `z` is the loop index:
+    palm2 3,z
+  8 +loop  ;
 
   \ }}} ---------------------------------------------------------
   \ User input {{{
@@ -2105,10 +2120,8 @@ defproc digitTo ref answer,max
   \   save over "SAMcharset" code peek svar 566+256,768
   \ endproc
 
-: c0  ( -- )
+: c0  ( -- )  0 charset  ;
   \ XXX TMP for debugging after an error
-  charset 0
-  ;
 
 : initUDG  ( -- )
   load "udg128" code udg chr$ 128 \ Spanish chars 128-143
@@ -2131,11 +2144,12 @@ defproc digitTo ref answer,max
   \   next z
 
   \ XXX TODO new graphic, based on the cause of the end
-  charset 1
+  1 charset
   #for z=1 to 15 step 7
-  for z=1 to 8 step 7
+  16 1 do
+    \ XXX TODO -- `z` is the loop index:
     palm2 z,27:palm2 z,1
-  next z
+  7 +loop
 
   if find=6 then happyEnd:else sadEnd
 
@@ -2159,7 +2173,7 @@ defproc digitTo ref answer,max
 : sadEnd  ( -- )
 
   \ XXX TODO uset TellZone
-  charset 0
+  0 charset
   print pen white; paper red;at 3,0;fn centered$("FIN DEL JUEGO")
   window 5,26,2,21 \ XXX TODO
   if supplies<=0 then \
@@ -2188,20 +2202,21 @@ defproc digitTo ref answer,max
   load "attr/zp5i5b1l03" code fn attrLine(0)
   load "attr/zp6i6b0l18" code fn attrLine(4)
   sunnySky
-  for z=7 to 22 step 5
+  23 7 do
+    \ XXX TODO -- `z` is the loop index:
     palm2 5,z
-  next z
+  5 +loop
   palm2 7,3:palm2 7,26
   \ Cofre del tesoro:
   print at 13,8; pen black; paper yellow;\
   "pq          xy                  rs          vs                  tu      ";\
   "\T\U    wu"
   palm2 11,28:palm2 11,0
-  charset 2
+  2 charset
   print at 17,13; pen blue; paper yellow;"l\::m"
   s" ¡Capitán, somos ricos!" message
   seconds 4
-  charset 1
+  1 charset
 
   ;
 
@@ -2230,10 +2245,10 @@ defproc digitTo ref answer,max
 
   \ Draw top and bottom borders of skulls.
 
-  charset 2
+  2 charset
   skulls 2
   skulls 0
-  charset 1
+  1 charset
 
   ;
 
@@ -2261,14 +2276,16 @@ deffn cpl=\
   local char,cpl
   let cpl=fn cpl
 
-  charset 0
+  0 charset
   begin len text$<=cpl  while
-    for char=cpl to 1 step -1
+    \ for char=cpl to 1 step -1 \ XXX OLD
+    0 cpl do
+      \ XXX TODO -- `char` is the loop index:
       if text$(char)=" " then \
         print text$(to char-1)
         let text$=text$(char+1 to)
         exit for
-    next char
+    -1 +loop
   repeat
   print text$
 
@@ -2316,7 +2333,7 @@ deffn cpl=\
   \ endproc
 
 : message  ( text$ -- )
-  charset 0
+  0 charset
   wipeMessage
   messageWindow
   tell text$
@@ -2330,15 +2347,17 @@ deffn cpl=\
 
   local char
 
-  charset 0
+  0 charset
   begin len text$<=width while
-    for char=width to 1 step -1
+    \ for char=width to 1 step -1
+    0 width do
+      \ XXX TODO -- `char` is the loop index:
       if text$(char)=" " then \
         print at row,col;text$(to char-1)
         let text$=text$(char+1 to)
         let row=row+1
         exit for
-    next char
+    -1 +loop
   repeat
   print at row,col;text$
 
@@ -2349,13 +2368,8 @@ deffn cpl=\
 
 : initScreen  ( -- )
 
-  local s
   mode 1
   let attrAd=scrad+6144
-  for s=2 to 16
-    close screen s
-  next s
-  open screen 2,1
   cls #
 
 
@@ -2398,7 +2412,7 @@ deffn cpl=\
 : graphicWindow  ( -- )
   \ Zone where graphics are shown
   window graphicWinLeft,graphicWinRight,graphicWinTop,graphicWinBottom
-  charset 1 \ default
+  1 charset \ default
   ;
 
 : introWindow  ( -- )
@@ -2465,57 +2479,49 @@ deffn cpl=\
   \ Meta {{{
 
 : showSea  ( -- )
-  local x,y,i
+  local x,y,invflag
   mode 3
   cls #
-  for y=0 to 8*2 step2
-    for x=0 to 14
-      print inverse i;using$("##",seaMap(1+y*9+x));
-      let i=not i
-    next x
+  \ for y=0 to 8*2 step 2
+  17 0 do
+    \ XXX TODO -- `y` is the outer loop index:
+    \ for x=0 to 14
+    15 0 do
+      \ XXX TODO -- `x` is the inner loop index:
+      invflag inverse
+      print using$("##",seaMap(1+y*9+x));
+      let invflag=not invflag
+    loop
     print
-  next y
-  mode 1
-  ;
+  loop
+  mode 1  0 inverse  ;
 
 : showCharsets  ( -- )
   local i
   cls #
-  for i=0 to 2
-    showCharset i
-  next i
-  charset 0
+  3 0 do
+    i showCharset
+  loop
+  0 charset
   print '"UDG"
   showUdg
   ;
 
 : showCharset  ( n -- )
-  charset 0
+  0 charset
   print '"charset ";n
   charset n
   showASCII
   ;
 
-: showASCII  ( -- )
-  local z
-  for z=32 to 127
-    print chr$ z;
-  next z
-  ;
+: showASCII  ( -- )  128 32 do  i emit  loop  ;
 
-: showUDG  ( -- )
-  local z
-  blocks 0
-  for z=128 to 164
-    print chr$ z;
-  next z
-  ;
+: showUDG  ( -- )  256 128 do  i emit  loop  ;
 
 : showDamages  ( -- )
-  local i
-  for i=0 to 100
+  101 0 do
+    \ XXX TODO -- `i` is the loop index:
     let damage=i
     print damage,fn damageIndex;" ";fn damage$
-  next i
-  ;
+  loop  ;
 
