@@ -11,16 +11,35 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612160010
+  \ Version 0.0.0+201612160025
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
 
 only forth definitions
 
-need chars>string  need string/
+need chars>string  need string/  need columns
 
 wordlist dup constant black-flag  dup >order  set-current
+
+  \ }}} ---------------------------------------------------------
+  \ Variables {{{
+
+variable aboard      \ flag
+variable alive       \ counter
+variable ammo        \ counter
+variable cash        \ counter
+variable damage      \ counter
+variable day         \ counter
+variable foundClues  \ counter
+variable morale      \ counter
+variable score       \ counter
+variable sunkShips   \ counter
+variable supplies    \ counter
+variable trades      \ counter
+variable quitGame    \ flag
+
+variable shipPicture \ flag
 
   \ }}} ---------------------------------------------------------
   \ Functions {{{
@@ -71,27 +90,13 @@ wordlist dup constant black-flag  dup >order  set-current
   \ active, _f_ is true and _n_ is the position of its
   \ highlighted letter.
 
-: centered$  ( ca1 len1 -- ca1 len2 )
-  chr$ 23+chr$ ((fn cpl-len t$)/2)+chr$ 0+t$  ;
-  \ A text centered on the current line
-  \ (the cursor must be at the start of the line)
-  \ XXX Why a chr$ 0 is needed? Without it, the first letter of
-  \ the text is removed.
-  \ XXX TODO --
-
-: banner$ ( ca len -- )
-  (string$((fn cpl-len t$)/2," ")+t$+string$(fn cpl," "))(to fn cpl)  ;
-  \ A text centered on the current line
-  \ (the cursor must be at the start of the line
-  \ and the whole line is overwritten)
-  \ XXX TODO --
-
 : coins$ ( x -- ca len )
   dup >r n>letters s"  " s+ r> dubloons$ s+  ;
   \ Return the text "x doubloons", with letters.
   \ XXX TODO --
 
-: upper1$ ( ca len -- ca len )  over c@ upper >r over r> swap c!  ;
+: upper1$ ( ca len -- ca len )
+  over c@ upper >r over r> swap c!  ;
   \ Change the first char of _ca len_ to uppercase.
 
 : failure  ( -- f )
@@ -114,7 +119,7 @@ wordlist dup constant black-flag  dup >order  set-current
   \ Physical condition of a crew member
   \ XXX TODO --
 
-: blankLine$  ( -- ca len )  string$(fn cpl," ")  ;
+: blankLine$  ( -- ca len )  string$(fn columns," ")  ;
   \ XXX TODO --
 
 : damageIndex  ( -- n )  damage @ damageLevels @ 101 / 1+  ;
@@ -1452,7 +1457,7 @@ variable possibleWest           \ flag
 
 : mainReport  ( -- )
   reportStart
-  0 1 at-xy s" Informe de situación" cpl type-center
+  0 1 at-xy s" Informe de situación" columns type-center
   0 4 at-xy
   ." Días:"         tab day @ .## cr cr
   ." Barco:"        tab damage$ upper1$ type cr cr
@@ -1468,10 +1473,9 @@ variable possibleWest           \ flag
   local nameCol,dataCol
   let nameCol=1,dataCol=20
   reportStart
-  print \
-    at 1,0;fn centered$("Informe de tripulación");\
-    at 4,nameCol;"Nombre";\
-    at 4,dataCol;"Condición"
+  0 1 at-xy s" Informe de tripulación" columns type-center
+  4 nameCol at-xy ." Nombre"
+  4 dataCol at-xy ." Condición"
   men 1+ 1 do
     \ XXX TODO -- `z` is the loop index:
     print \
@@ -1495,8 +1499,7 @@ variable possibleWest           \ flag
 
 : scoreReport  ( -- )
   reportStart
-  print \
-    at 1,0;fn centered$("Informe de puntuación");\
+  at 0,1 at-xy s" Informe de puntuación" columns type-center
     at 4,0;\
     "Días",using$("####",day);" x  200"'\
     "Hundimientos",using$("####",sunkShips);" x 1000"'\
@@ -1536,7 +1539,8 @@ variable possibleWest           \ flag
   message "¡Has encallado! El barco está "+damage$+"."
   \ XXX TODO print at the proper zone:
   if damage=100 then print at 20,7; pen 5; paper black;"TOTAL"
-  print pen black; paper green;at 17,0;fn centered$("INFORME")
+  black ink  green paper
+  0 17 at-xy s" INFORME" columns type-center
   \ XXX TODO choose more men, and inform about them
   manInjured
   manDead
@@ -1611,30 +1615,14 @@ variable possibleWest           \ flag
 
 : initOnce  ( -- )  initScreen  initUDG  ;
 
-variable aboard      \ flag
-variable alive       \ counter
-variable ammo        \ counter
-variable cash        \ counter
-variable damage      \ counter
-variable day         \ counter
-variable foundClues  \ counter
-variable morale      \ counter
-variable score       \ counter
-variable sunkShips   \ counter
-variable supplies    \ counter
-variable trades      \ counter
-variable quitGame    \ flag
-
-variable shipPicture \ flag
-
 : init  ( -- )
 
   local i,i$
 
   randomize
-  #load "attr/zp0i0b0l20" code fn attrLine(2)
-  print pen white; paper black; flash 1;\
-    at peek UWBOT-introWinTop-1,0;fn banner$("Preparando el viaje...")
+  \ load "attr/zp0i0b0l20" code fn attrLine(2) \ XXX TODO --
+  white ink  black paper  1 flash
+  0 14 at-xy s" Preparando el viaje..." columns type-center
 
   \ The sea map has 135 cells (9 rows, 15 columns)
   let locations=135
@@ -2186,7 +2174,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   \ XXX TODO uset TellZone
   0 charset
   white ink  red paper
-  0 3 at-xy s" FIN DEL JUEGO" cpl type-centered
+  0 3 at-xy s" FIN DEL JUEGO" columns type-center
   window 5,26,2,21 \ XXX TODO
   if supplies<=0 then \
   s" Las provisiones se han agotado." tell
@@ -2240,19 +2228,19 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   \ Intro {{{
 
 : intro  ( -- )
-  window
   cls
   skullBorder
   introWindow
-  s" Viejas leyendas hablan del tesoro que esconde la perdida isla de "
-  islandName$ s+ s" ." s+ tellCR
-  s" Los nativos del archipiélago recuerdan las antiguas pistas" tellCR
-  s" que conducen al tesoro." tell
-  s" Deberás comerciar con ellos para que te las digan." tell
-  s" Visita todas las islas hasta encontrar la isla de" tellCR
+  s" Viejas leyendas hablan del tesoro" tell
+  s" que esconde la perdida isla de" tell
+  islandName$ s" ." s+ tellCR
+  s" Los nativos del archipiélago recuerdan" tell
+  s" las antiguas pistas que conducen al tesoro." tell
+  s" Deberás comerciar con ellos para que te las digan." tellCR
+  s" Visita todas las islas hasta encontrar la isla de" tell
   islandName$ tell
   s" y sigue las pistas hasta el tesoro..." tell
-  print at peek UWBOT-introWinTop-1,0;fn centered$("Pulsa una tecla")
+  0 row 1+ s" Pulsa una tecla" columns type-center
   6000 pause  ;
 
 : skullBorder  ( -- )
@@ -2280,15 +2268,11 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   \ }}} ---------------------------------------------------------
   \ Text output {{{
 
-: cpl  ( -- n )  32  ;
-  \ Characters per line of the current upper window
-  \ XXX TODO --
-
 : tell  ( ca len -- )
   0 charset
-  begin  dup cpl >  while
+  begin  dup columns >  while
     \ for char=cpl to 1 step -1 \ XXX OLD
-    0 cpl do
+    0 columns do
       over i + c@ bl = if
         2dup drop i 1- type
         i 1+ string/ \ XXX OLD: let text$=text$(char+1 to)
