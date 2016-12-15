@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612160035
+  \ Version 0.0.0+201612160045
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -19,6 +19,10 @@
 only forth definitions
 
 need chars>string  need string/  need columns  need inverse
+need seconds
+
+  \ XXX TODO -- make a version of `seconds` that can be
+  \ interrupted with a key press
 
 wordlist dup constant black-flag  dup >order  set-current
 
@@ -260,7 +264,7 @@ variable possibleWest           \ flag
 
 : impossible  ( -- )
   s" Lo siento, capitán, no puede hacer eso." message
-  seconds 2  ;
+  2 seconds  ;
   \ XXX not used yet
 
   \ }}} ---------------------------------------------------------
@@ -368,7 +372,7 @@ variable possibleWest           \ flag
   let price=fn between(5,9)
   nativeSays "Precio ser "+fn coins$(price)+"."
   \ XXX TODO pause or join:
-  seconds 1
+  1 seconds
   nativeSays "¿Qué dar tú, blanco?"
   makeOffer
   \ One dubloon less is accepted:
@@ -438,9 +442,9 @@ variable possibleWest           \ flag
 
 : rejectedOffer  ( -- )
 
-  seconds 2
+  2 seconds
   nativeSays "¡Tú insultar! ¡Fuera de isla mía!"
-  seconds 4
+  4 seconds
   embark
 
   ;
@@ -453,7 +457,7 @@ variable possibleWest           \ flag
     score=score+200,\
     trades=trades+1
   nativeTellsClue
-  seconds 4
+  4 seconds
   embark
 
   ;
@@ -878,7 +882,7 @@ variable possibleWest           \ flag
 
   let ammo=ammo-1
   s" Disparas por error a uno de tus propios botes..." message
-  seconds 5
+  5 seconds
 
   if fn between(0,2)
     s" Por suerte el disparo no ha dado en el blanco." message
@@ -888,7 +892,7 @@ variable possibleWest           \ flag
     let morale=morale-2
     2 3 between 1+ 1 ?do  manInjured  loop
   endif
-  seconds 5
+  5 seconds
   wipeMessage
 
   ;
@@ -960,7 +964,7 @@ variable possibleWest           \ flag
   \ XXX TODO the enemy wins; our ship sinks,
   \ or the money and part of the crew is captured
   s" Te quedaste sin munición." message
-  seconds 4
+  4 seconds
   ;
 
 : moveEnemyShip  ( -- )
@@ -1103,7 +1107,7 @@ variable possibleWest           \ flag
 
   label L6898
 
-  seconds 3
+  3 seconds
 
   ;
 
@@ -1547,7 +1551,7 @@ variable possibleWest           \ flag
   manInjured
   manDead
   let morale=morale-fn between(1,4)
-  seconds 3
+  3 seconds
 
   ;
 
@@ -2200,7 +2204,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 
   local z
 
-  seconds 2
+  2 seconds
   load "attr/zp5i5b1l03" code fn attrLine(0)
   load "attr/zp6i6b0l18" code fn attrLine(4)
   sunnySky
@@ -2217,7 +2221,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   2 charset
   print at 17,13; pen blue; paper yellow;"l\::m"
   s" ¡Capitán, somos ricos!" message
-  seconds 4
+  4 seconds
   1 charset
 
   ;
