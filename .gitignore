@@ -1,0 +1,7 @@
+# Ignore ZX Spectrum emulator snapshots:
+*.szx
+
+# Ignore the development resources:
+_meta/
+
+# vim: filetype=config

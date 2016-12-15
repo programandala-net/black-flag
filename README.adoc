@@ -1,0 +1,15 @@
+== Bandera Negra
+:author: Marcos Cruz (programandala.net)
+:revdate: 2016-05-25
+
+This game is a Spanish remake of "Jolly Roger" (written by Barry
+Jones, published by Video Vault ltd. in 1984).
+
+This program is written in Forth with
+http://programandala.net/en.program.solo_forth.html[Solo Forth],
+for ZX Spectrum 128.
+
+The project started by converting the sources of a previous abandoned
+http://programandala.net/es.programa.bandera_negra.mbim.html[version
+for SAM Coupé] from MasterBASIC to Solo Forth...
+
