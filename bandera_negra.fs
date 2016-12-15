@@ -9,9 +9,18 @@
   \   "Jolly Roger"
   \   Copyright (C) 1984 Barry Jones / Video Vault ltd.
 
-  \ Copyright (C) 2011,2014,2015 Marcos Cruz (programandala.net)
+  \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612151459
+  \ Version 0.0.0+201612152139
+
+  \ }}} ---------------------------------------------------------
+  \ Requirements {{{
+
+only forth definitions
+
+need chars>string  need string/
+
+wordlist dup constant black-flag  dup >order  set-current
 
   \ }}} ---------------------------------------------------------
   \ Functions {{{
@@ -50,25 +59,19 @@ let \
   \ Convert _n_ to letters in string _ca len_.
   \ XXX TODO --
 
-: highlighted$ ( c -- ca len )
-  chr$ 20+chr$ 1+c$+chr$ 20+chr$ 0  ;
-  \ A highlighted char
-  \ XXX TODO --
+: highlighted$ ( c -- ca len )  0 20 rot 1 20 5 chars>string  ;
+  \ Convert _c_ to a string to print _c_ as a highlighted char.
 
-: activeOption$  ( ca len l -- )
-  o$(to l-1)+fn highlighted$(o$(l))+o$(l+1 to)  ;
-  \ An active option of the panel; l=pos of highlighted letter
-  \ XXX TODO -- _ca len_ is o$
+: activeOption$  ( ca1 len1 n -- ca2 len2 )
+  >r 2dup r@ 1- string/
+  2over drop r@ + c@ highlighted$ s+
+  2swap r> 1+ /string s+  ;
+  \ Convert menu option _ca len_ to an active menu option
+  \ with character at position _n_ highlighted with control
+  \ characters.
 
-: option$ ( ca len l a)
-  (o$ and not a)+(fn activeOption$(o$,l) and a)  ;
-  \ A panel option; a=active?; l=pos of highlighted letter
-  \ XXX TODO -- _ca len_ is o$
-
-  \ XXX OLD
-  \ deffn center$(l,t$)=\
-  \   \ A text centered at line l
-  \   chr$ 22+chr$ l+chr$ ((fn cpl-len t$)/2)+t$
+: option$ ( ca len n a -- ca len )  if  activeOption$  then  ;
+  \ A panel option; a=active?; _n_=pos of highlighted letter.
 
 : centered$  ( ca len -- )
   chr$ 23+chr$ ((fn cpl-len t$)/2)+chr$ 0+t$  ;
@@ -101,7 +104,9 @@ let \
   cash @ 1 < or  ;
   \ Failed mission?
 
-: success  ( -- f )  foundClues @ 6 =  ;
+6 constant maxClues
+
+: success  ( -- f )  foundClues @ maxClues =  ;
   \ Success?
 
 : gameOver  ( -- f )  failure success quitGame or or  ;
@@ -1418,22 +1423,25 @@ main
   restoreScreen
   ;
 
+: .##  ( u -- )  s>d <# # # #> type  ;
+  \ Print _u_ with two digits.
+
+: .####  ( u -- )  s>d <# # # # # #> type  ;
+  \ Print _u_ with four digits.
 
 : mainReport  ( -- )
   reportStart
-  print \
-    at 1,0;fn centered$("Informe de situación");\
-    at 4,0;\
-    "Días:",using$("##",day);''\
-    "Barco:",fn upper1$(fn damage$)''\
-    "Hombres:",using$("##",alive)'\
-    "Moral:",using$("## ",morale)''\
-    "Provisiones:",using$("##",supplies)'\
-    "Doblones:",using$("##",cash)''\
-    "Hundimientos:",using$("## ",sunkShips)'\
-    "Munición:",using$("##",ammo)''
-  reportEnd
-  ;
+  0 1 at-xy s" Informe de situación" cpl type-center
+  0 4 at-xy
+  ." Días:"         tab day @ .## cr cr
+  ." Barco:"        tab damage$ upper1$ type cr cr
+  ." Hombres:"      tab alive @ .## cr
+  ." Moral:"        tab using$("## ",morale) cr cr
+  ." Provisiones:"  tab supplies @ .## cr
+  ." Doblones:"     tab cash @ .## cr cr
+  ." Hundimientos:" tab using$("## ",sunkShips) cr
+  ." Munición:"     tab ammo @ .## cr cr
+  reportEnd  ;
 
 : crewReport  ( -- )
   local nameCol,dataCol
@@ -1456,6 +1464,14 @@ main
   reportEnd
   ;
 
+: updateScore  ( -- )
+  foundClues @ 1000 *
+  day        @  200 * +
+  sunkShips  @ 1000 * +
+  trades     @  200 * +
+               4000 success and +
+             score +!  ;
+
 : scoreReport  ( -- )
   reportStart
   print \
@@ -1464,14 +1480,11 @@ main
     "Días",using$("####",day);" x  200"'\
     "Hundimientos",using$("####",sunkShips);" x 1000"'\
     "Negocios",using$("####",trades);" x  200"'\
-    "Pistas",using$("####",foundClues);" x 1000"
-  if foundClues=6 then \
-    let score=score+4000
-    print "Tesoro",using$("####",4000)
-  let score=score+(foundClues*1000)+(day*200)+(sunkShips*1000)+(trades*200)
+    "Pistas",using$("####",foundClues);" x 1000"'\
+    "Tesoro",using$("####",4000)
+  updateScore
   print '"Total","       ";using$("####",score)
-  reportEnd
-  ;
+  reportEnd  ;
 
   \ .............................................................
   \ Run aground
@@ -2151,7 +2164,8 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 
   \ XXX TODO uset TellZone
   0 charset
-  print pen white; paper red;at 3,0;fn centered$("FIN DEL JUEGO")
+  white ink  red paper
+  0 3 at-xy s" FIN DEL JUEGO" cpl type-centered
   window 5,26,2,21 \ XXX TODO
   if supplies<=0 then \
   s" Las provisiones se han agotado." tell
