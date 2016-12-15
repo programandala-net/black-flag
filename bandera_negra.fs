@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612152139
+  \ Version 0.0.0+201612152145
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -35,29 +35,24 @@ wordlist dup constant black-flag  dup >order  set-current
   attr$  swap 32 *  string$  ;
   \ XXX TODO -- finish
 
-
 : dubloons$ ( n -- ca len )
   s" dobl " rot 1 > if s" ones"  else  s" ón"  then s+  ;
   \ "doubloon" or "doubloons", depending on _n_
 
-dim n$(11,6) \ numbers with letters
-let \
-  n$(1)="un",\
-  n$(2)="dos",\
-  n$(3)="tres",\
-  n$(4)="cuatro",\
-  n$(5)="cinco",\
-  n$(6)="seis",\
-  n$(7)="siete",\
-  n$(8)="ocho",\
-  n$(9)="nueve",\
-  n$(10)="diez",\
-  n$(11)="once"
-  \ XXX TODO -- create a string table
-
-: number$ ( n -- ca len )  n$(n)  ;
-  \ Convert _n_ to letters in string _ca len_.
-  \ XXX TODO --
+: number$ ( n -- ca len )
+  case   1 of  s" un"     endof
+         2 of  s" dos"    endof
+         3 of  s" tres"   endof
+         4 of  s" cuatro" endof
+         5 of  s" cinco"  endof
+         6 of  s" seis"   endof
+         7 of  s" siete"  endof
+         8 of  s" ocho"   endof
+         9 of  s" nueve"  endof
+        10 of  s" diez"   endof
+        11 of  s" once"   endof  endcase  ;
+  \ Convert _n_ to text in string _ca len_.
+  \ XXX TODO -- use a faster vector table instead
 
 : highlighted$ ( c -- ca len )  0 20 rot 1 20 5 chars>string  ;
   \ Convert _c_ to a string to print _c_ as a highlighted char.
