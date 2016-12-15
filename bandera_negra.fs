@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612151359
+  \ Version 0.0.0+201612151459
 
   \ }}} ---------------------------------------------------------
   \ Functions {{{
@@ -145,13 +145,12 @@ let \
   \ Main {{{
 
 main
-stop
 
 : main  ( -- )
   initOnce  begin  intro init game theEnd  repeat  ;
 
 : game  ( -- )
-  cls #
+  cls
   let screenRestored=false
   begin
     if not screenRestored then \
@@ -1408,7 +1407,7 @@ stop
 : reportStart  ( -- )
   \ Common task at the start of all reports
   saveScreen
-  cls #
+  cls
   window
   0 charset
   ;
@@ -1933,7 +1932,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 
   \ XXX TODO finish the new interface
 
-  cls #
+  cls
   sunnySky
   wipeIsland
   2 charset
@@ -2155,17 +2154,17 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   print pen white; paper red;at 3,0;fn centered$("FIN DEL JUEGO")
   window 5,26,2,21 \ XXX TODO
   if supplies<=0 then \
-  tell "Las provisiones se han agotado."
+  s" Las provisiones se han agotado." tell
   if morale<=0 then \
-  tell "La tripulación se ha amotinado."
+  s" La tripulación se ha amotinado." tell
   if ammo<=0 then \
-  tell "La munición se ha terminado."
+  s" La munición se ha terminado." tell
   if not alive then \
-  tell "Toda tu tripulación ha muerto."
+  s" Toda tu tripulación ha muerto." tell
   if damage=100 then \
-  tell "El barco está muy dañado y es imposible repararlo."
+  s" El barco está muy dañado y es imposible repararlo." tell
   if cash<=0 then \
-  tell "No te queda dinero."
+  s" No te queda dinero." tell
   window
 
   ;
@@ -2206,18 +2205,20 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   \ Intro {{{
 
 : intro  ( -- )
-
   window
-  cls #
+  cls
   skullBorder
   introWindow
-  tellCR "Viejas leyendas hablan del tesoro que esconde la perdida isla de "+islandName$+"."
-  tellCR "Los nativos del archipiélago recuerdan las antiguas pistas que conducen al tesoro. Deberás comerciar con ellos para que te las digan."
-  tellCR "Visita todas las islas hasta encontrar la isla de "+islandName$+" y sigue las pistas hasta el tesoro..."
+  s" Viejas leyendas hablan del tesoro que esconde la perdida isla de "
+  islandName$ s+ s" ." s+ tellCR
+  s" Los nativos del archipiélago recuerdan las antiguas pistas" tellCR
+  s" que conducen al tesoro." tell
+  s" Deberás comerciar con ellos para que te las digan." tell
+  s" Visita todas las islas hasta encontrar la isla de" tellCR
+  islandName$ tell
+  s" y sigue las pistas hasta el tesoro..." tell
   print at peek UWBOT-introWinTop-1,0;fn centered$("Pulsa una tecla")
-  6000 pause
-
-  ;
+  6000 pause  ;
 
 : skullBorder  ( -- )
 
@@ -2248,47 +2249,33 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   \ Characters per line of the current upper window
   \ XXX TODO --
 
-: tell  ( text$ -- )
-
-  local char,cpl
-  let cpl=fn cpl
-
+: tell  ( ca len -- )
   0 charset
-  begin len text$<=cpl  while
+  begin  dup cpl >  while
     \ for char=cpl to 1 step -1 \ XXX OLD
     0 cpl do
-      \ XXX TODO -- `char` is the loop index:
-      if text$(char)=" " then \
-        print text$(to char-1)
-        let text$=text$(char+1 to)
-        exit for
+      over i + c@ bl = if
+        2dup drop i 1- type
+        i 1+ string/ \ XXX OLD: let text$=text$(char+1 to)
+                     \ XXX OLD -- `char` was the loop index
+        unloop leave
+      then
     -1 +loop
-  repeat
-  print text$
+  repeat  type  ;
 
-  ;
+: tellCR  ( ca len -- )  tell cr  ;
 
-: tellCR  ( text$ -- )
-  tell text$
-  cr
-  ;
-
-: nativeSays  ( text$ -- )
+: nativeSays  ( ca len -- )
   nativeWindow
   cls 1
-  tell text$
+  tell
   \ XXX OLD
   #wipeNativeWords
   #tellZone text$,12,6,16
   ;
 
-: message  ( text$ -- )
-  0 charset
-  wipeMessage
-  messageWindow
-  tell text$
-  graphicWindow
-  ;
+: message  ( ca len -- )
+  0 charset  wipeMessage  messageWindow  tell  graphicWindow  ;
 
 : tellZone  ( text$,width,row,col -- )
 
@@ -2318,9 +2305,8 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 
 : initScreen  ( -- )
 
-  mode 1
   let attrAd=scrad+6144
-  cls #
+  cls
 
 
   \ Some window parameters
@@ -2424,8 +2410,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 
 : showSea  ( -- )
   local x,y,invflag
-  mode 3
-  cls #
+  cls
   \ for y=0 to 8*2 step 2
   17 0 do
     \ XXX TODO -- `y` is the outer loop index:
@@ -2441,22 +2426,12 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   mode 1  0 inverse  ;
 
 : showCharsets  ( -- )
-  local i
-  cls #
-  3 0 do
-    i showCharset
-  loop
-  0 charset
-  print '"UDG"
-  showUdg
-  ;
+  cls  3 0 do  i showCharset  loop
+       0 charset cr ." UDG" showUdg  ;
 
 : showCharset  ( n -- )
-  0 charset
-  print '"charset ";n
-  charset n
-  showASCII
-  ;
+  0 charset cr ." charset " n .
+  n charset showASCII  ;
 
 : showASCII  ( -- )  128 32 do  i emit  loop  ;
 
