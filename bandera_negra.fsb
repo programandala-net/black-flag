@@ -9,144 +9,6 @@
 
   \ Copyright (C) 2011,2014,2015 Marcos Cruz (programandala.net)
 
-  \ History
-  \ 2015-11-02: First changes on the MasterBASIC version,
-  \ to convert it to Forth.
-
-  \ }}} ---------------------------------------------------------
-  \ XXX TODO {{{
-
-  \ Desligar los valores en seaMap and islandMap de los objetos que
-  \ contienen (monedas, tiburón, barco enemigo, nativo...). Guardarlos
-  \ en una matriz independiente. Esto hará más claros los algoritmos y
-  \ evitará el problema de que la pantalla se redibuja cuando desaparece
-  \ un objeto (p.e., las monedas) tan solo porque ha cambiado el valor
-  \ de esa celda del mapa.
-
-  \ Condiciones para los comandos del panel: 
-  \ Comerciar:
-  \   islandMap(iPos)=nativeVillage
-  \ Matar:
-  \   not(islandMap(iPos)=2 or islandMap(iPos)=4 or islandMap(iPos)=6)
-
-  \ Cambiar la medida del daño del barco (variable «damage»)
-  \ por su estado, analógamente a la tripulación, y mostrarlo
-  \ en forma de texto.
-
-  \ Tabla de mejores puntuaciones; guardada en disquete.
-
-  \ Hacer dos aspectos para el final: éxito y fracaso.
-
-  \ Ampliar fn number$() y usarla en la negociación.
-
-  \ Un programa herramienta que prepare y guarde las matrices
-  \ en el disquete, para que el juego se ahorre la tarea, el
-  \ código y el tiempo. (Quizá no merece la pena, porque hay
-  \ variables que definir también y deberían duplicarse en
-  \ ambos programas).
-
-  \ Hacer que el número de doblones hallados varíe.
-
-  \ Usar un juego de caracteres diferente para las palabras de
-  \ los nativos.
-
-  \ Hacer, si no está, que se reciban provisiones, munición y
-  \ tropa tras vencer a un barco.
-
-  \ Dibujar escorpión y pantano.
-
-  \ Poder matar escorpión.
-
-  \ Borrar serpiente y escorpión cuando mueran.
-
-  \ Hacer variable el dibujo de provisiones.
-
-  \ Poner la pista en el bocadillo.
-
-  \ Reducir moral unas décimas cuando un hombre sea herido o
-  \ muerto.
-
-  \ Reducir la energía un número proporcional a la gravedad
-  \ del ataque, no siempre 1.
-
-  \ Informar de que no se puede desembarcar
-  \ porque la isla ya ha sido visitada.
-
-  \ Fallo: el barco sale con fondo negro cuando encalla.
-
-  \ Revisar los rangos de doblones al comerciar.
-
-  \ Informar de si hay muertos cuando el bote es alcanzado por
-  \ error. Calcular 'alive' antes y después de herir a los
-  \ hombres.
-
-  \ Usar otro juego de caracteres.
-
-  \ Hacer que el jugador pueda poner nombre a los miembros de
-  \ la tripulación.
-
-  \ Cambiar el aspecto de las pantallas finales: negras y con calaveras.
-
-  \ Hacer que el jugador pueda elegir nombre al capitán. 
-
-  \ Añadir Fin a la lista de comandos
-
-  \ Al embarcar, borrar panel antes de redibujar pantalla.
-
-  \ Hacer que el sol se imprima también al azar, pero no
-  \ coincida con las nubes.
-
-  \ }}} ---------------------------------------------------------
-  \ Vim preprocessing commands {{{
-
-  \ Spanish characters as UDGs
-
-  \ vim %substitute/á/\=nr2char(128)/gI
-  \ vim %substitute/Á/\=nr2char(129)/gI
-  \ vim %substitute/é/\=nr2char(130)/gI
-  \ vim %substitute/É/\=nr2char(131)/gI
-  \ vim %substitute/í/\=nr2char(132)/gI
-  \ vim %substitute/Í/\=nr2char(133)/gI
-  \ vim %substitute/ó/\=nr2char(134)/gI
-  \ vim %substitute/Ó/\=nr2char(135)/gI
-  \ vim %substitute/ú/\=nr2char(136)/gI
-  \ vim %substitute/Ú/\=nr2char(137)/gI
-  \ vim %substitute/ñ/\=nr2char(138)/gI
-  \ vim %substitute/Ñ/\=nr2char(139)/GI
-  \ vim %substitute/ü/\=nr2char(140)/GI
-  \ vim %substitute/Ü/\=nr2char(141)/gI
-  \ vim %substitute/¿/\=nr2char(142)/gI
-  \ vim %substitute/¡/\=nr2char(143)/gI
-
-  \ System variables
-
-  \ vim %substitute/\<UWRHS\>/\&5A38/gI
-  \ vim %substitute/\<UWLHS\>/\&5A39/gI
-  \ vim %substitute/\<UWTOP\>/\&5A3A/gI
-  \ vim %substitute/\<UWBOT\>/\&5A3B/gI
-  \ vim %substitute/\<LWRHS\>/\&5A3C/gI
-  \ vim %substitute/\<LWLHS\>/\&5A3D/gI
-  \ vim %substitute/\<LWTOP\>/\&5A3E/gI
-  \ vim %substitute/\<LWBOT\>/\&5A3F/gI
-  \ 8 if caps lock is on, else zero:
-  \ vim %substitute/\<KLFLAG\>/\&5C6A/gI
-
-  \ SPOSNU 5A6CH (2) Upper window position as column/row:
-  \ vim %substitute/\<UWCOL\>/\&5A6C/gI
-  \ vim %substitute/\<UWROW\>/\&5A6D/gI
-  \ SPOSNL 5A6EH (2) Lower window position as column/row:
-  \ vim %substitute/\<LWCOL\>/\&5A6E/gI
-  \ vim %substitute/\<LWROW\>/\&5A6F/gI
-
-  \ // frames0 holds the LSB:
-  \ #vim %substitute/\<FRAMES\>/\&5C78/gI
-  \ #vim %substitute/\<FRAMES0\>/\&5C78/gI
-  \ #vim %substitute/\<FRAMES1\>/\&5C79/gI
-  \ #vim %substitute/\<FRAMES2\>/\&5C7A/gI
-  \ #vim %substitute/\<FRAMES3\>/\&5C7F/gI
-  \ #vim %substitute/\<FRAMES34\>/\&5C7F/gI
-  \ #vim %substitute/\<FRAMES4\>/\&5C80/gI
-
 
   \ }}} ---------------------------------------------------------
   \ Functions {{{
@@ -296,11 +158,11 @@ stop
 
 : main  ( -- )
   initOnce
-  do:\
-    intro:\
-    init:\
-    game:\
-    theEnd:\
+  do
+    intro
+    init
+    game
+    theEnd
   loop until true \ XXX TODO playAgain
   ;
 
@@ -311,7 +173,7 @@ stop
     if not screenRestored then \
       \ XXX FIXME sometimes scenery is called here without reason
       \ XXX The logic is wrong.
-      scenery:\
+      scenery
     else \
       let screenRestored=0
     command
@@ -322,16 +184,16 @@ stop
   \ XXX FIXME useScreen2 and usesCreen2 cause the sea
   \ background is missing
   useScreen2
-  on aboard+1:\
-    islandScenery:\
+  on aboard+1
+    islandScenery
     seaScenery
   panel
   useScreen1
   ;
 
 : command  ( -- )
-  on aboard+1:\
-    islandCommand:\
+  on aboard+1
+    islandCommand
     shipCommand
   ;
 
@@ -445,7 +307,7 @@ stop
 
 : seaMove  ( offset -- )
   if seaMap(shipPos+offset)=reef then \
-    runAground:\
+    runAground
   else \
     let shipPos=shipPos+offset
     \ XXX OLD
@@ -454,8 +316,8 @@ stop
 
 : disembark  ( -- )
 
-  let supplies=supplies-fn between(1,2):\
-  wipeMessage:\
+  let supplies=supplies-fn between(1,2)
+  wipeMessage
   seaAndSky
 
   \ Disembarking scene
@@ -465,16 +327,16 @@ stop
     at 9,27;"HI :\::";\
     at 10,25;"F\::\::\::\::\::\::";\
     at 11,23;"JK\::\::\::\::\::\::\::"
-  for z=0 to 20:\
-    print pen yellow; paper blue;at 11,z;" <>":\
-    pause 10:\
+  for z=0 to 20
+    print pen yellow; paper blue;at 11,z;" <>"
+    pause 10
   next z
 
   let aboard=false
   if seaMap(shipPos)=treasureIsland then \
-    enterTreasureIsland:\
+    enterTreasureIsland
   else \
-    newIslandMap:\
+    newIslandMap
     enterIslandLocation
 
   ;
@@ -486,8 +348,8 @@ stop
 
   charset 1
   \ XXX TODO factor out:
-  for z=3 to 15:\
-    print at z,0; pen black; paper yellow;fn blankLine$:\
+  for z=3 to 15
+    print at z,0; pen black; paper yellow;fn blankLine$
   next z
   drawNative
   nativeSpeechBalloon
@@ -510,8 +372,8 @@ stop
     rejectedOffer:exit proc
 
   \ You offered too few
-  on fn between(1,4):\
-    goto lowerPrice:\
+  on fn between(1,4)
+    goto lowerPrice
     goto newPrice
 
   \ He reduces the price by one dubloon
@@ -533,7 +395,7 @@ stop
   nativeSays "Bueno, tú darme... "+fn coins$(price)+" y no hablar más."
   makeOffer
   if offer>=price then \
-    acceptedOffer:\
+    acceptedOffer
   else \
     rejectedOffer
 
@@ -547,10 +409,10 @@ stop
   ;
 
 : nativeSpeechBalloon  ( -- )
-  pen black:\
-  plot 100,100: draw 20,10: draw 0,30: draw 2,2:\
-  draw 100,0: draw 2,-2: draw 0,-60: draw -2,-2: draw -100,0:\
-  draw -2,2: draw 0,20: draw -20,0:\
+  pen black
+  plot 100,100: draw 20,10: draw 0,30: draw 2,2
+  draw 100,0: draw 2,-2: draw 0,-60: draw -2,-2: draw -100,0
+  draw -2,2: draw 0,20: draw -20,0
   pen white
   ;
 
@@ -562,7 +424,7 @@ stop
   let maxOffer=fn min(9,cash)
   message "Tienes "+fn coins$(cash)+". ¿Qué oferta le haces? (1-"+str$ maxOffer+")"
   digitTo offer,maxOffer
-  beep .2,10:\
+  beep .2,10
   message "Le ofreces "+fn coins$(offer)+"."
 
   ;
@@ -594,12 +456,12 @@ stop
   local clue
   nativeSays "Bien... Pista ser..."
   seconds  2
-  on fn between(1,6):\
-    nativeTellsClue1:\
-    nativeTellsClue2:\
-    nativeTellsClue3:\
-    nativeTellsClue4:\
-    nativeTellsClue5:\
+  on fn between(1,6)
+    nativeTellsClue1
+    nativeTellsClue2
+    nativeTellsClue3
+    nativeTellsClue4
+    nativeTellsClue5
     nativeTellsClue6
   seconds  2
   nativeSays "¡Buen viaje a isla de tesoro!"
@@ -671,7 +533,7 @@ stop
 : islandMove  ( offset -- )
 
   if islandMap(iPos+offset)<>coast then \
-    let iPos=iPos+offset:\
+    let iPos=iPos+offset
     enterIslandLocation
 
   ;
@@ -692,39 +554,39 @@ stop
   islandScenery
   
   if islandMap(iPos)=snake \ XXX MasterBASIC BUG? "b not found"!
-    manInjured:\
+    manInjured
     message "Una serpiente ha mordido a "+fn name$(injured)+"."
   
-  else if islandMap(iPos)=nativeFights:\
-    manInjured:\
+  else if islandMap(iPos)=nativeFights
+    manInjured
     message \
       "Un nativo intenta bloquear el paso y hiere a "+\
       fn name$(injured)+\
       ", que resulta "+fn condition$(injured)+"."
   
-  else if islandMap(iPos)=dubloonsFound:\
-    let dub=fn between(1,2):\
-    message "Encuentras "+fn coins$(dub)+".":\
-    let cash=cash+dub:\
-    drawDubloons dub:\
+  else if islandMap(iPos)=dubloonsFound
+    let dub=fn between(1,2)
+    message "Encuentras "+fn coins$(dub)+"."
+    let cash=cash+dub
+    drawDubloons dub
     let islandMap(iPos)=4
   
-  else if islandMap(iPos)=nativeAmmo:\
-    s" Un nativo te da algo de munición." message:\
-    let ammo=ammo+1:\
+  else if islandMap(iPos)=nativeAmmo
+    s" Un nativo te da algo de munición." message
+    let ammo=ammo+1
     let islandMap(iPos)=nativeFights
   
-  else if islandMap(iPos)=nativeSupplies:\
-    s" Un nativo te da provisiones." message:\
+  else if islandMap(iPos)=nativeSupplies
+    s" Un nativo te da provisiones." message
     \ XXX TODO random ammount
-    let supplies=supplies+1:\
+    let supplies=supplies+1
     let islandMap(iPos)=nativeFights
   
-  else if islandMap(iPos)=nativeVillage:\
+  else if islandMap(iPos)=nativeVillage
     s" Descubres un poblado nativo." message
   
   \ XXX TODO constants for these cases:
-  else if islandMap(iPos)=4 or islandMap(iPos)=6:\
+  else if islandMap(iPos)=4 or islandMap(iPos)=6
     islandEvents
   
   endif
@@ -738,56 +600,56 @@ stop
   \ Events on an island {{{
 
 : islandEvents  ( -- )
-  on fn between(1,11):\
-    event1:\
-    event2:\
-    event3:\
-    event4:\
-    event5:\
-    event6:\
-    event7:\
-    event8:\
-    event8:\
-    event9:\
+  on fn between(1,11)
+    event1
+    event2
+    event3
+    event4
+    event5
+    event6
+    event7
+    event8
+    event8
+    event9
     event9
   ;
 
 : event1  ( -- )
-  manDead:\
-  message fn name$(dead)+" se hunde en arenas movedizas.":\
+  manDead
+  message fn name$(dead)+" se hunde en arenas movedizas."
   ;
 
 : event2  ( -- )
   manDead
-  message fn name$(dead)+" se hunde en un pantano.":\
+  message fn name$(dead)+" se hunde en un pantano."
   ;
 
 : event3  ( -- )
-  manInjured:\
+  manInjured
   message "A "+fn name$(injured)+" le muerde una araña."
   ;
 
 : event4  ( -- )
-  manInjured:\
-  message "A "+fn name$(injured)+" le pica un escorpión.":\
+  manInjured
+  message "A "+fn name$(injured)+" le pica un escorpión."
   ;
 
 : event5  ( -- )
   \ XXX TODO only if supplies are not enough
-  s" La tripulación está hambrienta." message:\
+  s" La tripulación está hambrienta." message
   let morale=morale-1
   ;
 
 : event6  ( -- )
   \ XXX TODO only if supplies are not enough
-  s" La tripulación está sedienta." message:\
+  s" La tripulación está sedienta." message
   let morale=morale-1
   ;
 
 : event7  ( -- )
-  let dub=fn between(2,5):\
-  message "Encuentras "+fn coins$(dub)+".":\
-  let cash=cash+dub:\
+  let dub=fn between(2,5)
+  message "Encuentras "+fn coins$(dub)+"."
+  let cash=cash+dub
   drawDubloons dub
   ;
 
@@ -816,33 +678,33 @@ stop
   if islandMap(iPos)=nativeVillage
     drawVillage
   else if islandMap(iPos)=dubloonsFound 
-    palm2 8,4:\
+    palm2 8,4
     palm2 5,14
   else if islandMap(iPos)=nativeFights
-    palm2 5,14:\
-    palm2 8,25:\
+    palm2 5,14
+    palm2 8,25
     drawNative
   else if islandMap(iPos)=4 \ XXX TODO constant
-    palm2 8,25:\
-    palm2 8,4:\
+    palm2 8,25
+    palm2 8,4
     palm2 5,16
   else if islandMap(iPos)=snake
-    palm2 5,13:\
-    palm2 6,5:\
-    palm2 8,18:\
-    palm2 8,23:\
+    palm2 5,13
+    palm2 6,5
+    palm2 8,18
+    palm2 8,23
     drawSnake
   else if islandMap(iPos)=6 \ XXX TODO constant
-    palm2 8,23:\
-    palm2 5,17:\
+    palm2 8,23
+    palm2 5,17
     palm2 8,4
   else if islandMap(iPos)=nativeSupplies
-    drawSupplies:\
-    drawNative:\
+    drawSupplies
+    drawNative
     palm2 4,16
   else if islandMap(iPos)=nativeAmmo
-    drawAmmo:\
-    drawNative:\
+    drawAmmo
+    drawNative
     palm2 5,20
   endif
 
@@ -859,28 +721,28 @@ stop
   ;
 
 : drawLeftWaves  ( -- )
-  for z=3 to 15:\
-    print at z,0; pen white; paper blue;"  ":\
+  for z=3 to 15
+    print at z,0; pen white; paper blue;"  "
   next z
   print at 6,0; pen white; paper blue;"mn";at 10,0;"kl";at 13,0;"k";at 4,0;"m";at 8,1;"l"
   if islandMap(iPos+6)<>1 then \
-    charset 2:\
-    print at 3,2; pen yellow; paper blue;"A":\
+    charset 2
+    print at 3,2; pen yellow; paper blue;"A"
     charset 1
   if islandMap(iPos+6)=1 then \
-    charset 2:\
-    print at 4,2; pen yellow; paper blue;"A":\
+    charset 2
+    print at 4,2; pen yellow; paper blue;"A"
     charset 1
   if islandMap(iPos-6)=1 then \
-    charset 2:\
-    print at 13,2; pen yellow; paper blue;"C":\
+    charset 2
+    print at 13,2; pen yellow; paper blue;"C"
     charset 1
   ;
 
 : drawRightWaves  ( -- )
 
-  for z=3 to 15:\
-    print at z,30; pen white; paper blue;"  ":\
+  for z=3 to 15
+    print at z,30; pen white; paper blue;"  "
   next z
   print at 6,30; pen white; paper blue;"mn";at 10,30;"kl";at 13,31;"k";at 4,30;"m";at 8,31;"l"
   charset 2
@@ -936,16 +798,16 @@ stop
 : drawSupplies  ( -- )
 
   \ XXX TODO draw graphics depending on the actual ammount
-  charset 2:\
-  print at 12,14; pen black; paper yellow;"90  9099 0009":\
+  charset 2
+  print at 12,14; pen black; paper yellow;"90  9099 0009"
   charset 1
 
   ;
 
 : drawSnake  ( -- )
-  charset 2:\
+  charset 2
   print pen black;paper yellow;\
-    at 12,14; "xy":\
+    at 12,14; "xy"
   charset 1
   ;
 
@@ -964,7 +826,7 @@ stop
     at y+1,x;"S TU";\
     at y+1,x+1; pen yellow; "N";\
     at y+2,x+1;"M";\
-    at y+3,x+1;"L":\
+    at y+3,x+1;"L"
   ;
 
 : palm2  ( y,x -- )
@@ -981,13 +843,13 @@ stop
   \ Ship battle {{{
 
 : attackShip  ( -- )
-  if not ammo:\
-    noAmmoLeft:\
-  else:\
+  if not ammo
+    noAmmoLeft
+  else
     if seaMap(shipPos)>=13 and seaMap(shipPos)<=16 then \
-      shipBattle:\
+      shipBattle
     else \
-      attackOwnBoat:\
+      attackOwnBoat
   endif
   ;
 
@@ -1017,8 +879,8 @@ stop
     \ XXX TODO inform about how many injured?
     s" La bala alcanza su objetivo. Esto desmoraliza a la tripulación." message
     let morale=morale-2
-    for z=1 to fn between(2,3):\
-      manInjured:\
+    for z=1 to fn between(2,3)
+      manInjured
     next z
   endif
   seconds 5
@@ -1033,11 +895,11 @@ stop
   battleScenery
   do
     moveEnemyShip
-    let k$=inkey$:\
+    let k$=inkey$
     if instr("123",k$) then \
-      on val k$:\
-        fire 3:\
-        fire 10:\
+      on val k$
+        fire 3
+        fire 10
         fire 17
   loop until done or not ammo
   restoreScreen
@@ -1055,8 +917,8 @@ stop
     charset 1:print at z,6; pen red; paper yellow;"cde";at z+1,6;"fg";at z+1,1;"hi"
   next z
   let m=6: let n=20
-  for z=1 to 30:\
-    drawWave:\
+  for z=1 to 30
+    drawWave
   next z
 
   ;
@@ -1086,7 +948,7 @@ stop
 : noAmmoLeft  ( -- )
   \ XXX TODO the enemy wins; our ship sinks,
   \ or the money and part of the crew is captured
-  s" Te quedaste sin munición." message:\
+  s" Te quedaste sin munición." message
   seconds 4
   ;
 
@@ -1107,7 +969,7 @@ stop
 
 : drawWave  ( -- )
   print pen 5;\
-    at fn between(1,20),fn between(11,30);"kl":\
+    at fn between(1,20),fn between(11,30);"kl"
   ;
 
 : sunk  ( -- )
@@ -1134,10 +996,10 @@ stop
       done=true
 
   \ XXX --- original version:
-  if seaMap(shipPos)=13:let seaMap(shipPos)=10:\
-  else if seaMap(shipPos)=14:let seaMap(shipPos)=9:\
-  else if seaMap(shipPos)=15:let seaMap(shipPos)=8:\
-  else if seaMap(shipPos)=16:let seaMap(shipPos)=7:\
+  if seaMap(shipPos)=13:let seaMap(shipPos)=10
+  else if seaMap(shipPos)=14:let seaMap(shipPos)=9
+  else if seaMap(shipPos)=15:let seaMap(shipPos)=8
+  else if seaMap(shipPos)=16:let seaMap(shipPos)=7
   endif
   \ XXX TODO deprecated, buggy alternative:
   \   on fn max(1,seaMap(shipPos)-12):\ \ 13~16
@@ -1154,8 +1016,8 @@ stop
 : manInjured  ( -- )
   \ A man is injured
   \ Output: injured = his number
-  do:\
-    let injured=fn between(1,men):\
+  do
+    let injured=fn between(1,men)
   loop until stamina(injured)
   let stamina(injured)=stamina(injured)-1,\
   alive=alive-not stamina(injured)
@@ -1164,8 +1026,8 @@ stop
 : manDead  ( -- )
   \ A man dies
   \ Output: dead = his number
-  do:\
-    let dead=fn between(1,men):\
+  do
+    let dead=fn between(1,men)
   loop until stamina(dead)
   let \
     stamina(dead)=0,\
@@ -1178,8 +1040,8 @@ stop
 : attack  ( -- )
 
   #!!!if islandMap(iPos)=2 or islandMap(iPos)=4 or islandMap(iPos)=6 then \
-    #gosub @impossible:\
-    #gosub @islandPanel:\
+    #gosub @impossible
+    #gosub @islandPanel
     #exit proc
 
   s" Atacas al nativo..." message \ XXX OLD
@@ -1187,17 +1049,17 @@ stop
 
   \ XXX FIXME snake?!
   if islandMap(iPos)=5 then \
-    manDead:\
+    manDead
     message \
       "Lo matas, pero la serpiente mata a "+\
-      fn name$(dead)+".":\
+      fn name$(dead)+"."
     goto L6897
 
   if islandMap(iPos)=9 then \
-    manDead:\
+    manDead
     message \
       "Un poblado entero es un enemigo muy difícil."+\
-      fn name$(dead)+" muere en el combate.":\
+      fn name$(dead)+" muere en el combate."
     goto L6898
 
   let kill=fn between(1,5)
@@ -1210,7 +1072,7 @@ stop
     s" El nativo tiene provisiones escondidas en su taparrabos." message
     let supplies=supplies+1
   else if kill>=3
-    let dub=fn between(2,3):\
+    let dub=fn between(2,3)
     message \
       "Encuentras "+fn coins$(dub)+\
       " en el cuerpo del nativo muerto."
@@ -1218,8 +1080,8 @@ stop
   endif
 
   charset 2
-  for z=10 to 13:\
-    print at z,8; paper yellow; pen black;"t   ":\
+  for z=10 to 13
+    print at z,8; paper yellow; pen black;"t   "
   next z
   print \
     at 9,8; paper yellow; pen black;"u";\
@@ -1245,7 +1107,7 @@ stop
   \ (use the same graphic of the player ship)
   wipePanel
   stormySky
-  damaged 10,49:\
+  damaged 10,49
   s" Se desata una tormenta que causa destrozos en el barco." message
   rain
   \ XXX TODO bright sky!
@@ -1271,7 +1133,7 @@ stop
 : rainDrops  ( c$ -- )
   print pen white; paper 5;\
     at 2,cloud0X;string$(4,c$);\
-    at 2,cloud1X;string$(3,c$):\
+    at 2,cloud1X;string$(3,c$)
   pause 3 \ XXX TODO use TICS instead?
   ;
 
@@ -1285,8 +1147,8 @@ stop
   redrawShip
 
   \ XXX INFORMER
-  \   charset 0:\
-  \   print at 0,0;shipPos,seaMap(shipPos):\
+  \   charset 0
+  \   print at 0,0;shipPos,seaMap(shipPos)
   \   charset 1
  
   seaPicture seaMap(shipPos)
@@ -1295,78 +1157,78 @@ stop
   
 : seaPicture  ( n -- )
 
-  if n=2:\
-    drawBigIsland5:\
+  if n=2
+    drawBigIsland5
     palm1 4,19
-  else if n=3:\
-    drawBigIsland4:\
-    palm1 4,14:\
-    palm1 4,19:\
-    palm1 4,24:\
-    drawShark
-  else if n=4:\
-    drawLittleIsland2:\
+  else if n=3
+    drawBigIsland4
     palm1 4,14
-  else if n=5:\
-    drawLittleIsland1:\
-    palm1 4,24
-  else if n=6:\
-    drawLittleIsland1:\
-    palm1 4,24:\
-    drawLittleIsland2:\
-    palm1 4,14
-  else if n=7:\
-    drawBigIsland3:\
     palm1 4,19
-  else if n=8:\
-    drawBigIsland2:\
-    palm1 4,14:\
-    drawShark
-  else if n=9:\
-    drawBigIsland1:\
     palm1 4,24
-  else if n=10:\
-    palm1 4,24:\
+    drawShark
+  else if n=4
+    drawLittleIsland2
+    palm1 4,14
+  else if n=5
+    drawLittleIsland1
+    palm1 4,24
+  else if n=6
+    drawLittleIsland1
+    palm1 4,24
+    drawLittleIsland2
+    palm1 4,14
+  else if n=7
+    drawBigIsland3
+    palm1 4,19
+  else if n=8
+    drawBigIsland2
+    palm1 4,14
+    drawShark
+  else if n=9
+    drawBigIsland1
+    palm1 4,24
+  else if n=10
+    palm1 4,24
     drawTwoLittleIslands
-  else if n=11:\
+  else if n=11
     drawShark
   #else if n=12:\ \ XXX not in the original
-  else if n=13:\
-    palm1 4,24:\
-    drawTwoLittleIslands:\
-    drawEnemyShip
-  else if n=14:\
-    drawBigIsland1:\
-    palm1 4,24:\
-    drawEnemyShip
-  else if n=15:\
-    drawBigIsland2:\
-    palm1 4,14:\
-    drawEnemyShip
-  else if n=16:\
-    drawBigIsland3:\
-    palm1 4,19:\
-    drawEnemyShip
-  else if n=17:\
-    drawLittleIsland2:\
-    palm1 4,14:\
-    drawBoat:\
-    drawLittleIsland1:\
+  else if n=13
     palm1 4,24
-  else if n=18:\
-    drawLittleIsland1:\
-    palm1 4,24:\
+    drawTwoLittleIslands
+    drawEnemyShip
+  else if n=14
+    drawBigIsland1
+    palm1 4,24
+    drawEnemyShip
+  else if n=15
+    drawBigIsland2
+    palm1 4,14
+    drawEnemyShip
+  else if n=16
+    drawBigIsland3
+    palm1 4,19
+    drawEnemyShip
+  else if n=17
+    drawLittleIsland2
+    palm1 4,14
     drawBoat
-  else if n=19:\
-    drawBigIsland4:\
-    palm1 4,14:\
-    palm1 4,19:\
-    palm1 4,24:\
-    drawBoat:\
+    drawLittleIsland1
+    palm1 4,24
+  else if n=18
+    drawLittleIsland1
+    palm1 4,24
+    drawBoat
+  else if n=19
+    drawBigIsland4
+    palm1 4,14
+    palm1 4,19
+    palm1 4,24
+    drawBoat
     drawShark
-  else if n=20:\
-    drawBigIsland5:\
-    palm1 4,19:\
+  else if n=20
+    drawBigIsland5
+    palm1 4,19
     drawBoat
   else if n=shark:\ \ XXX TODO needed?
     drawShark
@@ -1494,12 +1356,12 @@ stop
 
 defproc drawTreasureIsland 
 
-  charset 1:\
+  charset 1
   print pen green;paper blue;\
     at 7,16;"A A   HI";\
     at 8,13;"F\::\::\::B\::\::\::B\::\::B\::\::\::C";\
     at 9,12;"G\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::D";\
-    at 10,10;"JK\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::E":\
+    at 10,10;"JK\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::E"
     at 11,9;":\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::C";\
     at 12,8;"F\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::D"
   print pen blue;paper green;\
@@ -1507,12 +1369,12 @@ defproc drawTreasureIsland
     at 14,20;"B\::\::\::\::B"
   print pen green;paper blue;\
     at 13,31;"E"
-  palm1 4,19:\
-  palm1 4,24:\
+  palm1 4,19
+  palm1 4,24
   palm1 4,14
   print at 9,22; pen black; paper green;"\T\U":\ \ the treasure
   if visited(shipPos) then \
-    message "Llegas nuevamente a la isla de "+islandName$+".":\
+    message "Llegas nuevamente a la isla de "+islandName$+"."
   else \
     message "Has encontrado la perdida isla de "+islandName$+"..."
   charset 1
@@ -1571,15 +1433,15 @@ defproc drawTreasureIsland
 
 : reportStart  ( -- )
   \ Common task at the start of all reports
-  saveScreen:\
-  cls #:\
-  window:\
+  saveScreen
+  cls #
+  window
   charset 0
   ;
 
 : reportEnd  ( -- )
   \ Common task at the end of all reports
-  pause 1000:\
+  pause 1000
   restoreScreen
   ;
 
@@ -1630,7 +1492,7 @@ defproc mainReport
     "Negocios",using$("####",trade);" x  200"'\
     "Pistas",using$("####",find);" x 1000"
   if find=6 then \
-    let score=score+4000:\
+    let score=score+4000
     print "Tesoro",using$("####",4000)
   let score=score+(find*1000)+(day*200)+(sunk*1000)+(trade*200)
   print '"Total","       ";using$("####",score)
@@ -1643,11 +1505,11 @@ defproc mainReport
 : runAground  ( -- )
 
   wipeMessage:\ \ XXX TODO remove?
-  charset 1:\
-  wipeSea:\
-  drawFarIslands:\
-  bottomReef:\
-  leftReef:\
+  charset 1
+  wipeSea
+  drawFarIslands
+  bottomReef
+  leftReef
   rightReef
 
   print pen white;\
@@ -1661,15 +1523,15 @@ defproc mainReport
     at 4,5;"Z123    HI";\
     at 8,7;"H\..I  A"
 
-  damaged 10,29:\
+  damaged 10,29
   \ XXX TODO improved message: "Por suerte, ..."
   message "¡Has encallado! El barco está "+fn damage$+"."
   \ XXX TODO print at the proper zone:
   if damage=100 then print at 20,7; pen 5; paper black;"TOTAL"
   print pen black; paper green;at 17,0;fn centered$("INFORME")
   \ XXX TODO choose more men, and inform about them
-  manInjured:\
-  manDead:\
+  manInjured
+  manDead
   let morale=morale-fn between(1,4)
   seconds 3
 
@@ -1677,7 +1539,7 @@ defproc mainReport
 
 : damaged  ( min,max -- )
   \ Increase the ship damage with random value in a range
-  let damage=damage+fn between(min,max):\
+  let damage=damage+fn between(min,max)
   if damage>100 then let damage=100
   ;
   
@@ -1686,25 +1548,25 @@ defproc mainReport
   \ Landscape graphics {{{
 
 : stormySky  ( -- )
-  load "attr/zp5i5b0l03" code fn attrLine(0):\
-  let noStorm=0:\
+  load "attr/zp5i5b0l03" code fn attrLine(0)
+  let noStorm=0
   sunAndClouds false
   ;
 
 : seaWaves  ( -- )
   local z
-  charset 1:\
-  for z=1 to 15:\
+  charset 1
+  for z=1 to 15
     print paper blue;pen cyan;\
       at fn between(4,graphicWinBottom),fn between(1,28);"kl";\
-      at fn between(4,graphicWinBottom),fn between(1,28);"mn":\
+      at fn between(4,graphicWinBottom),fn between(1,28);"mn"
   next z
   ;
 
 : seaAndSky  ( -- )
   graphicWindow:\ \ XXX TMP needed, because the wipePanel before the calling
-  wipeSea:\
-  seaWaves:\
+  wipeSea
+  seaWaves
   sunnySky
   ;
 
@@ -1717,7 +1579,7 @@ defproc mainReport
 : sunAndClouds  ( sunny -- )
 
   default sunny=true
-  charset 2:\
+  charset 2
   print paper 5;bright sunny;\
     at 0,26; pen yellow; "AB";\
     at 1,26;"CD"
@@ -1757,7 +1619,7 @@ defproc mainReport
     at peek UWBOT-introWinTop-1,0;fn banner$("Preparando el viaje...")
 
   \ The sea map has 135 cells (9 rows, 15 columns)
-  let locations=135:\
+  let locations=135
   dim seaMap(locations)
   dim visited(locations) \ flags for islands
 
@@ -1769,7 +1631,7 @@ defproc mainReport
   for i=31 to 106 step 15: let seaMap(i)=reef: next i \ west
 
   \ Normal islands
-  for i=17 to 119:\
+  for i=17 to 119
     if seaMap(i)<>reef then \
       let seaMap(i)=fn between (2,21)  \ random type
       \ XXX 21 is shark; these are picture types
@@ -1805,9 +1667,9 @@ defproc mainReport
       damageMaxLen=fn max(damageMaxLen,i)
   loop
   dim damage$(damageLevels,damageMaxLen)
-  restore damageData:\
-  for i=1 to damageLevels:\
-    read damage$(i):\
+  restore damageData
+  for i=1 to damageLevels
+    read damage$(i)
   next i
 
   \ Island map
@@ -1849,8 +1711,8 @@ defproc mainReport
   \ Villages
   restore villageNamesData
   dim village$(10,9)
-  for i=1 to 10:\
-    read village$(i):\
+  for i=1 to 10
+    read village$(i)
   next i
 
   \ Cardinal points
@@ -1920,8 +1782,8 @@ defproc mainReport
   let minStamina=0
   let maxStamina=4
   dim stamina(men)
-  for i=1 to men:\
-    let stamina(i)=maxStamina:\
+  for i=1 to men
+    let stamina(i)=maxStamina
   next i
 
   \ Stamina labels (1-5)
@@ -1930,9 +1792,9 @@ defproc mainReport
     staminaPen(5),\
     staminaPap(5),\
     staminaBri(5)
-  restore staminaData:\
-  for i=1 to 5:\
-    read stamina$(i),staminaPen(i),staminaPap(i),staminaBri(i):\
+  restore staminaData
+  for i=1 to 5
+    read stamina$(i),staminaPen(i),staminaPap(i),staminaBri(i)
   next i
 
   \ Stamina colors (one string char per level)
@@ -2049,16 +1911,16 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   local w,z
 
   \ XXX TMP erase the map -- do better
-  for z=1 to 30:\
-    let islandMap(z)=0:\
+  for z=1 to 30
+    let islandMap(z)=0
   next z
 
   restore islandData
-  for z=1 to 18:\
-    read w:let islandMap(w)=coast:\
+  for z=1 to 18
+    read w:let islandMap(w)=coast
   next z
 
-  for z=8 to 23:\
+  for z=8 to 23
     if islandMap(z)<>coast then let islandMap(z)=fn between(2,5)
   next z
 
@@ -2077,25 +1939,25 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 
   \ XXX TODO finish the new interface
 
-  cls #:\
+  cls #
   sunnySky
   wipeIsland
-  charset 2:\
+  charset 2
   print pen green; paper yellow;\
     at 3,0; " 5     6       45     6       5"
-  for z=0 to 24 step 8:\
+  for z=0 to 24 step 8
     print pen black; paper yellow;\
       at 3,z+3;":\#127";\
       at 4,z+2;":\::\::\#127";\
       at 5,z+1;":\::\::\::\::\#127";\
-      at 6,z;":\::\::\::\::\::\::\#127":\
+      at 6,z;":\::\::\::\::\::\::\#127"
   next z
-  charset 0:\
+  charset 0
   print at 7,0; pen white; paper red;"   1       2       3       4    "
   
   \ XXX TODO improve with LOAD or POKE
-  for z=8 to 21:\
-    print at z,0; pen white; paper black;fn blankLine$:\
+  for z=8 to 21
+    print at z,0; pen white; paper black;fn blankLine$
   next z
 
   sailorAndCaptain
@@ -2123,20 +1985,20 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   if option=turn then let find=find+1
 
   wipeIsland
-  for z=3 to 7:\
+  for z=3 to 7
     print paper yellow;pen black;\
       at z,1;z-2;"  ";village$(z-2);\
-      at z,12;z+3;"  ";village$(z+3):\
+      at z,12;z+3;"  ";village$(z+3)
   next z
   print at 7,12; pen black; paper yellow;"0  ";village$(10)
-  charset 2:\
+  charset 2
   print at 5,27; pen green; paper yellow;"S\::T";at 6,27;"VUW"
   
-  charset 0:\
+  charset 0
   print at 14,7; paper black;" Poblado  ";at 13,7;"¿Cuál";at 16,8;" capitán.";at 15,23;"? "
-  digitTo option:\
+  digitTo option
   print at 15,23; paper black;option: beep .2,30
-  seconds  2:\
+  seconds  2
   if option=village then let find=find+1
 
   \ XXX TODO better, with letters  
@@ -2153,8 +2015,8 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
     print paper black;\
       at 13,7;"¡Hemos encontrado";\
       at 14,7;"el oro,";\
-      at 16,7;"capitán!":\
-      treasureFound:\
+      at 16,7;"capitán!"
+      treasureFound
   else \
     print paper black;\
       at 13,7;"¡Nos hemos";\
@@ -2166,27 +2028,27 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   ;
 
 : sailorAndCaptain  ( -- )
-  charset 1:\
+  charset 1
   print pen cyan; paper black;\
     at 17,0;\
     " xy";tab 28;"pq"'\
     " vs";tab 28;"rs"'\
-    " wu";tab 28;"tu":\
-  sailorSpeechBalloon:\
+    " wu";tab 28;"tu"
+  sailorSpeechBalloon
   captainSpeechBalloon
   ;
 
 : sailorSpeechBalloon  ( -- )
-  plot 25,44:\
-  draw 20,10:draw 0,30:draw 2,2:draw 100,0:\
-  draw 2,-2:draw 0,-60:draw -2,-2:draw -100,0:\
+  plot 25,44
+  draw 20,10:draw 0,30:draw 2,2:draw 100,0
+  draw 2,-2:draw 0,-60:draw -2,-2:draw -100,0
   draw -2,2:draw 0,19:draw -20,0
   ;
 
 : captainSpeechBalloon  ( -- )
-  plot 220,44:\
-  draw -15,5:draw 0,20:draw -2,2:draw -30,0:\
-  draw -2,-2:draw 0,-40:draw 2,-2:draw 30,0:draw 2,2:\
+  plot 220,44
+  draw -15,5:draw 0,20:draw -2,2:draw -30,0
+  draw -2,-2:draw 0,-40:draw 2,-2:draw 30,0:draw 2,2
   draw 0,14:draw 15,0
   ;
 
@@ -2199,8 +2061,8 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 : wipeSailorSpeech  ( -- )
   \ XXX TODO better; use WINDOW and CLS 1
   local z
-  for z=12 to 18:\
-    print at z,6;"            ":\
+  for z=12 to 18
+    print at z,6;"            "
   next z
   ;
 
@@ -2208,8 +2070,8 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   local z
   wipeIsland
   print pen black;paper yellow;\
-    at 7,0;" 1       2       3       4":\
-  charset 1:\
+    at 7,0;" 1       2       3       4"
+  charset 1
   for z=2 to 26 step 8:palm2 3,z:next z
   ;
 
@@ -2227,7 +2089,7 @@ defproc digitTo ref answer,max
   default max=9
 
   do
-    pause 0:\
+    pause 0
     let answer=code inkey$-code "0"
     if answer<1 or answer>max then beep .1,10
   loop until answer>0 and answer<=max
@@ -2267,25 +2129,25 @@ defproc digitTo ref answer,max
 
   local z
 
-  paper yellow:\
+  paper yellow
   pen black
   cls 1
   \ XXX OLD
-  \   for z=0 to 21:\
-  \     print at z,0; paper yellow; pen black;fn blankLine$: beep .001,z+9:\
+  \   for z=0 to 21
+  \     print at z,0; paper yellow; pen black;fn blankLine$: beep .001,z+9
   \   next z
 
   \ XXX TODO new graphic, based on the cause of the end
-  charset 1:\
-  #for z=1 to 15 step 7:\
-  for z=1 to 8 step 7:\
-    palm2 z,27:palm2 z,1:\
+  charset 1
+  #for z=1 to 15 step 7
+  for z=1 to 8 step 7
+    palm2 z,27:palm2 z,1
   next z
 
   if find=6 then happyEnd:else sadEnd
 
   s" Pulsa una tecla para ver tus puntos" message
-  pause 0:beep .2,30:\
+  pause 0:beep .2,30
   scoreReport
 
   ;
@@ -2303,7 +2165,7 @@ defproc digitTo ref answer,max
 : sadEnd  ( -- )
 
   \ XXX TODO uset TellZone
-  charset 0:\
+  charset 0
   print pen white; paper red;at 3,0;fn centered$("FIN DEL JUEGO")
   window 5,26,2,21 \ XXX TODO
   if supplies<=0 then \
@@ -2329,19 +2191,19 @@ defproc digitTo ref answer,max
   local z
 
   seconds 2
-  load "attr/zp5i5b1l03" code fn attrLine(0):\
+  load "attr/zp5i5b1l03" code fn attrLine(0)
   load "attr/zp6i6b0l18" code fn attrLine(4)
   sunnySky
-  for z=7 to 22 step 5:\
-    palm2 5,z:\
+  for z=7 to 22 step 5
+    palm2 5,z
   next z
   palm2 7,3:palm2 7,26
   \ Cofre del tesoro:
   print at 13,8; pen black; paper yellow;\
   "pq          xy                  rs          vs                  tu      ";\
-  "\T\U    wu":\
+  "\T\U    wu"
   palm2 11,28:palm2 11,0
-  charset 2:\
+  charset 2
   print at 17,13; pen blue; paper yellow;"l\::m"
   s" ¡Capitán, somos ricos!" message
   seconds 4
@@ -2365,7 +2227,7 @@ defproc digitTo ref answer,max
   tellCR "Viejas leyendas hablan del tesoro que esconde la perdida isla de "+islandName$+"."
   tellCR "Los nativos del archipiélago recuerdan las antiguas pistas que conducen al tesoro. Deberás comerciar con ellos para que te las digan."
   tellCR "Visita todas las islas hasta encontrar la isla de "+islandName$+" y sigue las pistas hasta el tesoro..."
-  print at peek UWBOT-introWinTop-1,0;fn centered$("Pulsa una tecla"):\
+  print at peek UWBOT-introWinTop-1,0;fn centered$("Pulsa una tecla")
   pause 6000
 
   ;
@@ -2374,9 +2236,9 @@ defproc digitTo ref answer,max
 
   \ Draw top and bottom borders of skulls.
 
-  charset 2:\
-  skulls 2:\
-  skulls 0:\
+  charset 2
+  skulls 2
+  skulls 0
   charset 1
 
   ;
@@ -2409,8 +2271,8 @@ deffn cpl=\
   do until len text$<=cpl 
     for char=cpl to 1 step -1
       if text$(char)=" " then \
-        print text$(to char-1):\
-        let text$=text$(char+1 to):\
+        print text$(to char-1)
+        let text$=text$(char+1 to)
         exit for
     next char
   loop
@@ -2419,22 +2281,22 @@ deffn cpl=\
   ;
 
 : tellCR  ( text$ -- )
-  tell text$:\
+  tell text$
   print
   ;
 
   \ XXX OLD -- not used
   \ defproc sailorSays text$
-  \   wipeSailorWords:\
+  \   wipeSailorWords
   \   tellZone text$,10,13,7
   \ endproc
   \ 
   \ defproc wipeSailorWords
   \   local z
   \   seconds  1:pause 100
-  \   paper yellow:\
-  \   for z=13 to 16:\
-  \     print at z,7;string$(10," "):\
+  \   paper yellow
+  \   for z=13 to 16
+  \     print at z,7;string$(10," ")
   \   next z
   \   beep .15,fn between(11,20)
   \ endproc
@@ -2444,7 +2306,7 @@ deffn cpl=\
   cls 1
   tell text$
   \ XXX OLD
-  #wipeNativeWords:\
+  #wipeNativeWords
   #tellZone text$,12,6,16
   ;
 
@@ -2452,16 +2314,16 @@ deffn cpl=\
   \ defproc wipeNativeWordsEX
   \   local z
   \   seconds  1
-  \   paper yellow:\
-  \   for z=5 to 11:\
-  \     print at z,16;string$(12," "):\
+  \   paper yellow
+  \   for z=5 to 11
+  \     print at z,16;string$(12," ")
   \   next z
   \   beep .15,fn between(11,20)
   \ endproc
 
 : message  ( text$ -- )
-  charset 0:\
-  wipeMessage:\
+  charset 0
+  wipeMessage
   messageWindow
   tell text$
   graphicWindow
@@ -2478,9 +2340,9 @@ deffn cpl=\
   do until len text$<=width
     for char=width to 1 step -1
       if text$(char)=" " then \
-        print at row,col;text$(to char-1):\
-        let text$=text$(char+1 to):\
-        let row=row+1:\
+        print at row,col;text$(to char-1)
+        let text$=text$(char+1 to)
+        let row=row+1
         exit for
     next char
   loop
@@ -2496,8 +2358,8 @@ deffn cpl=\
   local s
   mode 1
   let attrAd=scrad+6144
-  for s=2 to 16:\
-    close screen s:\
+  for s=2 to 16
+    close screen s
   next s
   open screen 2,1
   cls #
@@ -2581,7 +2443,7 @@ deffn cpl=\
 
   \ XXX OLD
   #load "attr/zp0i0b0l06" code fn attrLine(panelTop-1)
-  messageWindow:\
+  messageWindow
   paper black:pen white:cls 1
 
   ;
@@ -2591,17 +2453,17 @@ deffn cpl=\
   ;
 
 : restoreScreen  ( -- )
-  copy screen 2 to 1:\
+  copy screen 2 to 1
   let screenRestored=true
   ;
 
 : useScreen2  ( -- )
-  saveScreen:\
+  saveScreen
   screen 2 
   ;
 
 : useScreen1  ( -- )
-  restoreScreen:\
+  restoreScreen
   screen 1
   ;
 
@@ -2634,24 +2496,24 @@ deffn cpl=\
   ;
 
 : showCharset  ( n -- )
-  charset 0:\
-  print '"charset ";n:\
-  charset n:\
+  charset 0
+  print '"charset ";n
+  charset n
   showASCII
   ;
 
 : showASCII  ( -- )
   local z
-  for z=32 to 127:\
-    print chr$ z;:\
+  for z=32 to 127
+    print chr$ z;
   next z
   ;
 
 : showUDG  ( -- )
   local z
   blocks 0
-  for z=128 to 164:\
-    print chr$ z;:\
+  for z=128 to 164
+    print chr$ z;
   next z
   ;
 
@@ -2662,13 +2524,4 @@ deffn cpl=\
     print damage,fn damageIndex;" ";fn damage$
   next i
   ;
-
-: s:\  ( -- )
-  clear:\
-  save over "bn" line 1:\
-  stop:\
-  ;
-
-  \ }}}
-
 
