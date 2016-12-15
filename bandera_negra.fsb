@@ -1,5 +1,7 @@
+( bandera-negra )
+
   \ Bandera negra
-  \ Version 201511020128
+  \
   \ A simulation game
   \ Written in Forth for the ZX Spectrum 128
 
@@ -9,6 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015 Marcos Cruz (programandala.net)
 
+  \ Version 0.0.0+201612151223
 
   \ }}} ---------------------------------------------------------
   \ Functions {{{
@@ -329,7 +332,7 @@ stop
     at 11,23;"JK\::\::\::\::\::\::\::"
   for z=0 to 20
     print pen yellow; paper blue;at 11,z;" <>"
-    pause 10
+    10 pause
   next z
 
   let aboard=false
@@ -592,7 +595,7 @@ stop
   endif
   
   charset 1
-  pause 100 \ XXX OLD
+  100 pause \ XXX OLD
   
   ;
 
@@ -859,9 +862,9 @@ stop
     doAttackOwnBoat
   else
     s" Por suerte no hay munición para disparar..." message
-    pause 3
+    3 pause 
     s" Enseguida te das cuenta de que ibas a hundir uno de tus botes." message
-    pause 3
+    3 pause 
     wipeMessage \ XXX needed?
   endif
 
@@ -1045,7 +1048,7 @@ stop
     #exit proc
 
   s" Atacas al nativo..." message \ XXX OLD
-  pause 100
+  100 pause 
 
   \ XXX FIXME snake?!
   if islandMap(iPos)=5 then \
@@ -1134,7 +1137,7 @@ stop
   print pen white; paper 5;\
     at 2,cloud0X;string$(4,c$);\
     at 2,cloud1X;string$(3,c$)
-  pause 3 \ XXX TODO use TICS instead?
+  3 pause \ XXX TODO use TICS instead?
   ;
 
   \ }}} ---------------------------------------------------------
@@ -1441,7 +1444,7 @@ defproc drawTreasureIsland
 
 : reportEnd  ( -- )
   \ Common task at the end of all reports
-  pause 1000
+  1000 pause 
   restoreScreen
   ;
 
@@ -2078,9 +2081,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   \ }}} ---------------------------------------------------------
   \ User input {{{
 
-: seconds  ( n -- )
-  pause n*50
-  ;
+: seconds  ( n -- )  50 * pause  ;
 
 defproc digitTo ref answer,max
 
@@ -2089,7 +2090,7 @@ defproc digitTo ref answer,max
   default max=9
 
   do
-    pause 0
+    0 pause
     let answer=code inkey$-code "0"
     if answer<1 or answer>max then beep .1,10
   loop until answer>0 and answer<=max
@@ -2147,7 +2148,8 @@ defproc digitTo ref answer,max
   if find=6 then happyEnd:else sadEnd
 
   s" Pulsa una tecla para ver tus puntos" message
-  pause 0:beep .2,30
+  0 pause 
+  beep .2,30
   scoreReport
 
   ;
@@ -2228,7 +2230,7 @@ defproc digitTo ref answer,max
   tellCR "Los nativos del archipiélago recuerdan las antiguas pistas que conducen al tesoro. Deberás comerciar con ellos para que te las digan."
   tellCR "Visita todas las islas hasta encontrar la isla de "+islandName$+" y sigue las pistas hasta el tesoro..."
   print at peek UWBOT-introWinTop-1,0;fn centered$("Pulsa una tecla")
-  pause 6000
+  6000 pause 
 
   ;
 
