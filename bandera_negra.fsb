@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612151223
+  \ Version 0.0.0+201612151229
 
   \ }}} ---------------------------------------------------------
   \ Functions {{{
@@ -31,7 +31,7 @@ deffn dubloons$(n)=\
   \ "doubloon" or "doubloons"; n=number of doubloons
   "dobl"+("ones" and (n>1))+(("ón") and (n=1))
 
-dim n$(11,6):\ \ numbers with letters
+dim n$(11,6) \ numbers with letters
 let \
   n$(1)="un",\
   n$(2)="dos",\
@@ -160,19 +160,12 @@ main
 stop
 
 : main  ( -- )
-  initOnce
-  do
-    intro
-    init
-    game
-    theEnd
-  loop until true \ XXX TODO playAgain
-  ;
+  initOnce  begin  intro init game theEnd  repeat  ;
 
 : game  ( -- )
   cls #
   let screenRestored=false
-  do
+  begin
     if not screenRestored then \
       \ XXX FIXME sometimes scenery is called here without reason
       \ XXX The logic is wrong.
@@ -180,7 +173,7 @@ stop
     else \
       let screenRestored=0
     command
-  loop until fn gameOver
+  fn gameOver until
   ;
 
 : scenery  ( -- )
@@ -896,7 +889,7 @@ stop
   let done=false
   saveScreen
   battleScenery
-  do
+  begin
     moveEnemyShip
     let k$=inkey$
     if instr("123",k$) then \
@@ -904,7 +897,7 @@ stop
         fire 3
         fire 10
         fire 17
-  loop until done or not ammo
+  done ammo 0= or until
   restoreScreen
   if not ammo then noAmmoLeft
   ;
@@ -1019,9 +1012,9 @@ stop
 : manInjured  ( -- )
   \ A man is injured
   \ Output: injured = his number
-  do
+  begin
     let injured=fn between(1,men)
-  loop until stamina(injured)
+  stamina(injured) until
   let stamina(injured)=stamina(injured)-1,\
   alive=alive-not stamina(injured)
   ;
@@ -1029,9 +1022,9 @@ stop
 : manDead  ( -- )
   \ A man dies
   \ Output: dead = his number
-  do
+  begin
     let dead=fn between(1,men)
-  loop until stamina(dead)
+  stamina(dead) until
   let \
     stamina(dead)=0,\
     alive=alive-1
@@ -1765,11 +1758,11 @@ defproc mainReport
   next name
   dim name$(men,nameMaxLen)
   for man=1 to men
-    do
+    begin
       let \
         name=fn between(1,names),\
         i$=names$(name)
-    loop until len trunc$ i$
+    len trunc$ i$ until
     let \
       name$(man)=i$,\
       names$(name)=""
@@ -2093,9 +2086,8 @@ defproc digitTo ref answer,max
     0 pause
     let answer=code inkey$-code "0"
     if answer<1 or answer>max then beep .1,10
-  loop until answer>0 and answer<=max
-
-  ;
+  \ loop until answer>0 and answer<=max  \ XXX OLD
+  answer @ 0> answer @ max <= and until  ;
 
   \ }}} ---------------------------------------------------------
   \ UDGs and charsets {{{
@@ -2270,14 +2262,14 @@ deffn cpl=\
   let cpl=fn cpl
 
   charset 0
-  do until len text$<=cpl 
+  begin len text$<=cpl  while
     for char=cpl to 1 step -1
       if text$(char)=" " then \
         print text$(to char-1)
         let text$=text$(char+1 to)
         exit for
     next char
-  loop
+  repeat
   print text$
 
   ;
@@ -2339,7 +2331,7 @@ deffn cpl=\
   local char
 
   charset 0
-  do until len text$<=width
+  begin len text$<=width while
     for char=width to 1 step -1
       if text$(char)=" " then \
         print at row,col;text$(to char-1)
@@ -2347,7 +2339,7 @@ deffn cpl=\
         let row=row+1
         exit for
     next char
-  loop
+  repeat
   print at row,col;text$
 
   ;
