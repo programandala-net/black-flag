@@ -11,25 +11,25 @@
 
   \ Copyright (C) 2011,2014,2015 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612151259
+  \ Version 0.0.0+201612151327
 
   \ }}} ---------------------------------------------------------
   \ Functions {{{
 
-deffn attrLine(l)=\
-  \ First attribute address of a character line (mode 1)
-  attrAd+l*32
+: attrLine ( l -- a )  32 * attrAd +  ;
+  \ First attribute address of a character line (mode 1).
 
-deffn attr$(p,i,b)=\
-  chr$(b*64+p*8+i)
+: attr$ ( paper ink bright -- c )  64 * + swap 8 * +  ;
+  \ XXX TODO -- rename
 
-  \ XXX FIXME STRING$ can not do more than 255 repetitions
-deffn attrLines$(l,p,i,b)=\
-  string$(l*32,fn attr$(p,i,b))
+: attrLines$ ( line paper ink bright -- ca len )
+  attr$  swap 32 *  string$  ;
+  \ XXX TODO -- finish
 
-deffn dubloons$(n)=\
-  \ "doubloon" or "doubloons"; n=number of doubloons
-  "dobl"+("ones" and (n>1))+(("ón") and (n=1))
+
+: dubloons$ ( n -- ca len )
+  s" dobl " rot 1 > if s" ones"  else  s" ón"  then s+  ;
+  \ "doubloon" or "doubloons", depending on _n_
 
 dim n$(11,6) \ numbers with letters
 let \
@@ -45,92 +45,83 @@ let \
   n$(10)="diez",\
   n$(11)="once"
   \ XXX MasterBASIC BUG? "Subscript wrong"!:
-deffn number$(n)=\
-  trunc$ n$(n)
 
-deffn highlighted$(c$)=\
+: number$ ( n -- ca len )  n$(n)  ;
+  \ Convert _n_ to letters in string _ca len_.
+  \ XXX TODO --
+
+: highlighted$ ( c -- ca len )
+  chr$ 20+chr$ 1+c$+chr$ 20+chr$ 0  ;
   \ A highlighted char
-  chr$ 20+chr$ 1+c$+chr$ 20+chr$ 0
+  \ XXX TODO --
 
-deffn activeOption$(o$,l)=\
+: activeOption$  ( ca len l -- )
+  o$(to l-1)+fn highlighted$(o$(l))+o$(l+1 to)  ;
   \ An active option of the panel; l=pos of highlighted letter
-  o$(to l-1)+fn highlighted$(o$(l))+o$(l+1 to)
+  \ XXX TODO -- _ca len_ is o$
 
-deffn option$(o$,l,a)=\
+: option$ ( ca len l a)
+  (o$ and not a)+(fn activeOption$(o$,l) and a)  ;
   \ A panel option; a=active?; l=pos of highlighted letter
-  (o$ and not a)+(fn activeOption$(o$,l) and a)
+  \ XXX TODO -- _ca len_ is o$
 
   \ XXX OLD
   \ deffn center$(l,t$)=\
   \   \ A text centered at line l
   \   chr$ 22+chr$ l+chr$ ((fn cpl-len t$)/2)+t$
-deffn centered$(t$)=\
+
+: centered$  ( ca len -- )
+  chr$ 23+chr$ ((fn cpl-len t$)/2)+chr$ 0+t$  ;
   \ A text centered on the current line
   \ (the cursor must be at the start of the line)
   \ XXX Why a chr$ 0 is needed? Without it, the first letter of
   \ the text is removed.
-  chr$ 23+chr$ ((fn cpl-len t$)/2)+chr$ 0+t$
+  \ XXX TODO -- 
 
-deffn banner$(t$)=\
+: banner$ ( ca len -- )
+  (string$((fn cpl-len t$)/2," ")+t$+string$(fn cpl," "))(to fn cpl)  ;
   \ A text centered on the current line
   \ (the cursor must be at the start of the line
   \ and the whole line is overwritten)
-  (string$((fn cpl-len t$)/2," ")+t$+string$(fn cpl," "))(to fn cpl)
+  \ XXX TODO -- 
 
-deffn coins$(x)=\
-  \ x doubloons, with letters.
-  \ XXX MasterBASIC BUG? "Subscript wrong"! (the problem is in fn number$():
-  #fn number$(n)+" "+fn dubloons$(n)
-  \ XXX MasterBASIC BUG? "Subscript wrong"!:
-  #trunc$ n$(n)+" "+fn dubloons$(n)
-  \ XXX This way it works, 'x' instead of 'n' and no fn number$!:
-  trunc$ n$(x)+" "+fn dubloons$(x)
+: coins$ ( x -- ca len )
+  dup >r n>letters s"  " s+ r> dubloons$ s+  ;
+  \ Return the text "x doubloons", with letters.
+  \ XXX TODO --
 
-deffn upper1$(t$)=\
-  \ Text with its first char in uppercase
-  shift$(t$(1),1)+t$(2 to)
+: upper1$ ( ca len -- ca len )  over c@ upper >r over r> swap c!  ;
+  \ Change the first char of _ca len_ to uppercase.
 
-deffn failure=\
+: failure  ( -- f )
+  not alive
+  or morale<=0
+  or fn damageIndex=damageLevels
+  or supplies<=0
+  or cash<=0  ;
   \ Failed mission?
-  not alive \
-  or morale<=0 \
-  or fn damageIndex=damageLevels \
-  or supplies<=0 \
-  or cash<=0
+  \ XXX TODO --
 
-deffn success=\
+: success  ( -- f )  find=6  ;
   \ Success?
-  find=6
+  \ XXX TODO --
 
-deffn gameOver=\
+: gameOver  ( -- f )  fn failure or fn success or quit  ;
   \ Game over?
-  fn failure or fn success or quit
+  \ XXX TODO --
 
-deffn condition$(m)=\
+: condition$ ( m -- ca len )  stamina$(stamina(m))  ;
   \ Physical condition of a crew member
-  trunc$ stamina$(stamina(m))
+  \ XXX TODO --
 
-deffn max(a,b)=\
-  a*(a>b)+b*(b>a)
+: blankLine$  ( -- ca len )  string$(fn cpl," ")  ;
+  \ XXX TODO --
 
-deffn min(a,b)=\
-  a*(a<b)+b*(b<a)
+: damageIndex  ( -- n )  damage @ damageLevels @ 101 / 1+  ;
 
-deffn between(a,b)=\
-  rnd(b-a)+a
-
-deffn blankLine$=\
-  string$(fn cpl," ")
-
-deffn name$(n)=\
-  \ Sailor name
-  trunc$ name$(n)
-
-deffn damageIndex=\
-  int(damage*damageLevels/101)+1
-deffn damage$=\
+: damage$  ( -- ca len )  damage$(damageIndex)  ;
   \ Damage description
-  trunc$ damage$(fn damageIndex)
+  \ XXX TODO -- `damage$()`  is the array
 
   \ }}} ---------------------------------------------------------
   \ Constants {{{
@@ -552,13 +543,13 @@ stop
   
   if islandMap(iPos)=snake \ XXX MasterBASIC BUG? "b not found"!
     manInjured
-    message "Una serpiente ha mordido a "+fn name$(injured)+"."
+    message "Una serpiente ha mordido a "+name$(injured)+"."
   
   else if islandMap(iPos)=nativeFights
     manInjured
     message \
       "Un nativo intenta bloquear el paso y hiere a "+\
-      fn name$(injured)+\
+      name$(injured)+\
       ", que resulta "+fn condition$(injured)+"."
   
   else if islandMap(iPos)=dubloonsFound
@@ -613,22 +604,22 @@ stop
 
 : event1  ( -- )
   manDead
-  message fn name$(dead)+" se hunde en arenas movedizas."
+  message name$(dead)+" se hunde en arenas movedizas."
   ;
 
 : event2  ( -- )
   manDead
-  message fn name$(dead)+" se hunde en un pantano."
+  message name$(dead)+" se hunde en un pantano."
   ;
 
 : event3  ( -- )
   manInjured
-  message "A "+fn name$(injured)+" le muerde una araña."
+  message "A "+name$(injured)+" le muerde una araña."
   ;
 
 : event4  ( -- )
   manInjured
-  message "A "+fn name$(injured)+" le pica un escorpión."
+  message "A "+name$(injured)+" le pica un escorpión."
   ;
 
 : event5  ( -- )
@@ -1054,14 +1045,14 @@ stop
     manDead
     message \
       "Lo matas, pero la serpiente mata a "+\
-      fn name$(dead)+"."
+      name$(dead)+"."
     goto L6897
 
   if islandMap(iPos)=9 then \
     manDead
     message \
       "Un poblado entero es un enemigo muy difícil."+\
-      fn name$(dead)+" muere en el combate."
+      name$(dead)+" muere en el combate."
     goto L6898
 
   let kill=fn between(1,5)
@@ -1069,7 +1060,7 @@ stop
   if kill=1
     manDead
     message \
-      "El nativo muere, pero antes mata a "+fn name$(dead)+"."
+      "El nativo muere, pero antes mata a "+name$(dead)+"."
   else if kill=2
     s" El nativo tiene provisiones escondidas en su taparrabos." message
     let supplies=supplies+1
@@ -1473,7 +1464,7 @@ defproc mainReport
     \ XXX TODO -- `z` is the loop index:
     print \
       pen white;\
-      at z+5,nameCol;fn name$(z);\
+      at z+5,nameCol;name$(z);\
       pen staminaPen(stamina(z)+1);\
       paper staminaPap(stamina(z)+1);\
       bright staminaBri(stamina(z)+1);\
@@ -1525,7 +1516,7 @@ defproc mainReport
 
   damaged 10,29
   \ XXX TODO improved message: "Por suerte, ..."
-  message "¡Has encallado! El barco está "+fn damage$+"."
+  message "¡Has encallado! El barco está "+damage$+"."
   \ XXX TODO print at the proper zone:
   if damage=100 then print at 20,7; pen 5; paper black;"TOTAL"
   print pen black; paper green;at 17,0;fn centered$("INFORME")
@@ -2091,7 +2082,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 
 : seconds  ( n -- )  50 * pause  ;
 
-defproc digitTo ref answer,max
+: digitTo  \ XXX TODO -- parameters: ref answer,max
 
   \ Return the digit number pressed by the player
 
@@ -2107,26 +2098,19 @@ defproc digitTo ref answer,max
   \ }}} ---------------------------------------------------------
   \ UDGs and charsets {{{
 
-  \ XXX TODO keep all the charsets and UDGs in RAM; otherwise it would
-  \ be too slow to load them every time in a real SAM.
+  \ XXX TODO keep all the charsets and UDGs in RAM
 
-: charset  ( n -- )
-  load "charset"+str$ n code udg " "
-  blocks n<>0
-  ;
-
-  \ defproc ssc
-  \   \ Save the original SAM charset
-  \   save over "SAMcharset" code peek svar 566+256,768
-  \ endproc
+: charset  ( n -- )  drop  ;
+  \ XXX TODO --
 
 : c0  ( -- )  0 charset  ;
   \ XXX TMP for debugging after an error
 
 : initUDG  ( -- )
-  load "udg128" code udg chr$ 128 \ Spanish chars 128-143
-  load "udg144" code udg chr$ 144 \ Graphics 144-168
+  \ load "udg128" code udg chr$ 128 \ Spanish chars 128-143
+  \ load "udg144" code udg chr$ 144 \ Graphics 144-168
   ;
+  \ XXX TODO --
 
   \ }}} ---------------------------------------------------------
   \ Game over{{{
@@ -2266,10 +2250,9 @@ defproc digitTo ref answer,max
   \ }}} ---------------------------------------------------------
   \ Text output {{{
 
-deffn cpl=\
-  \ XXX TODO set a variable when selecting a window
+: cpl  ( -- n )  32  ;
   \ Characters per line of the current upper window
-  peek UWRHS-peek UWLHS+1
+  \ XXX TODO -- 
 
 : tell  ( text$ -- )
 
@@ -2293,7 +2276,7 @@ deffn cpl=\
 
 : tellCR  ( text$ -- )
   tell text$
-  print
+  cr
   ;
 
   \ XXX OLD -- not used
@@ -2492,7 +2475,7 @@ deffn cpl=\
       print using$("##",seaMap(1+y*9+x));
       let invflag=not invflag
     loop
-    print
+    cr
   loop
   mode 1  0 inverse  ;
 
@@ -2522,6 +2505,7 @@ deffn cpl=\
   101 0 do
     \ XXX TODO -- `i` is the loop index:
     let damage=i
-    print damage,fn damageIndex;" ";fn damage$
+    print damage,fn damageIndex;" ";damage$
   loop  ;
 
+  \ vim: set filetype:soloforth
