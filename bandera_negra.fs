@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612151327
+  \ Version 0.0.0+201612151335
 
   \ }}} ---------------------------------------------------------
   \ Functions {{{
@@ -171,18 +171,13 @@ stop
   \ XXX FIXME useScreen2 and usesCreen2 cause the sea
   \ background is missing
   useScreen2
-  on aboard+1
-    islandScenery
-    seaScenery
+  aboard if  seaScenery  else  islandScenery  then
   panel
   useScreen1
   ;
 
 : command  ( -- )
-  on aboard+1
-    islandCommand
-    shipCommand
-  ;
+  aboard if  shipCommand  else  islandCommand  then  ;
 
   \ }}} ---------------------------------------------------------
   \ Command panel {{{
@@ -197,14 +192,14 @@ stop
     at 1,0;fn option$("Tripulación",1,1);\
     at 2,0;fn option$("Puntuación",1,1)
 
-  if aboard
+  aboard if
     \ XXX TODO possibleDisembarking only if no enemy ship is present
     let possibleDisembarking=(visited(shipPos)=false) or (seaMap(shipPos)=treasureIsland)
     print #0;at 0,16;fn option$("Desembarcar",1,possibleDisembarking)
   else
     let possibleEmbarking=true \ XXX TODO only if iPos is coast
     print #0;at 0,16;fn option$("emBarcar",3,possibleEmbarking)
-  endif
+  then
 
   \ XXX TODO check condition -- what about the enemy ship?
   \ XXX TODO several commands: attack ship/island/shark?
@@ -319,7 +314,7 @@ stop
     i 11 at-xy ." <>"  10 pause
   loop
 
-  let aboard=false
+  aboard off
   if seaMap(shipPos)=treasureIsland then \
     enterTreasureIsland
   else \
@@ -527,10 +522,9 @@ stop
   ;
 
 : embark  ( -- )
-  let \
-    visited(shipPos)=true,\
-    day=day+1,\
-    aboard=true
+  let visited(shipPos)=true
+  let day=day+1
+  aboard on
   ;
 
   \ }}} ---------------------------------------------------------
@@ -1599,6 +1593,8 @@ defproc mainReport
 
   ;
 
+variable aboard  \ flag
+
 : init  ( -- )
 
   local i,i$
@@ -1674,8 +1670,8 @@ defproc mainReport
   let shipPicture=0 \ flag for the ship picture
 
   \ Plot variables
+  aboard on
   let \
-    aboard=true,\
     alive=men,\
     ammo=2,\
     cash=5,\
