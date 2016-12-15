@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612152145
+  \ Version 0.0.0+201612160010
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -65,10 +65,13 @@ wordlist dup constant black-flag  dup >order  set-current
   \ with character at position _n_ highlighted with control
   \ characters.
 
-: option$ ( ca len n a -- ca len )  if  activeOption$  then  ;
-  \ A panel option; a=active?; _n_=pos of highlighted letter.
+: option$ ( ca1 len1 n f -- ca1 len1 | ca2 len2 )
+  if  activeOption$  then  ;
+  \ Prepare a panel option _ca1 len1_.  If the option is
+  \ active, _f_ is true and _n_ is the position of its
+  \ highlighted letter.
 
-: centered$  ( ca len -- )
+: centered$  ( ca1 len1 -- ca1 len2 )
   chr$ 23+chr$ ((fn cpl-len t$)/2)+chr$ 0+t$  ;
   \ A text centered on the current line
   \ (the cursor must be at the start of the line)
@@ -178,54 +181,77 @@ main
   \ }}} ---------------------------------------------------------
   \ Command panel {{{
 
+22 constant panel-y
+
+variable possibleDisembarking   \ flag
+variable possibleEmbarking      \ flag
+variable possibleAttacking      \ flag
+
+variable possibleNorth          \ flag
+variable possibleSouth          \ flag
+variable possibleEast           \ flag
+variable possibleWest           \ flag
+
+: .direction  ( c col row f -- )
+  inverse at-xy emit 0 inverse  ;
+
+: directionsMenu  ( -- )
+  possibleNorth on
+  possibleSouth on
+  possibleEast on
+  possibleWest on
+    \ XXX TMP --
+    \ XXX TODO -- use conditions
+  white ink  black paper
+  'N' 30 panel-y    possibleNorth @ .direction
+  'O' 29 panel-y 1+ possibleWest  @ .direction
+  'E' 31 panel-y 1+ possibleEast  @ .direction
+  'S' 30 panel-y 2+ possibleSouth @ .direction
+  '+' 30 panel-y 1+ at-xy emit  ;
+  \ Print the directions menu.
+  \
+  \ XXX TODO use a modified  version of "+"?
+
 : panel  ( -- )
-
-  wipePanel
-  0 charset
-
-  print #0;pen white;\
-    at 0,0;fn option$("Información",1,1);\
-    at 1,0;fn option$("Tripulación",1,1);\
-    at 2,0;fn option$("Puntuación",1,1)
+  wipePanel  0 charset  white ink
+  0 panel-y at-xy s" Información" 1 true option$ type cr
+                  s" Tripulación" 1 true option$ type cr
+                  s" Puntuación"  1 true option$ type cr
 
   aboard if
+
     \ XXX TODO possibleDisembarking only if no enemy ship is present
-    let possibleDisembarking=(visited(shipPos)=false) or (seaMap(shipPos)=treasureIsland)
-    print #0;at 0,16;fn option$("Desembarcar",1,possibleDisembarking)
+ 
+    \ let possibleDisembarking=(visited(shipPos)=false) or
+    \ (seaMap(shipPos)=treasureIsland)  \ XXX OLD
+    \ XXX TODO -- translate
+
+    0 panel-y at-xy
+    s" Desembarcar" 1 possibleDisembarking @ option$ type
+
   else
-    let possibleEmbarking=true \ XXX TODO only if iPos is coast
-    print #0;at 0,16;fn option$("emBarcar",3,possibleEmbarking)
+
+    possibleEmbarking on
+      \ XXX TODO only if iPos is coast
+    16 panel-y at-xy
+    s" emBarcar" 3 possibleEmbarking @ option$ type
+
   then
 
   \ XXX TODO check condition -- what about the enemy ship?
   \ XXX TODO several commands: attack ship/island/shark?
   let possibleAttacking=not (seaMap(shipPos)<13 or seaMap(shipPos)=shark or seaMap(shipPos)=treasureIsland)
-  print #0;at 1,16;fn option$("Atacar",1,possibleAttacking)
 
-  let possibleTrading=islandMap(iPos)=nativeVillage
-  print #0;at 2,16;fn option$("Comerciar",1,possibleTrading)
+  16 panel-y 1+ at-xy
+  s" Atacar" 1 possibleAttacking @ option$ type
 
-  directionsMenu
+  \ let possibleTrading=islandMap(iPos)=nativeVillage
+  \ XXX TODO -- translate
 
-  ;
+  16 panel-y 2+ at-xy
+  s" Comerciar" 1 possibleTrading @ option$ type
 
-: directionsMenu  ( -- )
-
-  \ XXX TODO conditions
-  let \
-    possibleNorth=true,\
-    possibleSouth=true,\
-    possibleEast=true,\
-    possibleWest=true
-  print #0;paper black; pen white;\
-    at 0,30;inverse possibleNorth;"N";inverse 0;\
-    at 1,29;inverse possibleWest;"O";inverse 0;\
-    at 1,31;inverse possibleEast;"E";inverse 0;\
-    at 2,30;inverse possibleSouth;"S";inverse 0;\
-    at 1,30;"+"
-  \ XXX TODO use a modified  version of "+"?
-
-  ;
+  directionsMenu  ;
 
 : impossible  ( -- )
   s" Lo siento, capitán, no puede hacer eso." message
