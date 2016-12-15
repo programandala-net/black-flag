@@ -11,14 +11,14 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612160025
+  \ Version 0.0.0+201612160035
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
 
 only forth definitions
 
-need chars>string  need string/  need columns
+need chars>string  need string/  need columns  need inverse
 
 wordlist dup constant black-flag  dup >order  set-current
 
@@ -95,9 +95,9 @@ variable shipPicture \ flag
   \ Return the text "x doubloons", with letters.
   \ XXX TODO --
 
-: upper1$ ( ca len -- ca len )
-  over c@ upper >r over r> swap c!  ;
+: uppers1 ( ca len -- )  drop 1 uppers  ;
   \ Change the first char of _ca len_ to uppercase.
+  \ XXX TODO -- move to the library of Solo Forth
 
 : failure  ( -- f )
   alive @ 0=
@@ -226,7 +226,7 @@ variable possibleWest           \ flag
   aboard if
 
     \ XXX TODO possibleDisembarking only if no enemy ship is present
- 
+
     \ let possibleDisembarking=(visited(shipPos)=false) or
     \ (seaMap(shipPos)=treasureIsland)  \ XXX OLD
     \ XXX TODO -- translate
@@ -409,8 +409,8 @@ variable possibleWest           \ flag
   exit proc
 
   label newPrice
-  let price=fn between(3,8)
-  nativeSays fn upper1$(fn coins$(price))+" ser nuevo precio, blanco."
+  3 8 between dup price ! coins$ 2dup uppers1
+  s"  ser nuevo precio, blanco." s+ nativeSays
   goto oneCoinLess
 
   ;
@@ -1460,7 +1460,7 @@ variable possibleWest           \ flag
   0 1 at-xy s" Informe de situación" columns type-center
   0 4 at-xy
   ." Días:"         tab day @ .## cr cr
-  ." Barco:"        tab damage$ upper1$ type cr cr
+  ." Barco:"        tab damage$ 2dup uppers1 type cr cr
   ." Hombres:"      tab alive @ .## cr
   ." Moral:"        tab using$("## ",morale) cr cr
   ." Provisiones:"  tab supplies @ .## cr
@@ -1477,14 +1477,16 @@ variable possibleWest           \ flag
   4 nameCol at-xy ." Nombre"
   4 dataCol at-xy ." Condición"
   men 1+ 1 do
-    \ XXX TODO -- `z` is the loop index:
+    white ink
     print \
-      pen white;\
-      at z+5,nameCol;name$(z);\
-      pen staminaPen(stamina(z)+1);\
-      paper staminaPap(stamina(z)+1);\
-      bright staminaBri(stamina(z)+1);\
-      at z+5,dataCol;fn upper1$(stamina$(stamina(z)+1))
+    nameCol i 5 + at-xy name$(i) type
+      \ XXX TODO -- convert array
+    staminaPen(stamina(i)+1) ink
+    staminaPap(stamina(i)+1) paper
+    staminaBri(stamina(i)+1) bright
+    dataCol i 5 + at-xy
+    stamina$(stamina(i)+1) 2dup uppers1 type
+      \ XXX TODO -- convert array
   loop
   reportEnd
   ;
