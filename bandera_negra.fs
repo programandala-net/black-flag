@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612151347
+  \ Version 0.0.0+201612151359
 
   \ }}} ---------------------------------------------------------
   \ Functions {{{
@@ -44,7 +44,7 @@ let \
   n$(9)="nueve",\
   n$(10)="diez",\
   n$(11)="once"
-  \ XXX MasterBASIC BUG? "Subscript wrong"!:
+  \ XXX TODO -- create a string table
 
 : number$ ( n -- ca len )  n$(n)  ;
   \ Convert _n_ to letters in string _ca len_.
@@ -94,21 +94,18 @@ let \
   \ Change the first char of _ca len_ to uppercase.
 
 : failure  ( -- f )
-  not alive
-  or morale<=0
-  or fn damageIndex=damageLevels
-  or supplies<=0
-  or cash<=0  ;
+  alive @ 0=
+  morale @ 1 < or
+  damageIndex damageLevels = or
+  supplies @ 1 < or
+  cash @ 1 < or  ;
   \ Failed mission?
-  \ XXX TODO --
 
-: success  ( -- f )  foundClues=6  ;
+: success  ( -- f )  foundClues @ 6 =  ;
   \ Success?
-  \ XXX TODO --
 
-: gameOver  ( -- f )  fn failure or fn success or quitGame  ;
+: gameOver  ( -- f )  failure success quitGame or or  ;
   \ Game over?
-  \ XXX TODO --
 
 : condition$ ( m -- ca len )  stamina$(stamina(m))  ;
   \ Physical condition of a crew member
@@ -232,12 +229,9 @@ stop
   ;
 
 : impossible  ( -- )
-
-  \ XXX not used yet
   s" Lo siento, capitán, no puede hacer eso." message
-  seconds 2
-
-  ;
+  seconds 2  ;
+  \ XXX not used yet
 
   \ }}} ---------------------------------------------------------
   \ Commands on the ship {{{
@@ -1338,7 +1332,7 @@ stop
     at 2,0;"Z123 HI A Z123 HI A Z123 HI Z123"
   ;
 
-defproc drawTreasureIsland
+: drawTreasureIsland  ( -- )
 
   1 charset
   print pen green;paper blue;\
@@ -1373,12 +1367,8 @@ defproc drawTreasureIsland
   \ Ships
 
 : redrawShip  ( -- )
-  \ XXX OLD
-  #if shipPicture then drawShipDown else drawShipUp
-  \ XXX alternative:
-  on shipPicture+1:drawShipDown:drawShipUp
-  let shipPicture=not shipPicture
-  ;
+  shipPicture @ if    drawShipDown shipPicture off
+                else  drawShipUp   shipPicture on  then  ;
 
 : drawShipUp  ( -- )
   print paper blue;pen white;\
@@ -1430,7 +1420,7 @@ defproc drawTreasureIsland
   ;
 
 
-defproc mainReport
+: mainReport  ( -- )
   reportStart
   print \
     at 1,0;fn centered$("Informe de situación");\
@@ -1588,19 +1578,21 @@ defproc mainReport
 
 : initOnce  ( -- )  initScreen  initUDG  ;
 
-variable aboard     \ flag
-variable alive      \ counter
-variable ammo       \ counter
-variable cash       \ counter
-variable damage     \ counter
-variable day        \ counter
-variable foundClues \ counter
-variable morale     \ counter
-variable score      \ counter
-variable sunkShips  \ counter
-variable supplies   \ counter
-variable trades     \ counter
-variable quitGame   \ flag
+variable aboard      \ flag
+variable alive       \ counter
+variable ammo        \ counter
+variable cash        \ counter
+variable damage      \ counter
+variable day         \ counter
+variable foundClues  \ counter
+variable morale      \ counter
+variable score       \ counter
+variable sunkShips   \ counter
+variable supplies    \ counter
+variable trades      \ counter
+variable quitGame    \ flag
+
+variable shipPicture \ flag
 
 : init  ( -- )
 
@@ -1674,7 +1666,7 @@ variable quitGame   \ flag
 
   initClues
 
-  let shipPicture=0 \ flag for the ship picture
+  shipPicture off
 
   \ Plot variables
   aboard on
@@ -2281,22 +2273,6 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   cr
   ;
 
-  \ XXX OLD -- not used
-  \ defproc sailorSays text$
-  \   wipeSailorWords
-  \   tellZone text$,10,13,7
-  \ endproc
-  \
-  \ defproc wipeSailorWords
-  \   local z
-  \   seconds  1:pause 100
-  \   paper yellow
-  \   for z=13 to 16
-  \     print at z,7;string$(10," ")
-  \   next z
-  \   beep .15,fn between(11,20)
-  \ endproc
-
 : nativeSays  ( text$ -- )
   nativeWindow
   cls 1
@@ -2305,17 +2281,6 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   #wipeNativeWords
   #tellZone text$,12,6,16
   ;
-
-  \ XXX OLD
-  \ defproc wipeNativeWordsEX
-  \   local z
-  \   seconds  1
-  \   paper yellow
-  \   for z=5 to 11
-  \     print at z,16;string$(12," ")
-  \   next z
-  \   beep .15,fn between(11,20)
-  \ endproc
 
 : message  ( text$ -- )
   0 charset
@@ -2404,12 +2369,6 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   \ Zone where intro text is shown
   window 2,29,introWinTop,21
   ;
-
-  \ XXX not used
-  \ defproc textWindow
-  \   \ Zone where texts are shown, including the zone border
-  \   window 0,31,17,20
-  \ endproc
 
 : messageWindow  ( -- )
   window messageWinLeft,messageWinRight,messageWinTop,messageWinBottom
