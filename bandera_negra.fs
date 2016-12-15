@@ -5,13 +5,13 @@
   \ A simulation game
   \ Written in Forth for the ZX Spectrum 128
 
-  \ This game is a translated and improved remake of 
+  \ This game is a translated and improved remake of
   \   "Jolly Roger"
   \   Copyright (C) 1984 Barry Jones / Video Vault ltd.
 
   \ Copyright (C) 2011,2014,2015 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612151335
+  \ Version 0.0.0+201612151347
 
   \ }}} ---------------------------------------------------------
   \ Functions {{{
@@ -76,14 +76,14 @@ let \
   \ (the cursor must be at the start of the line)
   \ XXX Why a chr$ 0 is needed? Without it, the first letter of
   \ the text is removed.
-  \ XXX TODO -- 
+  \ XXX TODO --
 
 : banner$ ( ca len -- )
   (string$((fn cpl-len t$)/2," ")+t$+string$(fn cpl," "))(to fn cpl)  ;
   \ A text centered on the current line
   \ (the cursor must be at the start of the line
   \ and the whole line is overwritten)
-  \ XXX TODO -- 
+  \ XXX TODO --
 
 : coins$ ( x -- ca len )
   dup >r n>letters s"  " s+ r> dubloons$ s+  ;
@@ -102,11 +102,11 @@ let \
   \ Failed mission?
   \ XXX TODO --
 
-: success  ( -- f )  find=6  ;
+: success  ( -- f )  foundClues=6  ;
   \ Success?
   \ XXX TODO --
 
-: gameOver  ( -- f )  fn failure or fn success or quit  ;
+: gameOver  ( -- f )  fn failure or fn success or quitGame  ;
   \ Game over?
   \ XXX TODO --
 
@@ -272,11 +272,11 @@ stop
       else if k=100 \ "d"
         if possibleDisembarking then \
           disembark:exit do
-      else if k=70:let quit=true:exit do \ "F" XXX TODO lowercase
+      else if k=70:let quitGame=true:exit do \ "F" XXX TODO lowercase
       endif
 
       \ if not (tics mod 5) then redrawShip  \ XXX OLD
-      i 40 = i 80 = or if  redrawShip  then 
+      i 40 = i 80 = or if  redrawShip  then
 
     loop
 
@@ -427,7 +427,7 @@ stop
   let \
     cash=cash-offer,\
     score=score+200,\
-    trade=trade+1
+    trades=trades+1
   nativeTellsClue
   seconds 4
   embark
@@ -508,7 +508,7 @@ stop
         attack:exit do
     else if k=116:crewReport:exit do \ "t"
     else if k=112:scoreReport:exit do \ "p"
-    else if k=70:let quit=true:exit do \ "F" XXX TODO lowercase
+    else if k=70:let quitGame=true:exit do \ "F" XXX TODO lowercase
     endif
   loop
   ;
@@ -534,48 +534,48 @@ stop
 
   wipeMessage:\ \ XXX TODO needed?
   islandScenery
-  
+
   if islandMap(iPos)=snake \ XXX MasterBASIC BUG? "b not found"!
     manInjured
     message "Una serpiente ha mordido a "+name$(injured)+"."
-  
+
   else if islandMap(iPos)=nativeFights
     manInjured
     message \
       "Un nativo intenta bloquear el paso y hiere a "+\
       name$(injured)+\
       ", que resulta "+fn condition$(injured)+"."
-  
+
   else if islandMap(iPos)=dubloonsFound
     let dub=fn between(1,2)
     message "Encuentras "+fn coins$(dub)+"."
     let cash=cash+dub
     drawDubloons dub
     let islandMap(iPos)=4
-  
+
   else if islandMap(iPos)=nativeAmmo
     s" Un nativo te da algo de munición." message
     let ammo=ammo+1
     let islandMap(iPos)=nativeFights
-  
+
   else if islandMap(iPos)=nativeSupplies
     s" Un nativo te da provisiones." message
     \ XXX TODO random ammount
     let supplies=supplies+1
     let islandMap(iPos)=nativeFights
-  
+
   else if islandMap(iPos)=nativeVillage
     s" Descubres un poblado nativo." message
-  
+
   \ XXX TODO constants for these cases:
   else if islandMap(iPos)=4 or islandMap(iPos)=6
     islandEvents
-  
+
   endif
-  
+
   1 charset
   100 pause \ XXX OLD
-  
+
   ;
 
   \ }}} ---------------------------------------------------------
@@ -659,7 +659,7 @@ stop
   if islandMap(iPos+1)=coast then drawRightWaves
   if islandMap(iPos)=nativeVillage
     drawVillage
-  else if islandMap(iPos)=dubloonsFound 
+  else if islandMap(iPos)=dubloonsFound
     palm2 8,4
     palm2 5,14
   else if islandMap(iPos)=nativeFights
@@ -842,9 +842,9 @@ stop
     doAttackOwnBoat
   else
     s" Por suerte no hay munición para disparar..." message
-    3 pause 
+    3 pause
     s" Enseguida te das cuenta de que ibas a hundir uno de tus botes." message
-    3 pause 
+    3 pause
     wipeMessage \ XXX needed?
   endif
 
@@ -889,7 +889,7 @@ stop
 
 : battleScenery  ( -- )
 
-  window:paper blue:cls:0 charset: 
+  window:paper blue:cls:0 charset:
   print at 21,10; pen white; paper red;" Munición = ";ammo
 
   black ink yellow paper
@@ -897,7 +897,7 @@ stop
 
   print at 2,0; pen black; paper white;"1";at 9,0;"2";at 16,0;"3"
 
-  18 3 do 
+  18 3 do
     black ink  2 charset  4 i 1- at-xy '1' emit
                           4 i    at-xy '2' emit
                           4 1 1+ at-xy '3' emit
@@ -978,7 +978,7 @@ stop
   \ XXX why this condition?:
   if seaMap(shipPos)>=13 and seaMap(shipPos)<=16 then \
     let \
-      sunk=sunk+1,\
+      sunkShips=sunkShips+1,\
       score=score+1000,\
       done=true
 
@@ -1032,7 +1032,7 @@ stop
     #exit proc
 
   s" Atacas al nativo..." message \ XXX OLD
-  100 pause 
+  100 pause
 
   \ XXX FIXME snake?!
   if islandMap(iPos)=5 then \
@@ -1134,11 +1134,11 @@ stop
   \   0 charset
   \   print at 0,0;shipPos,seaMap(shipPos)
   \   1 charset
- 
+
   seaPicture seaMap(shipPos)
 
   ;
-  
+
 : seaPicture  ( n -- )
 
   if n=2
@@ -1218,11 +1218,11 @@ stop
     drawShark
   endif
 
-  drawReefs  
-  
+  drawReefs
+
   if n=treasureIsland then \
     drawTreasureIsland
-  
+
   ;
 
 : drawShark  ( -- )
@@ -1338,7 +1338,7 @@ stop
     at 2,0;"Z123 HI A Z123 HI A Z123 HI Z123"
   ;
 
-defproc drawTreasureIsland 
+defproc drawTreasureIsland
 
   1 charset
   print pen green;paper blue;\
@@ -1425,12 +1425,12 @@ defproc drawTreasureIsland
 
 : reportEnd  ( -- )
   \ Common task at the end of all reports
-  1000 pause 
+  1000 pause
   restoreScreen
   ;
 
 
-defproc mainReport 
+defproc mainReport
   reportStart
   print \
     at 1,0;fn centered$("Informe de situación");\
@@ -1441,7 +1441,7 @@ defproc mainReport
     "Moral:",using$("## ",morale)''\
     "Provisiones:",using$("##",supplies)'\
     "Doblones:",using$("##",cash)''\
-    "Hundimientos:",using$("## ",sunk)'\
+    "Hundimientos:",using$("## ",sunkShips)'\
     "Munición:",using$("##",ammo)''
   reportEnd
   ;
@@ -1473,13 +1473,13 @@ defproc mainReport
     at 1,0;fn centered$("Informe de puntuación");\
     at 4,0;\
     "Días",using$("####",day);" x  200"'\
-    "Hundimientos",using$("####",sunk);" x 1000"'\
-    "Negocios",using$("####",trade);" x  200"'\
-    "Pistas",using$("####",find);" x 1000"
-  if find=6 then \
+    "Hundimientos",using$("####",sunkShips);" x 1000"'\
+    "Negocios",using$("####",trades);" x  200"'\
+    "Pistas",using$("####",foundClues);" x 1000"
+  if foundClues=6 then \
     let score=score+4000
     print "Tesoro",using$("####",4000)
-  let score=score+(find*1000)+(day*200)+(sunk*1000)+(trade*200)
+  let score=score+(foundClues*1000)+(day*200)+(sunkShips*1000)+(trades*200)
   print '"Total","       ";using$("####",score)
   reportEnd
   ;
@@ -1527,7 +1527,7 @@ defproc mainReport
   let damage=damage+fn between(min,max)
   if damage>100 then let damage=100
   ;
-  
+
 
   \ }}} ---------------------------------------------------------
   \ Landscape graphics {{{
@@ -1586,19 +1586,26 @@ defproc mainReport
   \ }}} ---------------------------------------------------------
   \ Setup {{{
 
-: initOnce  ( -- )
+: initOnce  ( -- )  initScreen  initUDG  ;
 
-  initScreen
-  initUDG
-
-  ;
-
-variable aboard  \ flag
+variable aboard     \ flag
+variable alive      \ counter
+variable ammo       \ counter
+variable cash       \ counter
+variable damage     \ counter
+variable day        \ counter
+variable foundClues \ counter
+variable morale     \ counter
+variable score      \ counter
+variable sunkShips  \ counter
+variable supplies   \ counter
+variable trades     \ counter
+variable quitGame   \ flag
 
 : init  ( -- )
 
   local i,i$
- 
+
   randomize
   #load "attr/zp0i0b0l20" code fn attrLine(2)
   print pen white; paper black; flash 1;\
@@ -1627,7 +1634,7 @@ variable aboard  \ flag
 
   \ Treasure island
   let \
-    treasureIsland=22,\
+    treasureIsland=22
     seaMap(fn between(94,104))=treasureIsland
 
   \ Ship position
@@ -1643,7 +1650,7 @@ variable aboard  \ flag
 
   \ Ship damage labels
   let \
-    damageLevels=0,\
+    damageLevels=0
     damageMaxLen=0
   restore damageData
   do
@@ -1651,7 +1658,7 @@ variable aboard  \ flag
     let i=len i$
     exit if not i
     let \
-      damageLevels=damageLevels+1,\
+      damageLevels=damageLevels+1
       damageMaxLen=fn max(damageMaxLen,i)
   loop
   dim damage$(damageLevels,damageMaxLen)
@@ -1671,19 +1678,18 @@ variable aboard  \ flag
 
   \ Plot variables
   aboard on
-  let \
-    alive=men,\
-    ammo=2,\
-    cash=5,\
-    damage=0,\
-    day=0,\
-    find=0,\
-    morale=10,\
-    score=0,\
-    sunk=0,\
-    supplies=10,\
-    trade=0,\
-    quit=false
+  men alive !
+  2 ammo !
+  5 cash !
+  0 damage !
+  0 day !
+  0 foundClues !
+  10 morale !
+  0 score !
+  0 sunkShips !
+  10 supplies !
+  0 trades !
+  quitGame off
 
   ;
 
@@ -1951,7 +1957,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   8 +loop
   0 charset
   print at 7,0; pen white; paper red;"   1       2       3       4    "
-  
+
   \ XXX TODO improve with LOAD or POKE
   22 8 do
     \ XXX TODO -- `z` is the loop index:
@@ -1959,28 +1965,28 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   loop
 
   sailorAndCaptain
-  
+
   sailorSays "¿Qué camino, capitán?"
   print at 15,23;"?" \ XXX TODO better, in all cases
   digitTo option
   print at 15,23; paper black;option: beep .2,30
   seconds  2
-  if option=path then let find=find+1
-  
+  if option=path then let foundClues=foundClues+1
+
   sailorSays "¿Qué árbol, capitán?"
   print at 15,23;"? "
   digitTo option: 0 charset: print at 15,23; paper black;option: beep .2,30
   trees
   seconds  2:
-  if option=tree then let find=find+1
+  if option=tree then let foundClues=foundClues+1
 
-  \ XXX TODO better, with letters  
+  \ XXX TODO better, with letters
   print at 14,7; paper black;"Izquierda Derecha";at 16,8;"I=1  D=2 ";at 15,23;"? "
   digitTo option
   0 charset
   print at 15,23; paper black;option: beep .2,30
   seconds  2
-  if option=turn then let find=find+1
+  if option=turn then let foundClues=foundClues+1
 
   wipeIsland
   8 3 do
@@ -1992,25 +1998,25 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   print at 7,12; pen black; paper yellow;"0  ";village$(10)
   2 charset
   print at 5,27; pen green; paper yellow;"S\::T";at 6,27;"VUW"
-  
+
   0 charset
   print at 14,7; paper black;" Poblado  ";at 13,7;"¿Cuál";at 16,8;" capitán.";at 15,23;"? "
   digitTo option
   print at 15,23; paper black;option: beep .2,30
   seconds  2
-  if option=village then let find=find+1
+  if option=village then let foundClues=foundClues+1
 
-  \ XXX TODO better, with letters  
+  \ XXX TODO better, with letters
   print at 13,7; paper black;"¿Qué camino";at 14,7;"capitán?";at 16,7;"1N 2S 3E 4O";at 15,23;"? "
   digitTo option: print at 15,23; paper black;option: beep .2,30
-  seconds  2: if option=direction then let find=find+1
-  
+  seconds  2: if option=direction then let foundClues=foundClues+1
+
   print at 13,7; paper black;"¿Cuántos";at 14,7;"pasos,";at 16,7;"capitán?";at 15,23;"? "
   digitTo option: print at 15,23; paper black;option: beep .2,30
-  seconds  2: if option=pace then let find=find+1
+  seconds  2: if option=pace then let foundClues=foundClues+1
 
   \ XXX TODO use tellZone
-  if find=6 then \
+  if foundClues=6 then \
     print paper black;\
       at 13,7;"¡Hemos encontrado";\
       at 14,7;"el oro,";\
@@ -2131,10 +2137,10 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
     palm2 z,27:palm2 z,1
   7 +loop
 
-  if find=6 then happyEnd:else sadEnd
+  if foundClues=6 then happyEnd:else sadEnd
 
   s" Pulsa una tecla para ver tus puntos" message
-  0 pause 
+  0 pause
   beep .2,30
   scoreReport
 
@@ -2217,7 +2223,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   tellCR "Los nativos del archipiélago recuerdan las antiguas pistas que conducen al tesoro. Deberás comerciar con ellos para que te las digan."
   tellCR "Visita todas las islas hasta encontrar la isla de "+islandName$+" y sigue las pistas hasta el tesoro..."
   print at peek UWBOT-introWinTop-1,0;fn centered$("Pulsa una tecla")
-  6000 pause 
+  6000 pause
 
   ;
 
@@ -2248,7 +2254,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 
 : cpl  ( -- n )  32  ;
   \ Characters per line of the current upper window
-  \ XXX TODO -- 
+  \ XXX TODO --
 
 : tell  ( text$ -- )
 
@@ -2280,7 +2286,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   \   wipeSailorWords
   \   tellZone text$,10,13,7
   \ endproc
-  \ 
+  \
   \ defproc wipeSailorWords
   \   local z
   \   seconds  1:pause 100
@@ -2414,12 +2420,12 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   ;
 
 : nativeWindow  ( -- )
-  \ Window for native's speech 
+  \ Window for native's speech
   window 16,26,6,9
   ;
 
 : lowWindow  ( left,right,top,bottom -- )
-  poke LWRHS,right,left,top,bottom 
+  poke LWRHS,right,left,top,bottom
   ;
 
 : wipePanel  ( -- )
@@ -2446,7 +2452,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 
 : useScreen2  ( -- )
   saveScreen
-  screen 2 
+  screen 2
   ;
 
 : useScreen1  ( -- )
