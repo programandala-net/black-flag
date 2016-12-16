@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612161642
+  \ Version 0.0.0+201612161646
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -153,8 +153,15 @@ constant villages
   here ," este"
   here ," sur"
   here ," norte"
-/sconstants cardinal$
-constant cardinalPoints
+sconstants cardinal$  ( n -- ca len )
+
+  \ ............................
+  \ Hands
+
+0
+  here ," derecha"    \ right
+  here ," izquierda"  \ left
+sconstants hand$  ( n -- ca len )
 
   \ }}} ---------------------------------------------------------
   \ Functions {{{
@@ -578,8 +585,7 @@ nativeTellsClue6
   ;
 
 : nativeTellsClue3  ( -- )
-  nativeSays "Ir a "+hand$(turn)+" en árbol."
-  ;
+  s" Ir a " turn @ hand$ s+ s" en árbol." s+ nativeSays  ;
 
 : nativeTellsClue4  ( -- )
   s" Atravesar poblado " village @ village$ s+ s" ." s+
@@ -1754,20 +1760,12 @@ create islandEvents>  ( -- a )
 : initClues  ( -- )
 
   \ Clues
-  1 3 random-range path !
-  1 3 random-range tree !
-  1 10 random-range village !
-  1 2 random-range turn !
+  1 3 random-range path !  \ XXX TODO -- check range 0..?
+  1 3 random-range tree !  \ XXX TODO -- check range 0..?
+  0 9 random-range village !
+  0 1 random-range turn !
   0 3 random-range direction !
-  1 9 random-range pace !
-
-  \ Left and right
-  dim hand$(2)
-  let \
-    hand$(1)="izquierda",\
-    hand$(2)="derecha"
-
-  ;
+  1 9 random-range pace !  ;  \ XXX TODO -- check range 0..?
 
 : initCrew  ( -- )
 
