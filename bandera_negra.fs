@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612161607
+  \ Version 0.0.0+201612161632
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -53,6 +53,7 @@ wordlist dup constant black-flag  dup >order  set-current
   \ XXX TODO complete
 2 constant dubloonsFound
 3 constant nativeFights
+\ 4 constant \ XXX TODO --
 5 constant snake
 7 constant nativeSupplies
 8 constant nativeAmmo
@@ -337,8 +338,7 @@ variable possibleWest           \ flag
   16 panel-y 1+ at-xy
   s" Atacar" 1 possibleAttacking @ option$ type
 
-  \ let possibleTrading=islandMap(iPos)=nativeVillage
-  \ XXX TODO -- translate
+  iPos @ islandMap @ nativeVillage = possibleTrading !
 
   16 panel-y 2+ at-xy
   s" Comerciar" 1 possibleTrading @ option$ type
@@ -620,12 +620,10 @@ nativeTellsClue6
   ;
 
 : islandMove  ( offset -- )
-
-  if islandMap(iPos+offset)<>coast then \
-    let iPos=iPos+offset
-    enterIslandLocation
-
-  ;
+  dup iPos @ + islandMap @ coast <>
+  if    iPos +!  enterIslandLocation
+  else  drop
+  then  ;
 
 : embark  ( -- )
   let visited(shipPos)=true
@@ -641,43 +639,58 @@ nativeTellsClue6
   wipeMessage:\ \ XXX TODO needed?
   islandScenery
 
-  if islandMap(iPos)=snake \ XXX MasterBASIC BUG? "b not found"!
+  iPos @ islandMap @ case
+
+  snake of
     manInjured
     message "Una serpiente ha mordido a "+name$(injured)+"."
+  endof
 
-  else if islandMap(iPos)=nativeFights
+  nativeFights of
     manInjured
     message \
       "Un nativo intenta bloquear el paso y hiere a "+\
       name$(injured)+\
       ", que resulta "+condition$(injured)+"."
+  endof
 
-  else if islandMap(iPos)=dubloonsFound
+  dubloonsFound of
     1 2 random-range dub !
     message "Encuentras "+coins$(dub)+"."
-    let cash=cash+dub
+    dub @ cash +!
     drawDubloons dub
-    let islandMap(iPos)=4
+    4 iPos @ islandMap !
+      \ XXX TODO -- constant for 4
+  endof
 
-  else if islandMap(iPos)=nativeAmmo
+  nativeAmmo of
     s" Un nativo te da algo de munición." message
-    let ammo=ammo+1
-    let islandMap(iPos)=nativeFights
+    1 ammo +!
+    nativeFights iPos @ islandMap !
+  endof
 
-  else if islandMap(iPos)=nativeSupplies
+  nativeSupplies of
     s" Un nativo te da provisiones." message
     \ XXX TODO random ammount
-    let supplies=supplies+1
-    let islandMap(iPos)=nativeFights
+    1 supplies +!
+    nativeFights iPos @ islandMap !
+  endof
 
-  else if islandMap(iPos)=nativeVillage
+  nativeVillage of
     s" Descubres un poblado nativo." message
+  endof
 
-  \ XXX TODO constants for these cases:
-  else if islandMap(iPos)=4 or islandMap(iPos)=6
+  4 of
+    \ XXX TODO constant for this case
     islandEvents
+  endof
 
-  endif
+  6 of
+    \ XXX TODO constant for this case
+    islandEvents
+  endof
+
+  endcase
 
   1 charset
   100 pause \ XXX OLD
@@ -763,47 +776,58 @@ create islandEvents>  ( -- a )
   \ XXX OLD
   \   load "attr/zp6i6b0l13" code attrLine(3)
   poke attrLine(3),attrLines$(6,yellow,yellow,0)+attrLines$(7,yellow,yellow,0)
+  \ XXX TODO -- adapt
+
   sunnySky
-  if islandMap(iPos-6)=coast then drawBottomWaves
-  if islandMap(iPos+6)=coast then drawHorizontWaves
-  if islandMap(iPos-1)=coast then drawLeftWaves
-  if islandMap(iPos+1)=coast then drawRightWaves
-  if islandMap(iPos)=nativeVillage
-    drawVillage
-  else if islandMap(iPos)=dubloonsFound
-    palm2 8,4
-    palm2 5,14
-  else if islandMap(iPos)=nativeFights
-    palm2 5,14
-    palm2 8,25
-    drawNative
-  else if islandMap(iPos)=4 \ XXX TODO constant
-    palm2 8,25
-    palm2 8,4
-    palm2 5,16
-  else if islandMap(iPos)=snake
-    palm2 5,13
-    palm2 6,5
-    palm2 8,18
-    palm2 8,23
-    drawSnake
-  else if islandMap(iPos)=6 \ XXX TODO constant
-    palm2 8,23
-    palm2 5,17
-    palm2 8,4
-  else if islandMap(iPos)=nativeSupplies
-    drawSupplies
-    drawNative
-    palm2 4,16
-  else if islandMap(iPos)=nativeAmmo
-    drawAmmo
-    drawNative
-    palm2 5,20
-  endif
 
-  ;
+  iPos @ 6 - islandMap @ coast = if  drawBottomWaves   then
+  iPos @ 6 + islandMap @ coast = if  drawHorizonWaves  then
+  iPos @ 1-  islandMap @ coast = if  drawLeftWaves     then
+  iPos @ 1+  islandMap @ coast = if  drawRightWaves    then
 
-: drawHorizontWaves  ( -- )
+  iPos @ islandMap @ case
+    nativeVillage of
+      drawVillage
+    endof
+    dubloonsFound of
+      palm2 8,4
+      palm2 5,14
+    endof
+    nativeFights of
+      palm2 5,14
+      palm2 8,25
+      drawNative
+    endof
+    4 of \ XXX TODO constant
+      palm2 8,25
+      palm2 8,4
+      palm2 5,16
+    endof
+    snake of
+      palm2 5,13
+      palm2 6,5
+      palm2 8,18
+      palm2 8,23
+      drawSnake
+    endof
+    6 of \ XXX TODO constant
+      palm2 8,23
+      palm2 5,17
+      palm2 8,4
+    endof
+    nativeSupplies of
+      drawSupplies
+      drawNative
+      palm2 4,16
+    endof
+    nativeAmmo of
+      drawAmmo
+      drawNative
+      palm2 5,20
+    endof
+  endcase  ;
+
+: drawHorizonWaves  ( -- )
   white ink  blue paper
   0 3 at-xy ."  kl  mn     nm    klk   nm nm n"  ;
 
@@ -819,14 +843,11 @@ create islandEvents>  ( -- a )
   0 6 at-xy ." mn" 0 10 at-xy ." kl" 0 13 at-xy ." k"
   0 4 at-xy ." m" 1 8 at-xy ." l"
   2 charset
-  if islandMap(iPos+6)<>1 then \
-    yellow ink  blue paper  2 3 at-xy 'A' emit
-  if islandMap(iPos+6)=1 then \
-    yellow ink  blue paper  2 4 at-xy 'A' emit
-  if islandMap(iPos-6)=1 then \
-    yellow ink  blue paper  2 13 at-xy 'C' emit
+  yellow ink  blue paper
+  iPos @ 6 + islandMap @ coast <> if  2  3 at-xy 'A' emit  then
+  iPos @ 6 + islandMap @ coast =  if  2  4 at-xy 'A' emit  then
+  iPos @ 6 - islandMap @ coast =  if  2 13 at-xy 'C' emit  then
   1 charset  ;
-  \ XXX TODO -- change colors only once
 
 : drawRightWaves  ( -- )
   white ink  blue paper
@@ -835,15 +856,13 @@ create islandEvents>  ( -- a )
   30 6 at-xy ." mn" 30 10 at-xy ." kl" 31 13 at-xy ." k"
   30 4 at-xy ." m" 31 8 at-xy ." l"
   2 charset
-  if islandMap(iPos+6)=1 then \
-    yellow ink  blue paper  29 4 at-xy 'B' emit
-  if islandMap(iPos-6)=1 then \
-    yellow ink  blue paper  29 13 at-xy 'D' emit
-  if islandMap(iPos+6)<>1 then \
-    yellow ink  blue paper  29 3 at-xy 'B' emit
-  1 charset
-  ;
-  \ XXX TODO -- change colors only once
+  yellow ink  blue paper
+  iPos @ 6 + islandMap @ coast =
+  if    29  4 at-xy 'B' emit  then
+  iPos @ 6 - islandMap @ coast =
+  if    29 13 at-xy 'D'
+  else  29  3 at-xy 'B'
+  then  emit  1 charset  ;
 
 : drawVillage  ( -- )
 
@@ -1119,20 +1138,22 @@ create islandEvents>  ( -- a )
   s" Atacas al nativo..." message \ XXX OLD
   100 pause
 
-  \ XXX FIXME snake?!
-  if islandMap(iPos)=5 then \
+  iPos @ islandMap @ 5 = if
+    \ XXX TODO --  5=snake?
     manDead
     message \
       "Lo matas, pero la serpiente mata a "+\
       name$(dead)+"."
     goto L6897
+  then
 
-  if islandMap(iPos)=9 then \
+  iPos @ islandMap @ nativeVillage = if
     manDead
     message \
       "Un poblado entero es un enemigo muy difícil."+\
       name$(dead)+" muere en el combate."
     goto L6898
+  then
 
   1 5 random-range kill !
   \ let z=int (rnd*2)+2
@@ -1160,7 +1181,8 @@ create islandEvents>  ( -- a )
 
   label L6897
 
-  let islandMap(iPos)=4
+  4 iPos @ islandMap !
+    \ XXX TODO -- constant for 4
 
   label L6898
 
@@ -1693,8 +1715,6 @@ create islandEvents>  ( -- a )
 
   initCrew
 
-  0 islandMap() /islandMap erase
-
   let iPos=1 \ player position on the island
 
   initClues
@@ -1867,12 +1887,6 @@ data "Óscar Romato"
 data "Óscar Terista"
 data ""
 
-  \ .............................
-  \ Islands
-
-label islandData
-data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
-
   \ }}} ---------------------------------------------------------
   \ Island map {{{
 
@@ -1880,26 +1894,36 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 
   local w,z
 
-  \ XXX TMP erase the map -- do better
-  31 1 do
-    \ XXX TODO -- `z` is the loop index:
-    let islandMap(z)=0
+  0 islandMap /islandMap cells erase
+
+  coast  0 islandMap !
+  coast  1 islandMap !
+  coast  2 islandMap !
+  coast  3 islandMap !
+  coast  4 islandMap !
+  coast  5 islandMap !
+  coast  6 islandMap !
+  coast 11 islandMap !
+  coast 12 islandMap !
+  coast 17 islandMap !
+  coast 18 islandMap !
+  coast 23 islandMap !
+  coast 24 islandMap !
+  coast 25 islandMap !
+  coast 26 islandMap !
+  coast 27 islandMap !
+  coast 28 islandMap !
+  coast 29 islandMap !
+
+  23 7 do
+    i islandMap @ coast <>
+    if  2 5 random-range i islandMap !  then
+      \ XXX TODO -- use constant instead of `2 5`
   loop
 
-  restore islandData
-  19 1 do
-    read w
-    coast w islandMap() !
-  loop
-
-  24 8 do
-    i islandMap() coast <>
-    if  2 5 random-range i islandMap() !  then
-  loop
-
-  nativeVillage 20 23 random-range islandMap() !
-  nativeAmmo 14 17 random-range islandMap() !
-  nativeSupplies 8 11 random-range islandMap() !
+  nativeVillage 20 23 random-range islandMap !
+  nativeAmmo 14 17 random-range islandMap !
+  nativeSupplies 8 11 random-range islandMap !
   8 11 random-range iPos !  ;
 
   \ }}}----------------------------------------------------------
