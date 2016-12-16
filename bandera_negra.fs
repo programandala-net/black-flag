@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612161650
+  \ Version 0.0.0+201612162202
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -35,6 +35,8 @@ wordlist dup constant black-flag  dup >order  set-current
 
 30 constant /islandMap
   \ cells of the island map
+
+10 constant men
 
 0 constant minStamina
 4 constant maxStamina
@@ -145,6 +147,15 @@ men avariable stamina()
   here ," Óscar Terista"
 /sconstants names$  ( n -- ca len )
 constant names
+
+men 2avariable name  ( n -- a )
+  \ A double-cell array to hold the address and length
+  \ of the names of the crew members, compiled in `names$`.
+
+names men avariable usedNames  ( n -- a )
+  \ An array to hold a true flag when the correspondent name
+  \ in `names$` has been used in `name`. The goal is to prevent
+  \ name duplicates in the crew.
 
   \ ............................
   \ Ship damage descriptions
@@ -1603,7 +1614,7 @@ create islandEvents>  ( -- a )
   0 1 at-xy s" Informe de tripulación" columns type-center
   4 nameCol at-xy ." Nombre"
   4 dataCol at-xy ." Condición"
-  men 1+ 1 do
+  men 0 do
     white ink
     print \
     nameCol i 5 + at-xy name$(i) type
@@ -1807,36 +1818,23 @@ create islandEvents>  ( -- a )
   0 3 random-range direction !
   1 9 random-range pace !  ;  \ XXX TODO -- check range 0..?
 
-: initCrew  ( -- )
+: unusedName  ( -- n )
+  0 begin
+    drop  0 [ names 1- ] literal random-range
+  dup usedNames @ 0= until  ;
+  \ Return the random identifier _n_ of an unused name.
 
-  let men=10
-  initCrewNames
-  initCrewStamina
+: initCrewName  ( n -- )
+  unusedName  dup usedNames on  names$ name 2!  ;
+  \ Choose an unused name for crew member _n_.
 
-  ;
-
-: initCrewNames  ( -- )
-
-  local man,i,i$,names,name
-
-  dim name$(men)
-  men 1+ 1 do
-    \ XXX TODO -- `man` is the loop index:
-    begin
-      1 names random-range name !
-      let i$=names$(name)
-    len trunc$ i$ until
-    let \
-      name$(man)=i$,\
-      names$(name)=""
-  loop
-
-  ;
+: initCrewNames  ( -- )  men 0 do  i initCrewName  loop  ;
+  \ Choose unused names for the crew members.
 
 : initCrewStamina  ( -- )
 
   \ XXX TODO stamina levels = array indexes
-  men 1+ 1 do  maxStamina i stamina() !  loop
+  men 0 do  maxStamina i stamina() !  loop
 
   \ Stamina labels (1-5)
   dim \
@@ -1857,6 +1855,8 @@ create islandEvents>  ( -- a )
     staminaBri$=chr$ 0+chr$ 1+chr$ 0+chr$ 0+chr$ 0
 
   ;
+
+: initCrew  ( -- )  initCrewNames initCrewStamina  ;
 
   \ }}} ---------------------------------------------------------
   \ Data {{{
