@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612161436
+  \ Version 0.0.0+201612161439
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -1140,13 +1140,17 @@ create islandEvents>  ( -- a )
   \ }}} ---------------------------------------------------------
   \ Storm {{{
 
+: damaged  ( min max -- )
+  random-range damage +!  damage @ 100 min damage !  ;
+  \ Increase the ship damage with random value in a range
+
 : storm  ( -- )
 
   \ XXX TODO make the enemy ship to move, if present
   \ (use the same graphic of the player ship)
   wipePanel
   stormySky
-  damaged 10,49
+  10 49 damaged
   s" Se desata una tormenta que causa destrozos en el barco." message
   rain
   \ XXX TODO bright sky!
@@ -1563,7 +1567,7 @@ create islandEvents>  ( -- a )
   5 4 at-xy ." Z123    HI"
   7 8 at-xy ." H\..I  A"
 
-  damaged 10,29
+  10 29 damaged
   \ XXX TODO improved message: "Por suerte, ..."
   message "¡Has encallado! El barco está "+damage$+"."
   \ XXX TODO print at the proper zone:
@@ -1574,11 +1578,6 @@ create islandEvents>  ( -- a )
   \ XXX TODO choose more men, and inform about them
   manInjured manDead
   -4 -1 random-range morale +!  3 seconds  ;
-
-: damaged  ( min max -- )
-  random-range damage +!
-  damage @ 100 min damage !  ;
-  \ Increase the ship damage with random value in a range
 
   \ }}} ---------------------------------------------------------
   \ Landscape graphics {{{
