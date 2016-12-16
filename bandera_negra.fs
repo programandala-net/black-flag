@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612161646
+  \ Version 0.0.0+201612161650
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -105,6 +105,46 @@ variable pace
   \ Crew
 
 men avariable stamina()
+
+  \ Crew names are pun funny names in Spanish:
+
+0
+  here ," Alfredo Minguero"
+  here ," Armando Bronca"
+  here ," Borja Monserrano"
+  here ," Clemente Cato"
+  here ," César Pullido"
+  here ," Enrique Sitos"
+  here ," Erasmo Coso"
+  here ," Felipe Llejo"
+  here ," Javi Oneta"
+  here ," Javier Nesnoche"
+  here ," Jorge Neral"
+  here ," Jorge Ranio"
+  here ," Lope Lotilla"
+  here ," Manolo Pillo"
+  here ," Marcos Tilla"
+  here ," Melchor Icete"
+  here ," Néstor Nillo"
+  here ," Néstor Tilla"
+  here ," Paco Tilla"
+  here ," Pascual Baricoque"
+  here ," Pedro Medario"
+  here ," Policarpio Nero"
+  here ," Ramiro Inoveo"
+  here ," Ricardo Borriquero"
+  here ," Roberto Mate"
+  here ," Rodrigo Minolas"
+  here ," Ulises Cocido"
+  here ," Ulises Tantería"
+  here ," Vicente Rador"
+  here ," Víctor Nillo"
+  here ," Víctor Tilla"
+  here ," Zacarías Queroso"
+  here ," Óscar Romato"
+  here ," Óscar Terista"
+/sconstants names$  ( n -- ca len )
+constant names
 
   \ ............................
   \ Ship damage descriptions
@@ -1779,22 +1819,6 @@ create islandEvents>  ( -- a )
 
   local man,i,i$,names,name
 
-  let \
-    names=0,\
-  restore menNamesData
-  do
-    read i$
-    let i=len i$
-    exit if not i
-    let \
-      names=names+1
-  loop
-  dim names$(names)
-  restore menNamesData
-  names 1+ 1 do
-    \ XXX TODO -- `i` is the loop index:
-    read names$(i)
-  loop
   dim name$(men)
   men 1+ 1 do
     \ XXX TODO -- `man` is the loop index:
@@ -1847,48 +1871,6 @@ data "herido grave",red,black,1
 data "herido leve",red,black,0
 data "magullado",yellow,black,0
 data "en forma",green,black,0
-
-  \ .............................
-  \ Crewmen names
-
-  \ (They are pun funny names in Spanish)
-
-label menNamesData
-data "Alfredo Minguero"
-data "Armando Bronca"
-data "Borja Monserrano"
-data "Clemente Cato"
-data "César Pullido"
-data "Enrique Sitos"
-data "Erasmo Coso"
-data "Felipe Llejo"
-data "Javi Oneta"
-data "Javier Nesnoche"
-data "Jorge Neral"
-data "Jorge Ranio"
-data "Lope Lotilla"
-data "Manolo Pillo"
-data "Marcos Tilla"
-data "Melchor Icete"
-data "Néstor Nillo"
-data "Néstor Tilla"
-data "Paco Tilla"
-data "Pascual Baricoque"
-data "Pedro Medario"
-data "Policarpio Nero"
-data "Ramiro Inoveo"
-data "Ricardo Borriquero"
-data "Roberto Mate"
-data "Rodrigo Minolas"
-data "Ulises Cocido"
-data "Ulises Tantería"
-data "Vicente Rador"
-data "Víctor Nillo"
-data "Víctor Tilla"
-data "Zacarías Queroso"
-data "Óscar Romato"
-data "Óscar Terista"
-data ""
 
   \ }}} ---------------------------------------------------------
   \ Island map {{{
