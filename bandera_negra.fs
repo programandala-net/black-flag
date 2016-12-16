@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612161327
+  \ Version 0.0.0+201612161436
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -20,7 +20,7 @@ only forth definitions
 
 need chars>string  need string/  need columns  need inverse
 need seconds  need random-range  need at-x     need row
-need ruler    need avariable
+need ruler    need avariable  need /sconstants
 
   \ XXX TODO -- make a version of `seconds` that can be
   \ interrupted with a key press
@@ -28,9 +28,7 @@ need ruler    need avariable
 wordlist dup constant black-flag  dup >order  set-current
 
   \ }}} ---------------------------------------------------------
-  \ Data {{{
-
-  \ Constants
+  \ Constants {{{
 
 135 constant locations
   \ cells of the sea map (15 columns x 9 rows)
@@ -42,7 +40,27 @@ wordlist dup constant black-flag  dup >order  set-current
 0 constant minStamina
 4 constant maxStamina
 
-  \ Variables
+: islandName$  ( -- ca len )  s" Calavera"  ;
+
+: shipName$  ( -- ca len )  s" Furioso"  ;
+
+  \ Ids of sea and island cells
+  \ XXX TODO complete
+ 1 constant reef
+ 1 constant coast
+21 constant shark
+
+  \ Ids of island cells
+  \ XXX TODO complete
+2 constant dubloonsFound
+3 constant nativeFights
+5 constant snake
+7 constant nativeSupplies
+8 constant nativeAmmo
+9 constant nativeVillage
+
+  \ }}} ---------------------------------------------------------
+  \ Variables {{{
 
 variable aboard           \ flag
 variable alive            \ counter
@@ -64,12 +82,30 @@ variable screenRestored   \ flag
 
 variable iPos             \ player position on the island
 
-  \ Arrays
+  \ }}} ---------------------------------------------------------
+  \ Arrays {{{
 
-locations avariable seaMap()
-locations avariable visited() \ flags for islands
-/islandMap avariable islandMap()
-men avariable stamina()
+locations   avariable seaMap()
+locations   avariable visited()    \ flags for islands
+/islandMap  avariable islandMap()
+men         avariable stamina()
+
+  \ Ship damage descriptions:
+
+0
+  here ," hundiéndose"            \ worst: sinking
+  here ," a punto de hundirse"
+  here ," haciendo agua"
+  here ," destrozado"
+  here ," casi destrozado"
+  here ," gravemente dañado"
+  here ," muy dañado"
+  here ," algo dañado"
+  here ," muy poco dañado"
+  here ," casi como nuevo"
+  here ," impecable"            \ best: perfect
+/sconstants damageLevel$  ( n -- ca len )
+            constast damageLevels
 
   \ }}} ---------------------------------------------------------
   \ Functions {{{
@@ -134,13 +170,13 @@ men avariable stamina()
   \ Change the first char of _ca len_ to uppercase.
   \ XXX TODO -- move to the library of Solo Forth
 
-: damageIndex  ( -- n )  damage @ damageLevels @ * 101 / 1+  ;
+: damageIndex  ( -- n )  damage @ damageLevels * 101 / 1+  ;
   \ XXX TODO -- use `*/`
 
 : failure  ( -- f )
   alive @ 0=
   morale @ 1 < or
-  damageIndex damageLevels @ = or
+  damageIndex damageLevels = or
   supplies @ 1 < or
   cash @ 1 < or  ;
   \ Failed mission?
@@ -160,31 +196,8 @@ men avariable stamina()
 : blankLine$  ( -- ca len )  string$(columns," ")  ;
   \ XXX TODO --
 
-: damage$  ( -- ca len )  damage$(damageIndex)  ;
+: damage$  ( -- ca len )  damageIndex damageLevel$  ;
   \ Damage description
-  \ XXX TODO -- `damage$()`  is the array
-
-  \ }}} ---------------------------------------------------------
-  \ Constants {{{
-
-: islandName$  ( -- ca len )  s" Calavera"  ;
-
-: shipName$  ( -- ca len )  s" Furioso"  ;
-
-  \ Ids of sea and island cells
-  \ XXX TODO complete
- 1 constant reef
- 1 constant coast
-21 constant shark
-
-  \ Ids of island cells
-  \ XXX TODO complete
-2 constant dubloonsFound
-3 constant nativeFights
-5 constant snake
-7 constant nativeSupplies
-8 constant nativeAmmo
-9 constant nativeVillage
 
   \ }}} ---------------------------------------------------------
   \ Main {{{
@@ -1567,7 +1580,6 @@ create islandEvents>  ( -- a )
   damage @ 100 min damage !  ;
   \ Increase the ship damage with random value in a range
 
-
   \ }}} ---------------------------------------------------------
   \ Landscape graphics {{{
 
@@ -1660,22 +1672,6 @@ create islandEvents>  ( -- a )
   let panelTop=17,panelBottom=21
 
   initCrew
-
-  \ Ship damage labels
-  damageLevels off
-  restore damageData
-  do
-    read i$
-    let i=len i$
-    exit if not i
-    1 damageLevels +!
-  loop
-  dim damage$(damageLevels)
-  restore damageData
-  damageLevels @ +1 do
-    \ XXX TODO -- `i` is the loop index:
-    read damage$(i)
-  loop
 
   0 islandMap() /islandMap erase
 
@@ -1835,23 +1831,6 @@ data "herido grave",red,black,1
 data "herido leve",red,black,0
 data "magullado",yellow,black,0
 data "en forma",green,black,0
-
-  \ .............................
-  \ Ship damage descriptions
-
-label damageData
-data "impecable" \ best: perfect
-data "casi como nuevo"
-data "muy poco dañado"
-data "algo dañado"
-data "muy dañado"
-data "gravemente dañado"
-data "casi destrozado"
-data "destrozado"
-data "haciendo agua"
-data "a punto de hundirse"
-data "hundiéndose" \ worst: sinking
-data "" \ end of data
 
   \ .............................
   \ Crewmen names
