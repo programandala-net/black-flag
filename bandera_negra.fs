@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612160214
+  \ Version 0.0.0+201612160218
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -2228,25 +2228,16 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   0 row 1+ s" Pulsa una tecla" columns type-center
   6000 pause  ;
 
+: skulls  ( -- )
+  ."   nop  nop  nop  nop  nop  nop  " cr
+  ."   qrs  qrs  qrs  qrs  qrs  qrs  "  ;
+  \ Draw a row of six skulls.
+
 : skullBorder  ( -- )
-
-  \ Draw top and bottom borders of skulls.
-
-  2 charset
-  skulls 2
-  skulls 0
-  1 charset
-
-  ;
-
-: skulls  ( channel -- )
-  white ink  black paper  1 bright
-  print #channel
-  home
-    ."   nop  nop  nop  nop  nop  nop  " cr
-    ."   qrs  qrs  qrs  qrs  qrs  qrs  "  ;
-  \ Draw a row of skulls at the given row.
-  \ XXX TODO -- adapt the calls with a row
+  2 charset white ink  black paper  1 bright
+            home skulls 0 23 at-xy skulls
+  1 charset  ;
+  \ Draw top and bottom border of skulls.
 
   \ }}} ---------------------------------------------------------
   \ Text output {{{
