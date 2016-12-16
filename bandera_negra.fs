@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612160218
+  \ Version 0.0.0+201612160245
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -19,7 +19,7 @@
 only forth definitions
 
 need chars>string  need string/  need columns  need inverse
-need seconds  need random-range
+need seconds  need random-range  need at-x
 
   \ XXX TODO -- make a version of `seconds` that can be
   \ interrupted with a key press
@@ -29,21 +29,25 @@ wordlist dup constant black-flag  dup >order  set-current
   \ }}} ---------------------------------------------------------
   \ Variables {{{
 
-variable aboard      \ flag
-variable alive       \ counter
-variable ammo        \ counter
-variable cash        \ counter
-variable damage      \ counter
-variable day         \ counter
-variable foundClues  \ counter
-variable morale      \ counter
-variable score       \ counter
-variable sunkShips   \ counter
-variable supplies    \ counter
-variable trades      \ counter
-variable quitGame    \ flag
+variable aboard           \ flag
+variable alive            \ counter
+variable ammo             \ counter
+variable cash             \ counter
+variable damage           \ counter
+variable day              \ counter
+variable foundClues       \ counter
+variable morale           \ counter
+variable score            \ counter
+variable sunkShips        \ counter
+variable supplies         \ counter
+variable trades           \ counter
+variable quitGame         \ flag
 
-variable shipPicture \ flag
+variable shipPicture      \ flag
+
+variable screenRestored   \ flag
+
+variable iPos             \ player position on the island
 
   \ }}} ---------------------------------------------------------
   \ Functions {{{
@@ -136,6 +140,7 @@ variable shipPicture \ flag
   \ Constants {{{
 
 : islandName$  ( -- ca len )  s" Calavera"  ;
+
 : shipName$  ( -- ca len )  s" Furioso"  ;
 
   \ Ids of sea cells
@@ -163,15 +168,15 @@ main
 
 : game  ( -- )
   cls
-  let screenRestored=false
+  screenRestored off
   begin
-    if not screenRestored then \
+    screenRestored @ if
+      screenRestored off
+    else
       \ XXX FIXME sometimes scenery is called here without reason
       \ XXX The logic is wrong.
       scenery
-    else \
-      let screenRestored=0
-    command
+    then  command
   fn gameOver until
   ;
 
@@ -309,7 +314,7 @@ variable possibleWest           \ flag
     loop
 
     \ XXX TODO increase the probability every day?
-    if not fn between(0,80) then storm
+    0 80 random-range 0= if  storm  then
 
   loop
 
@@ -326,7 +331,7 @@ variable possibleWest           \ flag
 
 : disembark  ( -- )
 
-  let supplies=supplies-fn between(1,2)
+  -2 -1 random-range supplies +!
   wipeMessage
   seaAndSky
 
@@ -364,7 +369,7 @@ variable possibleWest           \ flag
   s" Un comerciante nativo te sale al encuentro." message
   nativeSays "Yo vender pista de tesoro a tú."
 
-  let price=fn between(5,9)
+  5 9 random-range price !
   nativeSays "Precio ser "+fn coins$(price)+"."
   \ XXX TODO pause or join:
   1 seconds
@@ -378,9 +383,14 @@ variable possibleWest           \ flag
     rejectedOffer:exit proc
 
   \ You offered too few
-  on fn between(1,4)
-    goto lowerPrice
-    goto newPrice
+  1 4 random-range case
+    1 of  lowerPrice  endof
+    2 of  newPrice  endof
+  endcase
+  \ XXX TODO -- the original does a `goto`, see:
+  \ on fn between(1,4)
+  \   goto lowerPrice
+  \   goto newPrice
 
   \ He reduces the price by one dubloon
   let price=price-1
@@ -396,8 +406,9 @@ variable possibleWest           \ flag
   endif
 
   label lowerPrice
+  \ XXX TODO -- factor out
   \ He lowers the price by several dubloons
-  let price=price-fn between(2,3)
+  -3 -2 random-range price +!
   nativeSays "Bueno, tú darme... "+fn coins$(price)+" y no hablar más."
   makeOffer
   if offer>=price then \
@@ -408,6 +419,7 @@ variable possibleWest           \ flag
   exit proc
 
   label newPrice
+  \ XXX TODO -- factor out
   3 8 random-range dup price ! coins$ 2dup uppers1
   s"  ser nuevo precio, blanco." s+ nativeSays
   goto oneCoinLess
@@ -426,7 +438,7 @@ variable possibleWest           \ flag
   \ Ask the player for an offer
 
   local maxOffer
-  let maxOffer=fn min(9,cash)
+  9 cash @ min maxOffer !
   message "Tienes "+fn coins$(cash)+". ¿Qué oferta le haces? (1-"+str$ maxOffer+")"
   digitTo offer,maxOffer
   beep .2,10
@@ -456,21 +468,22 @@ variable possibleWest           \ flag
 
   ;
 
-: nativeTellsClue  ( -- )
+create nativeTellsClues  ( -- a )
+]
+nativeTellsClue1
+nativeTellsClue2
+nativeTellsClue3
+nativeTellsClue4
+nativeTellsClue5
+nativeTellsClue6
+[
 
-  local clue
+: nativeTellsClue  ( -- )
   nativeSays "Bien... Pista ser..."
   2 seconds
-  on fn between(1,6)
-    nativeTellsClue1
-    nativeTellsClue2
-    nativeTellsClue3
-    nativeTellsClue4
-    nativeTellsClue5
-    nativeTellsClue6
+  0 5 random-range cells nativeTellsClues + perform
   2 seconds
   nativeSays "¡Buen viaje a isla de tesoro!"
-
   ;
 
 : nativeTellsClue1  ( -- )
@@ -569,7 +582,7 @@ variable possibleWest           \ flag
       ", que resulta "+fn condition$(injured)+"."
 
   else if islandMap(iPos)=dubloonsFound
-    let dub=fn between(1,2)
+    1 2 random-range dub !
     message "Encuentras "+fn coins$(dub)+"."
     let cash=cash+dub
     drawDubloons dub
@@ -602,21 +615,6 @@ variable possibleWest           \ flag
 
   \ }}} ---------------------------------------------------------
   \ Events on an island {{{
-
-: islandEvents  ( -- )
-  on fn between(1,11)
-    event1
-    event2
-    event3
-    event4
-    event5
-    event6
-    event7
-    event8
-    event8
-    event9
-    event9
-  ;
 
 : event1  ( -- )
   manDead
@@ -651,7 +649,7 @@ variable possibleWest           \ flag
   ;
 
 : event7  ( -- )
-  let dub=fn between(2,5)
+  2 5 random-range dub !
   message "Encuentras "+fn coins$(dub)+"."
   let cash=cash+dub
   drawDubloons dub
@@ -664,6 +662,26 @@ variable possibleWest           \ flag
 : event9  ( -- )
   s" La costa está despejada, capitán." message
   ;
+
+create islandEvents>  ( -- a )
+]
+    event1
+    event2
+    event3
+    event4
+    event5
+    event6
+    event7
+    event8
+    event8
+    event9
+    event9
+    noop
+    noop
+[
+
+: islandEvents  ( -- )
+  0 10 random-range cells islandEvents> + perform  ;
 
   \ }}} ---------------------------------------------------------
   \ Island graphics {{{
@@ -771,15 +789,15 @@ variable possibleWest           \ flag
 
   black ink  yellow paper
   print \
-  7 12 at-xy ." X";\
-  17 12 at-xy ." Y";\
-  22 12 at-xy ." Z";\
-  26 12 at-xy ." XY";\
-  8 9 at-xy ." ZZ";\
-  13 9 at-xy ." Y";\
-  24 9 at-xy ." ZX";\
-  10 6 at-xy ." XYZ";\
-  17 6 at-xy ." YX";\
+  7 12 at-xy ." X"
+  17 12 at-xy ." Y"
+  22 12 at-xy ." Z"
+  26 12 at-xy ." XY"
+  8 9 at-xy ." ZZ"
+  13 9 at-xy ." Y"
+  24 9 at-xy ." ZX"
+  10 6 at-xy ." XYZ"
+  17 6 at-xy ." YX"
   26 6 at-xy ." Z"
 
   1 charset
@@ -789,8 +807,8 @@ variable possibleWest           \ flag
 : drawNative  ( -- )
   black ink  yellow paper
   print \
-  8 10 at-xy ."  _ `";\
-  8 11 at-xy ." }~.,";\
+  8 10 at-xy ."  _ `"
+  8 11 at-xy ." }~.,"
   8 12 at-xy ." {|\?"
   ;
 
@@ -824,12 +842,12 @@ variable possibleWest           \ flag
 : palm2  ( y,x -- )
   green ink  yellow paper
   print \
-  x y at-xy ." OPQR";\
-  x y+1 at-xy ." S TU";\
+  x y at-xy ." OPQR"
+  x y+1 at-xy ." S TU"
   black ink
-  x+1 y+1 at-xy ." N";\
-  x+1 y+2 at-xy ." M";\
-  x+1 y+3 at-xy ." L";\
+  x+1 y+1 at-xy ." N"
+  x+1 y+2 at-xy ." M"
+  x+1 y+3 at-xy ." L"
   x+1 y+4 at-xy ." V"
   ;
 
@@ -867,14 +885,14 @@ variable possibleWest           \ flag
   s" Disparas por error a uno de tus propios botes..." message
   5 seconds
 
-  if fn between(0,2)
+  3 random if
     s" Por suerte el disparo no ha dado en el blanco." message
   else
     \ XXX TODO inform about how many injured?
     s" La bala alcanza su objetivo. Esto desmoraliza a la tripulación." message
     -2 morale +!
     3 4 random-range 1 ?do  manInjured  loop
-  endif
+  then
   5 seconds
   wipeMessage
 
@@ -883,20 +901,19 @@ variable possibleWest           \ flag
 : shipBattle  ( -- )
   local done,k
   let done=false
-  saveScreen
-  battleScenery
+  saveScreen battleScenery
   begin
     moveEnemyShip
     let k$=inkey$
-    if instr("123",k$) then \
+    instr("123",k$) if
       on val k$
         fire 3
         fire 10
         fire 17
+    then
   done ammo 0= or until
   restoreScreen
-  if not ammo then noAmmoLeft
-  ;
+  ammo @ 0= if  noAmmoLeft  then  ;
 
 : battleScenery  ( -- )
   window  blue paper cls  0 charset
@@ -949,16 +966,15 @@ variable possibleWest           \ flag
   \ or the money and part of the crew is captured
 
 : moveEnemyShip  ( -- )
-  let \
-    ship=fn between(1,5),\
-    n=n+(ship=1 and n<28)-(ship=2 and n>18),\
-    m=m+(ship=3 and m<17)-(ship=4 and m>1)
+  1 5 random-range ship !
+  let n=n+(ship=1 and n<28)-(ship=2 and n>18)
+  let m=m+(ship=3 and m<17)-(ship=4 and m>1)
   white ink  blue paper
   print
-  n m at-xy ."  ab ";\
-  n m+1 at-xy ."  90 ";\
-  n-1 m+2 at-xy ."  678 ";\
-  n m-1 at-xy ."    ";\
+  n m at-xy ."  ab "
+  n m+1 at-xy ."  90 "
+  n-1 m+2 at-xy ."  678 "
+  n m-1 at-xy ."    "
   n m+3 at-xy ."    "
   if ship=5 then \
     drawWave
@@ -973,14 +989,14 @@ variable possibleWest           \ flag
 
   white ink  blue paper
   print \
-  n m at-xy ."    ";\
-  n m+1 at-xy ."  ab";\
-  n m+2 at-xy ."  90";\
-  n m at-xy ."    ";\
-  n m+1 at-xy ."    ";\
-  n m+2 at-xy ."  ab";\
-  n m at-xy ."    ";\
-  n m+1 at-xy ."    ";\
+  n m at-xy ."    "
+  n m+1 at-xy ."  ab"
+  n m+2 at-xy ."  90"
+  n m at-xy ."    "
+  n m+1 at-xy ."    "
+  n m+2 at-xy ."  ab"
+  n m at-xy ."    "
+  n m+1 at-xy ."    "
   n m+2 at-xy ."    "
   2 seconds
   \ XXX TODO simpler and better
@@ -1013,17 +1029,17 @@ variable possibleWest           \ flag
   \ A man is injured
   \ Output: injured = his number
   begin
-    let injured=fn between(1,men)
+    1 men random-range injured !
   stamina(injured) until
-  let stamina(injured)=stamina(injured)-1,\
-  alive=alive-not stamina(injured)
+  let stamina(injured)=stamina(injured)-1
+  let alive=alive-not stamina(injured)
   ;
 
 : manDead  ( -- )
   \ A man dies
   \ Output: dead = his number
   begin
-    let dead=fn between(1,men)
+    1 men random-range dead !
   stamina(dead) until
   let \
     stamina(dead)=0,\
@@ -1058,8 +1074,8 @@ variable possibleWest           \ flag
       name$(dead)+" muere en el combate."
     goto L6898
 
-  let kill=fn between(1,5)
-  #let z=int (rnd*2)+2
+  1 5 random-range kill !
+  \ let z=int (rnd*2)+2
   if kill=1
     manDead
     message \
@@ -1068,7 +1084,7 @@ variable possibleWest           \ flag
     s" El nativo tiene provisiones escondidas en su taparrabos." message
     let supplies=supplies+1
   else if kill>=3
-    let dub=fn between(2,3)
+    2 3 random-range dub !
     message \
       "Encuentras "+fn coins$(dub)+\
       " en el cuerpo del nativo muerto."
@@ -1242,19 +1258,19 @@ variable possibleWest           \ flag
 : leftReef  ( -- )
   black ink  blue paper
   print \
-  0 4 at-xy ." A";\
-  1 6 at-xy ." HI";\
-  0 8 at-xy ." WXY";\
-  1 11 at-xy ." A";\
+  0 4 at-xy ." A"
+  1 6 at-xy ." HI"
+  0 8 at-xy ." WXY"
+  1 11 at-xy ." A"
   0 13 at-xy ." HI"
   ;
 
 : rightReef  ( -- )
   black ink  blue paper
   print \
-  30 4 at-xy ." HI";\
-  28 6 at-xy ." A";\
-  29 7 at-xy ." WXY";\
+  30 4 at-xy ." HI"
+  28 6 at-xy ." A"
+  29 7 at-xy ." WXY"
   31 9 at-xy ." A"
   ;
 
@@ -1264,74 +1280,74 @@ variable possibleWest           \ flag
 : drawBigIsland5  ( -- )
   green ink  blue paper
   print  
-  18 7 at-xy ." HI A";\
-  17 8 at-xy ." G\::\::\::\::BC";\
-  16 9 at-xy ." F\::\::\::\::\::\::\::D";\
-  14 10 at-xy ." JK\::\::\::\::\::\::\::\::E";\
+  18 7 at-xy ." HI A"
+  17 8 at-xy ." G\::\::\::\::BC"
+  16 9 at-xy ." F\::\::\::\::\::\::\::D"
+  14 10 at-xy ." JK\::\::\::\::\::\::\::\::E"
   13 11 at-xy ." F\::\::\::\::\::\::\::\::\::\::\::C"
   ;
 
 : drawBigIsland4  ( -- )
   green ink  blue paper
   print \
-  16 7 at-xy ." WXYA";\
-  14 8 at-xy ." :\::\::\::\::\::\::C F\::\::D";\
-  13 9 at-xy ." :\::\::\::\::\::\::\::\::B\::\::\::E";\
+  16 7 at-xy ." WXYA"
+  14 8 at-xy ." :\::\::\::\::\::\::C F\::\::D"
+  13 9 at-xy ." :\::\::\::\::\::\::\::\::B\::\::\::E"
   12 10 at-xy ." F\::\::\::\::\::\::\::\::\::\::\::\::\::\::C"
   ;
 
 : drawLittleIsland2  ( -- )
   green ink  blue paper
   print 
-  14 8 at-xy ." :\::\::C";\
-  16 7 at-xy ." A";\
-  13 9 at-xy ." :\::\::\::\::D";\
+  14 8 at-xy ." :\::\::C"
+  16 7 at-xy ." A"
+  13 9 at-xy ." :\::\::\::\::D"
   12 10 at-xy ." F\::\::\::\::\::E"
   ;
 
 : drawLittleIsland1  ( -- )
   green ink  blue paper
   print \
-  23 8 at-xy ." JK\::C";\
-  22 9 at-xy ." :\::\::\::\::D";\
+  23 8 at-xy ." JK\::C"
+  22 9 at-xy ." :\::\::\::\::D"
   21 10 at-xy ." F\::\::\::\::\::E"
   ;
 
 : drawBigIsland3  ( -- )
   green ink  blue paper
   print \
-  21 7 at-xy ." Z123";\
-  19 8 at-xy ." :\::\::\::\::\::C";\
-  18 9 at-xy ." :\::\::\::\::\::\::\::D";\
-  15 10 at-xy ." F\::B\::\::\::\::\::\::\::\::E";\
+  21 7 at-xy ." Z123"
+  19 8 at-xy ." :\::\::\::\::\::C"
+  18 9 at-xy ." :\::\::\::\::\::\::\::D"
+  15 10 at-xy ." F\::B\::\::\::\::\::\::\::\::E"
   13 11 at-xy ." JK\::\::\::\::\::\::\::\::\::\::\::\::C"
   ;
 
 : drawBigIsland2  ( -- )
   green ink  blue paper
   print 
-  17 7 at-xy ." Z123";\
-  14 8 at-xy ." F\::B\::\::\::\::\::C";\
-  13 9 at-xy ." G\::\::\::\::\::\::\::\::\::D";\
+  17 7 at-xy ." Z123"
+  14 8 at-xy ." F\::B\::\::\::\::\::C"
+  13 9 at-xy ." G\::\::\::\::\::\::\::\::\::D"
   12 10 at-xy ." F\::\::\::\::\::\::\::\::\::\::E;"
   ;
 
 : drawBigIsland1  ( -- )
   green ink  blue paper
   print \
-  20 7 at-xy ." HI A";\
-  19 8 at-xy ." G\::\::B\::\::\::C";\
-  18 9 at-xy ." F\::\::\::\::\::\::\::\::D";\
+  20 7 at-xy ." HI A"
+  19 8 at-xy ." G\::\::B\::\::\::C"
+  18 9 at-xy ." F\::\::\::\::\::\::\::\::D"
   16 10 at-xy ." JK\::\::\::\::\::\::\::\::\::E"
   ;
 
 : drawTwoLittleIslands  ( -- )
   green ink  blue paper
   print \
-17 6 at-xy ." WXY  A";\
-16 7 at-xy ." A   A   F\::C";\
-15 8 at-xy ." :\::\#127 :\::\#127 G\::\::\::D";\
-14 9 at-xy ." G\::\::\::D   F\::\::\::\::E";\
+17 6 at-xy ." WXY  A"
+16 7 at-xy ." A   A   F\::C"
+15 8 at-xy ." :\::\#127 :\::\#127 G\::\::\::D"
+14 9 at-xy ." G\::\::\::D   F\::\::\::\::E"
 13 10 at-xy ." F\::\::\::\::E"
   ;
 
@@ -1346,15 +1362,15 @@ variable possibleWest           \ flag
   1 charset
   green ink  blue paper
   print \
-  16 7 at-xy ." A A   HI";\
-  13 8 at-xy ." F\::\::\::B\::\::\::B\::\::B\::\::\::C";\
-  12 9 at-xy ." G\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::D";\
+  16 7 at-xy ." A A   HI"
+  13 8 at-xy ." F\::\::\::B\::\::\::B\::\::B\::\::\::C"
+  12 9 at-xy ." G\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::D"
   10 10 at-xy ." JK\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::E"
-  9 11 at-xy ." :\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::C";\
+  9 11 at-xy ." :\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::C"
   8 12 at-xy ." F\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::D"
   blue ink  green paper
   print \
-  8 13 at-xy ."  HI Z123  HI A  A A  A ";\
+  8 13 at-xy ."  HI Z123  HI A  A A  A "
   20 14 at-xy ." B\::\::\::\::B"
   green ink  blue paper
   print \
@@ -1386,32 +1402,32 @@ variable possibleWest           \ flag
 : drawShipUp  ( -- )
   white ink  blue paper
   print 
-  shipX shipY at-xy ." \A\B\C";\
-  shipX shipY+1 at-xy ." \D\E\F";\
+  shipX shipY at-xy ." \A\B\C"
+  shipX shipY+1 at-xy ." \D\E\F"
   shipX shipY+2 at-xy ." \G\H\I"
   ;
 
 : drawShipDown  ( -- )
   white ink  blue paper
   print 
-  shipX shipY at-xy ." \J\K\L";\
-  shipX shipY+1 at-xy ." \M\N\O";\
+  shipX shipY at-xy ." \J\K\L"
+  shipX shipY+1 at-xy ." \M\N\O"
   shipX shipY+2 at-xy ." \P\Q\R"
   ;
 
 : drawEnemyShip  ( -- )
   yellow ink  blue paper
   print 
-  11 4 at-xy ."  ab";\
-  11 5 at-xy ."  90";\
+  11 4 at-xy ."  ab"
+  11 5 at-xy ."  90"
   11 6 at-xy ." 678"
   ;
 
 : wipeEnemyShip  ( -- )
   blue paper
   print 
-  11 4 at-xy ."    ";\
-  11 5 at-xy ."    ";\
+  11 4 at-xy ."    "
+  11 5 at-xy ."    "
   11 6 at-xy ."    "
   ;
 
@@ -1505,15 +1521,15 @@ variable possibleWest           \ flag
 
   white ink
   print
-  14 8 at-xy ." \A\B\C";\
-  14 9 at-xy ." \D\E\F";\
+  14 8 at-xy ." \A\B\C"
+  14 9 at-xy ." \D\E\F"
   14 10 at-xy ." \G\H\I"
   black ink  blue paper
   print
-  17 10 at-xy ." WXY     A";\
-  19 6 at-xy ." A   Z123";\
-  6 11 at-xy ." A   HI";\
-  5 4 at-xy ." Z123    HI";\
+  17 10 at-xy ." WXY     A"
+  19 6 at-xy ." A   Z123"
+  6 11 at-xy ." A   HI"
+  5 4 at-xy ." Z123    HI"
   7 8 at-xy ." H\..I  A"
 
   damaged 10,29
@@ -1528,11 +1544,10 @@ variable possibleWest           \ flag
   manInjured manDead
   -4 -1 random-range morale +!  3 seconds  ;
 
-: damaged  ( min,max -- )
+: damaged  ( min max -- )
+  random-range damage +!
+  damage @ 100 min damage !  ;
   \ Increase the ship damage with random value in a range
-  let damage=damage+fn between(min,max)
-  if damage>100 then let damage=100
-  ;
 
 
   \ }}} ---------------------------------------------------------
@@ -1616,9 +1631,8 @@ variable possibleWest           \ flag
   loop
 
   \ Treasure island
-  let \
-    treasureIsland=22
-    seaMap(fn between(94,104))=treasureIsland
+  22 treasureIsland !
+  treasureIsland @ 94 104 random-range seaMap() !
 
   \ Ship position
   let shipPos=fn between (32,42)
@@ -1679,12 +1693,12 @@ variable possibleWest           \ flag
 : initClues  ( -- )
 
   \ Clues
-  let path=fn between(1,3)
-  let tree=fn between(1,3)
-  let village=fn between(1,10)
-  let turn=fn between(1,2)
-  let direction=fn between(1,4)
-  let pace=fn between(1,9)
+  1 3 random-range path !
+  1 3 random-range tree !
+  1 10 random-range village !
+  1 2 random-range turn !
+  1 4 random-range direction !
+  1 9 random-range pace !
 
   \ Villages
   restore villageNamesData
@@ -1744,9 +1758,8 @@ variable possibleWest           \ flag
   men 1+ 1 do
     \ XXX TODO -- `man` is the loop index:
     begin
-      let \
-        name=fn between(1,names),\
-        i$=names$(name)
+      1 names random-range name !
+      let i$=names$(name)
     len trunc$ i$ until
     let \
       name$(man)=i$,\
@@ -1901,21 +1914,19 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 
   restore islandData
   19 1 do
-    read w:let islandMap(w)=coast
+    read w
+    coast w islandMap() !
   loop
 
   24 8 do
-    \ XXX TODO -- `z` is the loop index:
-    if islandMap(z)<>coast then let islandMap(z)=fn between(2,5)
+    i islandMap() coast <>
+    if  2 5 random-range i islandMap() !  then
   loop
 
-  let \
-    islandMap(fn between(20,23))=nativeVillage,\
-    islandMap(fn between(14,17))=nativeAmmo,\
-    islandMap(fn between(8,11))=nativeSupplies,\
-    iPos=fn between(8,11) \ player position on the island
-
-  ;
+  nativeVillage 20 23 random-range islandMap() !
+  nativeAmmo 14 17 random-range islandMap() !
+  nativeSupplies 8 11 random-range islandMap() !
+  8 11 random-range iPos !  ;
 
   \ }}}----------------------------------------------------------
   \ On the treasure island {{{
@@ -2023,14 +2034,14 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   black paper
   if foundClues=6 then \
     print
-    7 13 at-xy ." ¡Hemos encontrado";\
-    7 14 at-xy ." el oro,";\
+    7 13 at-xy ." ¡Hemos encontrado"
+    7 14 at-xy ." el oro,"
     7 16 at-xy ." capitán!"
       treasureFound
   else \
     print
-    7 13 at-xy ." ¡Nos hemos";\
-    7 14 at-xy ."  equivocado ";\
+    7 13 at-xy ." ¡Nos hemos"
+    7 14 at-xy ."  equivocado "
     7 16 at-xy ." capitán!"
   2 seconds  1 charset  ;
 
@@ -2337,19 +2348,16 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   ;
 
 : wholeWindow  ( -- )
-  window 0,31,0,20
-  ;
+  window 0,31,0,20  ;
 
 : graphicWindow  ( -- )
-  \ Zone where graphics are shown
   window graphicWinLeft,graphicWinRight,graphicWinTop,graphicWinBottom
-  1 charset \ default
-  ;
+  1 charset  ;
+  \ Zone where graphics are shown
 
 : introWindow  ( -- )
+  window 2,29,introWinTop,21  ;
   \ Zone where intro text is shown
-  window 2,29,introWinTop,21
-  ;
 
 : messageWindow  ( -- )
   window messageWinLeft,messageWinRight,messageWinTop,messageWinBottom
@@ -2373,30 +2381,24 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   ;
 
 : wipeMessage  ( -- )
-
+  \ load "attr/zp0i0b0l06" code fn attrLine(panelTop-1)
   \ XXX OLD
-  #load "attr/zp0i0b0l06" code fn attrLine(panelTop-1)
   messageWindow
   white ink  black paper  cls1  ;
 
 : saveScreen  ( -- )
-  copy screen 1 to 2
+  \ copy screen 1 to 2
   ;
+  \ XXX TODO --
 
 : restoreScreen  ( -- )
-  copy screen 2 to 1
-  let screenRestored=true
-  ;
+  \ copy screen 2 to 1
+  screenRestored on  ;
+  \ XXX TODO --
 
-: useScreen2  ( -- )
-  saveScreen
-  screen 2
-  ;
+: useScreen2  ( -- )  saveScreen 2 screen  ;
 
-: useScreen1  ( -- )
-  restoreScreen
-  screen 1
-  ;
+: useScreen1  ( -- )  restoreScreen 1 screen  ;
 
   \ }}} ---------------------------------------------------------
   \ Meta {{{
