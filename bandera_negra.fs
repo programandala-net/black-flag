@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612170027
+  \ Version 0.0.0+201612170029
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -47,6 +47,7 @@ wordlist dup constant black-flag  dup >order  set-current
 : islandName$  ( -- ca len )  s" Calavera"  ;
 
 : shipName$  ( -- ca len )  s" Furioso"  ;
+  \ XXX TODO -- not used yet
 
   \ Ids of sea and island cells
   \ XXX TODO complete
@@ -1549,10 +1550,11 @@ create islandEvents>  ( -- a )
   black ink  green paper
   22 9 at-xy ." \T\U":\ \ the treasure
   shipPos @ visited @ if
-    message "Llegas nuevamente a la isla de "+islandName$+"."
+    s" Llegas nuevamente a la isla de " islandName$ s+ s" ."
   else
-    message "Has encontrado la perdida isla de "+islandName$+"..."
-  then  1 charset  ;
+    s" Has encontrado la perdida isla de "
+    islandName$ s+ s" ..."
+  then  s+ message  1 charset  ;
 
 : wipeIsland  ( -- )
   poke attrLine(3),attrLines$(5,6,6,0)  ;
