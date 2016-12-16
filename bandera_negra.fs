@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612161632
+  \ Version 0.0.0+201612161638
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -312,7 +312,8 @@ variable possibleWest           \ flag
 
     \ XXX TODO possibleDisembarking only if no enemy ship is present
 
-    shipPos visited @ 0=  shipPas seaMap @ treasureIsland =  or
+    shipPos @ visited @ 0=
+    shipPas seaMap @ treasureIsland =  or
     possibleDisembanking !
 
     0 panel-y at-xy
@@ -626,10 +627,7 @@ nativeTellsClue6
   then  ;
 
 : embark  ( -- )
-  let visited(shipPos)=true
-  let day=day+1
-  aboard on
-  ;
+  shipPos @ visited on  1 day +!  aboard on  ;
 
   \ }}} ---------------------------------------------------------
   \ Enter island location {{{
@@ -1460,13 +1458,11 @@ create islandEvents>  ( -- a )
   palm1 4,14
   black ink  green paper
   22 9 at-xy ." \T\U":\ \ the treasure
-  if visited(shipPos) then \
+  shipPos @ visited @ if
     message "Llegas nuevamente a la isla de "+islandName$+"."
-  else \
+  else
     message "Has encontrado la perdida isla de "+islandName$+"..."
-  1 charset
-
-  ;
+  then  1 charset  ;
 
 : wipeIsland  ( -- )
   poke attrLine(3),attrLines$(5,6,6,0)  ;
@@ -1674,15 +1670,7 @@ create islandEvents>  ( -- a )
 
 : initOnce  ( -- )  initScreen  initUDG  ;
 
-: init  ( -- )
-
-  local i,i$
-
-  randomize
-  \ load "attr/zp0i0b0l20" code attrLine(2) \ XXX TODO --
-  white ink  black paper  1 flash
-  0 14 at-xy s" Preparando el viaje..." columns type-center
-
+: initSeaMap  ( -- )
   0 seaMap  /seaMap cells erase
   0 visited /seaMap cells erase
 
@@ -1703,6 +1691,19 @@ create islandEvents>  ( -- a )
   \ Treasure island
   22 treasureIsland !
   treasureIsland @ 94 104 random-range seaMap !
+  ;
+  \ XXX TODO -- factor
+
+: init  ( -- )
+
+  local i,i$
+
+  randomize
+  \ load "attr/zp0i0b0l20" code attrLine(2) \ XXX TODO --
+  white ink  black paper  1 flash
+  0 14 at-xy s" Preparando el viaje..." columns type-center
+
+  initSeaMap
 
   \ Ship position
   32 42 random-range shipPos !
@@ -1735,6 +1736,7 @@ create islandEvents>  ( -- a )
   10 supplies !
   0 trades !
   quitGame off
+    \ XXX TODO -- factor
 
   ;
 
