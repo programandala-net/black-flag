@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612160045
+  \ Version 0.0.0+201612160146
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -19,7 +19,7 @@
 only forth definitions
 
 need chars>string  need string/  need columns  need inverse
-need seconds
+need seconds  need random-range
 
   \ XXX TODO -- make a version of `seconds` that can be
   \ interrupted with a key press
@@ -332,7 +332,8 @@ variable possibleWest           \ flag
 
   \ Disembarking scene
   1 charset
-  print pen green; paper blue;\
+  green ink  blue paper
+  print \
     at 8,31;":";\
     at 9,27;"HI :\::";\
     at 10,25;"F\::\::\::\::\::\::";\
@@ -413,19 +414,18 @@ variable possibleWest           \ flag
   exit proc
 
   label newPrice
-  3 8 between dup price ! coins$ 2dup uppers1
+  3 8 random-range dup price ! coins$ 2dup uppers1
   s"  ser nuevo precio, blanco." s+ nativeSays
   goto oneCoinLess
 
   ;
 
 : nativeSpeechBalloon  ( -- )
-  pen black
+  black ink
   plot 100,100: draw 20,10: draw 0,30: draw 2,2
   draw 100,0: draw 2,-2: draw 0,-60: draw -2,-2: draw -100,0
   draw -2,2: draw 0,20: draw -20,0
-  pen white
-  ;
+  white ink  ;
 
 : makeOffer  ( -- )
 
@@ -721,57 +721,53 @@ variable possibleWest           \ flag
   ;
 
 : drawHorizontWaves  ( -- )
-  print at 3,0; pen white; paper blue;\
-  "  kl  mn     nm    klk   nm nm n"
-  ;
+  white ink  blue paper
+  0 3 at-xy ."  kl  mn     nm    klk   nm nm n"  ;
 
 : drawBottomWaves  ( -- )
-  print at 14,0; paper blue; pen white;\
-  "  kl     mn  mn    kl    kl kl  m     mn      klmn   mn m  mn   "
-  ;
+  white ink  blue paper
+  0 14 at-xy ."  kl     mn  mn    kl    kl kl  m"
+             ."     mn      klmn   mn m  mn   "  ;
 
 : drawLeftWaves  ( -- )
   white ink blue paper
-  16 3 do
-    0 i at-xy ."  "
-  loop
-  print at 6,0; pen white; paper blue;"mn";at 10,0;"kl";at 13,0;"k";at 4,0;"m";at 8,1;"l"
+  16 3 do  0 i at-xy ."  "  loop
+  white ink  blue paper
+  0 6 at-xy ." mn" 0 10 at-xy ." kl" 0 13 at-xy ." k"
+  0 4 at-xy ." m" 1 8 at-xy ." l"
+  2 charset
   if islandMap(iPos+6)<>1 then \
-    2 charset
-    print at 3,2; pen yellow; paper blue;"A"
-    1 charset
+    yellow ink  blue paper  2 3 at-xy 'A' emit
   if islandMap(iPos+6)=1 then \
-    2 charset
-    print at 4,2; pen yellow; paper blue;"A"
-    1 charset
+    yellow ink  blue paper  2 4 at-xy 'A' emit
   if islandMap(iPos-6)=1 then \
-    2 charset
-    print at 13,2; pen yellow; paper blue;"C"
-    1 charset
-  ;
+    yellow ink  blue paper  2 13 at-xy 'C' emit
+  1 charset  ;
+  \ XXX TODO -- change colors only once
 
 : drawRightWaves  ( -- )
   white ink  blue paper
-  16 3 do
-    30 i at-xy ."  "
-  loop
-  print at 6,30; pen white; paper blue;"mn";at 10,30;"kl";at 13,31;"k";at 4,30;"m";at 8,31;"l"
+  16 3 do  30 i at-xy ."  "  loop
+  white ink  blue paper
+  30 6 at-xy ." mn" 30 10 at-xy ." kl" 31 13 at-xy ." k"
+  30 4 at-xy ." m" 31 8 at-xy ." l"
   2 charset
   if islandMap(iPos+6)=1 then \
-    print at 4,29; pen yellow; paper blue;"B"
+    yellow ink  blue paper  29 4 at-xy 'B' emit
   if islandMap(iPos-6)=1 then \
-    print at 13,29; pen yellow; paper blue;"D"
+    yellow ink  blue paper  29 13 at-xy 'D' emit
   if islandMap(iPos+6)<>1 then \
-    print at 3,29; pen yellow; paper blue;"B"
+    yellow ink  blue paper  29 3 at-xy 'B' emit
   1 charset
-
   ;
+  \ XXX TODO -- change colors only once
 
 : drawVillage  ( -- )
 
   2 charset
 
-  print pen green;paper yellow;\
+  green ink  yellow paper
+  print \
     at 5,6;" S\::T    ST   S\::T";\
     at 6,6;" VUW    78   VUW   4";\
     at 8,4;"S\::T   S\::T    S\::T S\::T  S\::T ";\
@@ -779,7 +775,8 @@ variable possibleWest           \ flag
     at 11,4;"S\::T    S\::T ST  S\::T S\::T";\
     at 12,4;"VUW  4 VUW 78  VUW VUW"
 
-  print pen black;paper yellow;\
+  black ink  yellow paper
+  print \
     at 12,7;"X";\
     at 12,17;"Y";\
     at 12,22;"Z";\
@@ -796,28 +793,26 @@ variable possibleWest           \ flag
   ;
 
 : drawNative  ( -- )
-  print pen black;paper yellow;\
+  black ink  yellow paper
+  print \
     at 10,8;" _ `";\
     at 11,8;"}~.,";\
     at 12,8;"{|\?"
   ;
 
 : drawAmmo  ( -- )
-  print pen black;paper yellow;at 12,14; "hi"
-  ;
+  black ink  yellow paper  14 12 at-xy ." hi"  ;
 
 : drawSupplies  ( -- )
-
-  \ XXX TODO draw graphics depending on the actual ammount
   2 charset
-  print at 12,14; pen black; paper yellow;"90  9099 0009"
-  1 charset
-
-  ;
+  black ink  yellow paper 14 12 at-xy ." 90  9099 0009"
+  1 charset  ;
+  \ XXX TODO draw graphics depending on the actual ammount
 
 : drawSnake  ( -- )
   2 charset
-  print pen black;paper yellow;\
+  black ink  yellow paper
+  print \
     at 12,14; "xy"
   1 charset
   ;
@@ -825,26 +820,32 @@ variable possibleWest           \ flag
 : drawDubloons  ( coins -- )
 
   2 charset
-  print pen black;paper yellow;\
+  black ink  yellow paper
+  print \
     at 12,12; "vw vw vw vw vw vw vw vw"(to coins*3)
   1 charset
 
   ;
 
 : palm1  ( y,x -- )
-  print pen green;paper blue;\
+  green ink  blue paper
+  print \
     at y,x;"OPQR";\
     at y+1,x;"S TU";\
-    at y+1,x+1; pen yellow; "N";\
+    at y+1,x+1;
+  yellow ink
+    "N";\
     at y+2,x+1;"M";\
     at y+3,x+1;"L"
   ;
 
 : palm2  ( y,x -- )
-  print pen green; paper yellow;\
+  green ink  yellow paper
+  print \
     at y,x;"OPQR";\
     at y+1,x;"S TU";\
-    at y+1,x+1; pen black;"N";\
+    at y+1,x+1;
+    black ink;"N";\
     at y+2,x+1;"M";\
     at y+3,x+1;"L";\
     at y+4,x+1;"V"
@@ -889,8 +890,8 @@ variable possibleWest           \ flag
   else
     \ XXX TODO inform about how many injured?
     s" La bala alcanza su objetivo. Esto desmoraliza a la tripulación." message
-    let morale=morale-2
-    2 3 between 1+ 1 ?do  manInjured  loop
+    -2 morale +!
+    3 4 random-range 1 ?do  manInjured  loop
   endif
   5 seconds
   wipeMessage
@@ -916,14 +917,14 @@ variable possibleWest           \ flag
   ;
 
 : battleScenery  ( -- )
-
-  window:paper blue:cls:0 charset:
-  print at 21,10; pen white; paper red;" Munición = ";ammo
+  window  blue paper cls  0 charset
+  white ink  red paper  10 21 at-xy ." Munición = " ammo ?
 
   black ink yellow paper
   22 0 do  0 i at-xy  ." ________ "  loop
 
-  print at 2,0; pen black; paper white;"1";at 9,0;"2";at 16,0;"3"
+  black ink  white paper
+  0 2 at-xy ." 1" 0 9 at-xy ." 2" 0 16 at-xy ." 3"
 
   18 3 do
     black ink  2 charset  4 i 1- at-xy '1' emit
@@ -937,42 +938,41 @@ variable possibleWest           \ flag
   let m=6: let n=20
   31 1 do  drawWave  loop  ;
 
-: fire  ( y -- )
-
-  local z
-
-  let ammo=ammo-1
-  0 charset
-  print at 21,22; pen white; paper red;ammo
+: fire  ( row -- )
+  \ XXX TODO -- store _row_ in a variable, as local
+  -1 ammo +!
+  0 charset white ink  red paper 22 21 at-xy ammo ?
   1 charset
-  print at y-1,9; pen yellow; paper blue;"+";at y+1,9;"-"
+  yellow ink  blue paper
+  dup 1- 9 swap at-xy ." +" dup 1+ 9 swap at-xy ." -"
   moveEnemyShip
-  print at y-1,9; pen yellow; paper blue;" ";at y+1,9;" "
-  print at y,9; pen yellow; paper blue;" j"
+  dup 1- 9 swap at-xy space dup 1+ 9 swap at-xy space
+  9 over at-xy ."  j"
   moveEnemyShip
   31 9 do
     \ XXX TODO -- `z` is the loop index:
-    print at y,z; pen yellow; paper blue;" j"
-    if m=y and z=n or m=y-1 and z=n or m=y-2 and z=n then sunk
-    if m=y and z=n+1 or m=y-1 and z=n+1 or m=y-2 and z=n+1 then sunk
+    dup i swap at-xy ."  j"
+    m=y and i=n or m=y-1 and i=n or m=y-2 and i=n
+      \ XXX TODO -- convert expression
+    if  sunk  then
+    m=y and i=n+1 or m=y-1 and i=n+1 or m=y-2 and i=n+1
+      \ XXX TODO -- convert expression
+    if  sunk  then
   loop
-  print at y,30; paper blue;"  "
-
-  ;
+  blue paper 30 swap at-xy ."  "  ;
 
 : noAmmoLeft  ( -- )
+  s" Te quedaste sin munición." message  4 seconds  ;
   \ XXX TODO the enemy wins; our ship sinks,
   \ or the money and part of the crew is captured
-  s" Te quedaste sin munición." message
-  4 seconds
-  ;
 
 : moveEnemyShip  ( -- )
   let \
     ship=fn between(1,5),\
     n=n+(ship=1 and n<28)-(ship=2 and n>18),\
     m=m+(ship=3 and m<17)-(ship=4 and m>1)
-  print pen white; paper blue;\
+  white ink  blue paper
+  print
     at m,n;" ab ";\
     at m+1,n;" 90 ";\
     at m+2,n-1;" 678 ";\
@@ -983,15 +983,14 @@ variable possibleWest           \ flag
   ;
 
 : drawWave  ( -- )
-  print pen 5;\
-    at fn between(1,20),fn between(11,30);"kl"
-  ;
+  cyan ink 11 30 random-range 1 20 random-range at-xy ." kl"  ;
 
 : sunk  ( -- )
 
   \ Sunk the enemy ship
 
-  print pen white;paper blue;\
+  white ink  blue paper
+  print \
     at m,n;"   ";\
     at m+1,n;" ab";\
     at m+2,n;" 90";\
@@ -1096,9 +1095,9 @@ variable possibleWest           \ flag
 
   2 charset  black ink  yellow paper yellow
   14 10 do  8 i at-xy ." t   "  loop
-  print \
-    at 9,8; paper yellow; pen black;"u";\
-    at 10,9; paper black; pen white;"nop";at 11,9;"qrs"
+  black ink  yellow paper  8  9 at-xy ." u"
+  white ink  black  paper  9 10 at-xy ." nop"
+                           9 11 at-xy ." qrs"
   1 charset
 
   label L6897
@@ -1107,9 +1106,7 @@ variable possibleWest           \ flag
 
   label L6898
 
-  3 seconds
-
-  ;
+  3 seconds  ;
 
   \ }}} ---------------------------------------------------------
   \ Storm {{{
@@ -1124,13 +1121,10 @@ variable possibleWest           \ flag
   s" Se desata una tormenta que causa destrozos en el barco." message
   rain
   \ XXX TODO bright sky!
-  print pen white; paper 5;\
-    at 2,cloud0X;"    ";\
-    at 2,cloud1X;"   "
+  white ink  cyan paper
+  cloud0X 2 at-xy ."     " cloud1X 2 at-xy ."    "
   message "Tras la tormenta, el barco está "+fn damage$+"."
-  panel
-
-  ;
+  panel  ;
 
 : rain  ( -- )
   local z
@@ -1143,11 +1137,10 @@ variable possibleWest           \ flag
   loop  ;
 
 : rainDrops  ( c$ -- )
-  print pen white; paper 5;\
+  white ink  cyan paper
     at 2,cloud0X;string$(4,c$);\
     at 2,cloud1X;string$(3,c$)
-  3 pause \ XXX TODO use TICS instead?
-  ;
+  3 pause  ;
 
   \ }}} ---------------------------------------------------------
   \ Sea graphics {{{
@@ -1254,8 +1247,8 @@ variable possibleWest           \ flag
   ;
 
 : drawShark  ( -- )
-  print at 13,18; pen white; paper blue;"\S"
-  ;
+  white ink  blue paper  18 13 at-xy ." \S"  ;
+  \ XXX TODO -- adapt the UDG notation
 
   \ .............................................................
   \ Reefs
@@ -1270,13 +1263,14 @@ variable possibleWest           \ flag
 : bottomReef  ( -- )
   \ XXX FIXME still "Off the screen" error!
   \ The reason is the window is changed
-  print pen black; paper blue;\
-    at 14,2;" A  HI   HI       HI  HI  A";\
-    at 15,0;"WXY  :\::\::\#127     Z123     :\::\::\#127"
-  ;
+  black ink  blue paper
+  2 14 at-xy ."  A  HI   HI       HI  HI  A"
+  0 15 at-xy ." WXY  :\::\::\#127     Z123     :\::\::\#127"  ;
+  \ XXX TODO -- adapt the graphic chars notation
 
 : leftReef  ( -- )
-  print pen black;paper blue;\
+  black ink  blue paper
+  print \
     at 4,0;"A";\
     at 6,1;"HI";\
     at 8,0;"WXY";\
@@ -1285,7 +1279,8 @@ variable possibleWest           \ flag
   ;
 
 : rightReef  ( -- )
-  print pen black;paper blue;\
+  black ink  blue paper
+  print \
     at 4,30;"HI";\
     at 6,28;"A";\
     at 7,29;"WXY";\
@@ -1296,7 +1291,8 @@ variable possibleWest           \ flag
   \ Islands
 
 : drawBigIsland5  ( -- )
-  print  pen green; paper blue;\
+  green ink  blue paper
+  print  
     at 7,18;"HI A";\
     at 8,17;"G\::\::\::\::BC";\
     at 9,16;"F\::\::\::\::\::\::\::D";\
@@ -1305,7 +1301,8 @@ variable possibleWest           \ flag
   ;
 
 : drawBigIsland4  ( -- )
-  print pen green;paper blue;\
+  green ink  blue paper
+  print \
     at 7,16;"WXYA";\
     at 8,14;":\::\::\::\::\::\::C F\::\::D";\
     at 9,13;":\::\::\::\::\::\::\::\::B\::\::\::E";\
@@ -1313,7 +1310,8 @@ variable possibleWest           \ flag
   ;
 
 : drawLittleIsland2  ( -- )
-  print pen green; paper blue;\
+  green ink  blue paper
+  print 
     at 8,14;":\::\::C";\
     at 7,16;"A";\
     at 9,13;":\::\::\::\::D";\
@@ -1321,14 +1319,16 @@ variable possibleWest           \ flag
   ;
 
 : drawLittleIsland1  ( -- )
-  print pen green;paper blue;\
+  green ink  blue paper
+  print \
     at 8,23;"JK\::C";\
     at 9,22;":\::\::\::\::D";\
     at 10,21;"F\::\::\::\::\::E"
   ;
 
 : drawBigIsland3  ( -- )
-  print pen green;paper blue;\
+  green ink  blue paper
+  print \
     at 7,21;"Z123";\
     at 8,19;":\::\::\::\::\::C";\
     at 9,18;":\::\::\::\::\::\::\::D";\
@@ -1337,7 +1337,8 @@ variable possibleWest           \ flag
   ;
 
 : drawBigIsland2  ( -- )
-  print pen green; paper blue;\
+  green ink  blue paper
+  print 
     at 7,17;"Z123";\
     at 8,14;"F\::B\::\::\::\::\::C";\
     at 9,13;"G\::\::\::\::\::\::\::\::\::D";\
@@ -1345,7 +1346,8 @@ variable possibleWest           \ flag
   ;
 
 : drawBigIsland1  ( -- )
-  print pen green;paper blue;\
+  green ink  blue paper
+  print \
     at 7,20;"HI A";\
     at 8,19;"G\::\::B\::\::\::C";\
     at 9,18;"F\::\::\::\::\::\::\::\::D";\
@@ -1353,7 +1355,8 @@ variable possibleWest           \ flag
   ;
 
 : drawTwoLittleIslands  ( -- )
-  print pen green;paper blue;\
+  green ink  blue paper
+  print \
   at 6,17;"WXY  A";\
   at 7,16;"A   A   F\::C";\
   at 8,15;":\::\#127 :\::\#127 G\::\::\::D";\
@@ -1362,29 +1365,34 @@ variable possibleWest           \ flag
   ;
 
 : drawFarIslands  ( -- )
-  print pen green; paper 5;\
+  green ink  cyan paper
+  print 
     at 2,0;"Z123 HI A Z123 HI A Z123 HI Z123"
   ;
 
 : drawTreasureIsland  ( -- )
 
   1 charset
-  print pen green;paper blue;\
+  green ink  blue paper
+  print \
     at 7,16;"A A   HI";\
     at 8,13;"F\::\::\::B\::\::\::B\::\::B\::\::\::C";\
     at 9,12;"G\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::D";\
     at 10,10;"JK\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::E"
     at 11,9;":\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::C";\
     at 12,8;"F\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::D"
-  print pen blue;paper green;\
+  blue ink  green paper
+  print \
     at 13,8;" HI Z123  HI A  A A  A ";\
     at 14,20;"B\::\::\::\::B"
-  print pen green;paper blue;\
+  green ink  blue paper
+  print \
     at 13,31;"E"
   palm1 4,19
   palm1 4,24
   palm1 4,14
-  print at 9,22; pen black; paper green;"\T\U":\ \ the treasure
+  black ink  green paper
+  print at 9,22; "\T\U":\ \ the treasure
   if visited(shipPos) then \
     message "Llegas nuevamente a la isla de "+islandName$+"."
   else \
@@ -1405,35 +1413,40 @@ variable possibleWest           \ flag
                 else  drawShipUp   shipPicture on  then  ;
 
 : drawShipUp  ( -- )
-  print paper blue;pen white;\
+  white ink  blue paper
+  print 
     at shipY,shipX;"\A\B\C";\
     at shipY+1,shipX;"\D\E\F";\
     at shipY+2,shipX;"\G\H\I"
   ;
 
 : drawShipDown  ( -- )
-  print paper blue;pen white;\
+  white ink  blue paper
+  print 
     at shipY,shipX;"\J\K\L";\
     at shipY+1,shipX;"\M\N\O";\
     at shipY+2,shipX;"\P\Q\R"
   ;
 
 : drawEnemyShip  ( -- )
-  print pen yellow; paper blue;\
+  yellow ink  blue paper
+  print 
     at 4,11;" ab";\
     at 5,11;" 90";\
     at 6,11;"678"
   ;
 
 : wipeEnemyShip  ( -- )
-  print paper blue;\
+  blue paper
+  print 
     at 4,11;"   ";\
     at 5,11;"   ";\
     at 6,11;"   "
   ;
 
 : drawBoat  ( -- )
-  print at 7,11; pen yellow; paper blue;"<>"
+  yellow ink  blue paper
+  print at 7,11; "<>"
   ;
 
   \ }}} ---------------------------------------------------------
@@ -1529,11 +1542,13 @@ variable possibleWest           \ flag
   leftReef
   rightReef
 
-  print pen white;\
+  white ink
+  print
     at 8,14;"\A\B\C";\
     at 9,14;"\D\E\F";\
     at 10,14;"\G\H\I"
-  print pen black; paper blue;\
+  black ink  blue paper
+  print
     at 10,17;"WXY     A";\
     at 6,19;"A   Z123";\
     at 11,6;"A   HI";\
@@ -1544,16 +1559,13 @@ variable possibleWest           \ flag
   \ XXX TODO improved message: "Por suerte, ..."
   message "¡Has encallado! El barco está "+damage$+"."
   \ XXX TODO print at the proper zone:
-  if damage=100 then print at 20,7; pen 5; paper black;"TOTAL"
+  damage @ 100 =
+  if  cyan ink  black paper  7 20 at-xy ." TOTAL"  then
   black ink  green paper
   0 17 at-xy s" INFORME" columns type-center
   \ XXX TODO choose more men, and inform about them
-  manInjured
-  manDead
-  let morale=morale-fn between(1,4)
-  3 seconds
-
-  ;
+  manInjured manDead
+  -4 -1 random-range morale +!  3 seconds  ;
 
 : damaged  ( min,max -- )
   \ Increase the ship damage with random value in a range
@@ -1568,14 +1580,14 @@ variable possibleWest           \ flag
 : stormySky  ( -- )
   load "attr/zp5i5b0l03" code fn attrLine(0)
   let noStorm=0
-  sunAndClouds false
-  ;
+  false sunAndClouds  ;
 
 : seaWaves  ( -- )
   local z
   1 charset
+  cyan ink  blue paper
   16 1 do
-    print paper blue;pen cyan;\
+    print 
       at fn between(4,graphicWinBottom),fn between(1,28);"kl";\
       at fn between(4,graphicWinBottom),fn between(1,28);"mn"
   loop  ;
@@ -1593,27 +1605,17 @@ variable possibleWest           \ flag
   #finnishTheSky 1
   ;
 
-: sunAndClouds  ( sunny -- )
-
-  default sunny=true
-  2 charset
-  print paper 5;bright sunny;\
-    at 0,26; pen yellow; "AB";\
-    at 1,26;"CD"
-  let \
-    cloud0X=fn between(1,9),\
-    cloud1X=fn between(13,21)
-  print pen white; paper 5;bright sunny;\
-    at 0,cloud0X;"EFGH";\
-    at 1,cloud0X;"IJKL";\
-    at 0,cloud1X;"MNO";\
-    at 1,cloud1X;"PQR"
-  1 charset
-
-  ;
+: sunAndClouds  ( f -- )
+  2 charset  bright  yellow ink  cyan paper
+  26 0 at-xy ." AB"  1 26 at-xy ." CD"  white ink
+  1 9 random-range dup cloud0X !
+  dup 0 at-xy ." EFGH" 1 at-xy ." IJKL"
+  13 21 random-range dup cloud1X !
+  dup 0 at-xy ." MNO"  1 at-xy ." PQR"
+  1 charset  0 bright  ;
 
 : wipeSea  ( -- )
-  load "attr/zp1i1b0l13" code fn attrLine(3)
+  \ load "attr/zp1i1b0l13" code fn attrLine(3) \ XXX TODO --
   ;
 
   \ }}} ---------------------------------------------------------
@@ -1964,24 +1966,22 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   sunnySky
   wipeIsland
   2 charset
-  print pen green; paper yellow;\
-    at 3,0; " 5     6       45     6       5"
+  green ink  yellow paper
+  0 3 at-xy ."  5     6       45     6       5"
+  black ink
   25 0 do
-    \ XXX TODO -- `z` is the loop index:
-    print pen black; paper yellow;\
-      at 3,z+3;":\#127";\
-      at 4,z+2;":\::\::\#127";\
-      at 5,z+1;":\::\::\::\::\#127";\
-      at 6,z;":\::\::\::\::\::\::\#127"
+    i 3 + 3 at-xy ." :\#127"
+    i 2+  4 at-xy ." :\::\::\#127"
+    i 1+  5 at-xy ." :\::\::\::\::\#127"
+    i     6 at-xy ." :\::\::\::\::\::\::\#127"
+    \ XXX TODO -- adapt the graphics notation
   8 +loop
-  0 charset
-  print at 7,0; pen white; paper red;"   1       2       3       4    "
+  0 charset  white ink  red paper
+  0 7 at-xy ."    1       2       3       4    "
 
-  \ XXX TODO improve with LOAD or POKE
-  22 8 do
-    \ XXX TODO -- `z` is the loop index:
-    print at z,0; pen white; paper black;fn blankLine$
-  loop
+  white ink  black paper
+  22 8 do  0 i at-xy blankLine$ type  loop
+    \ XXX TODO improve with `fill`
 
   sailorAndCaptain
 
@@ -2008,59 +2008,65 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   if option=turn then let foundClues=foundClues+1
 
   wipeIsland
+  black ink  yellow paper
   8 3 do
     \ XXX TODO -- `z` is the loop index:
-    print paper yellow;pen black;\
+    print 
       at z,1;z-2;"  ";village$(z-2);\
       at z,12;z+3;"  ";village$(z+3)
   loop
-  print at 7,12; pen black; paper yellow;"0  ";village$(10)
+  black ink  yellow paper  12 7 at-xy ." 0  " village$(10) type
   2 charset
-  print at 5,27; pen green; paper yellow;"S\::T";at 6,27;"VUW"
+  green ink  27 5 at-xy ." S\::T" 27 6 at-xy ." VUW"
 
   0 charset
-  print at 14,7; paper black;" Poblado  ";at 13,7;"¿Cuál";at 16,8;" capitán.";at 15,23;"? "
+  black paper
+  7 14 at-xy ."  Poblado  " 7 13 at-xy ." ¿Cuál"
+  8 16 at-xy ."  capitán." 23 15 at-xy ." ? "
   digitTo option
-  print at 15,23; paper black;option: beep .2,30
+  23 15 at-xy option  \ XXX TODO --
+  beep .2,30
   seconds  2
-  if option=village then let foundClues=foundClues+1
+  option village = if  1 foundClues +!  then  \ XXX TODO --
 
   \ XXX TODO better, with letters
-  print at 13,7; paper black;"¿Qué camino";at 14,7;"capitán?";at 16,7;"1N 2S 3E 4O";at 15,23;"? "
-  digitTo option: print at 15,23; paper black;option: beep .2,30
-  seconds  2: if option=direction then let foundClues=foundClues+1
+  print at 13,7; ¿Qué camino";at 14,7;"capitán?";at 16,7;"1N 2S 3E 4O";at 15,23;"? "
+  digitTo option: print at 15,23; option: beep .2,30
+  2 seconds
+  option direction = if  1 foundClues +!  then  \ XXX TODO --
 
-  print at 13,7; paper black;"¿Cuántos";at 14,7;"pasos,";at 16,7;"capitán?";at 15,23;"? "
-  digitTo option: print at 15,23; paper black;option: beep .2,30
-  seconds  2: if option=pace then let foundClues=foundClues+1
+  print at 13,7; "¿Cuántos";at 14,7;"pasos,";at 16,7;"capitán?";at 15,23;"? "
+  digitTo option
+  print at 15,23; option
+  beep .2,30
+  2 seconds
+  option pace = if  1 foundClues +!  then  \ XXX TODO --
 
   \ XXX TODO use tellZone
+  black paper
   if foundClues=6 then \
-    print paper black;\
+    print
       at 13,7;"¡Hemos encontrado";\
       at 14,7;"el oro,";\
       at 16,7;"capitán!"
       treasureFound
   else \
-    print paper black;\
+    print
       at 13,7;"¡Nos hemos";\
       at 14,7;" equivocado ";\
       at 16,7;"capitán!"
-  seconds  2
-  1 charset
-
-  ;
+  2 seconds  1 charset  ;
 
 : sailorAndCaptain  ( -- )
   1 charset
-  print pen cyan; paper black;\
+  cyan ink  black paper
+  print 
     at 17,0;\
     " xy";tab 28;"pq"'\
     " vs";tab 28;"rs"'\
     " wu";tab 28;"tu"
   sailorSpeechBalloon
-  captainSpeechBalloon
-  ;
+  captainSpeechBalloon  ;
 
 : sailorSpeechBalloon  ( -- )
   plot 25,44
@@ -2090,7 +2096,8 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 : trees  ( -- )
   local z
   wipeIsland
-  print pen black;paper yellow;\
+  black ink  yellow paper
+  print \
     at 7,0;" 1       2       3       4"
   1 charset
   27 2 do
@@ -2140,13 +2147,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 
   local z
 
-  paper yellow
-  pen black
-  cls 1
-  \ XXX OLD
-  \   for z=0 to 21
-  \     print at z,0; paper yellow; pen black;fn blankLine$: beep .001,z+9
-  \   next z
+  black ink yellow paper cls1
 
   \ XXX TODO new graphic, based on the cause of the end
   1 charset
@@ -2214,12 +2215,14 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   5 +loop
   palm2 7,3:palm2 7,26
   \ Cofre del tesoro:
-  print at 13,8; pen black; paper yellow;\
+  black ink  yellow paper
+  print at 13,8;
   "pq          xy                  rs          vs                  tu      ";\
   "\T\U    wu"
   palm2 11,28:palm2 11,0
   2 charset
-  print at 17,13; pen blue; paper yellow;"l\::m"
+  blue ink  yellow paper
+  print at 17,13; "l\::m"
   s" ¡Capitán, somos ricos!" message
   4 seconds
   1 charset
@@ -2264,12 +2267,11 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 
   \ Draw a row of skulls at the given row.
 
-  print #channel;paper black;pen white;bright 1;\
+  white ink  black paper  1 bright
+  print #channel
     at 0,0;\
-    "  nop  nop  nop  nop  nop  nop  "'\
-    "  qrs  qrs  qrs  qrs  qrs  qrs  "
-
-  ;
+    "  nop  nop  nop  nop  nop  nop  " cr
+    "  qrs  qrs  qrs  qrs  qrs  qrs  "  ;
 
   \ }}} ---------------------------------------------------------
   \ Text output {{{
@@ -2292,7 +2294,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 
 : nativeSays  ( ca len -- )
   nativeWindow
-  cls 1
+  cls1
   tell
   \ XXX OLD
   #wipeNativeWords
@@ -2407,9 +2409,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   \ XXX OLD
   #load "attr/zp0i0b0l06" code fn attrLine(panelTop-1)
   messageWindow
-  paper black:pen white:cls 1
-
-  ;
+  white ink  black paper  cls1  ;
 
 : saveScreen  ( -- )
   copy screen 1 to 2
