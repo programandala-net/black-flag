@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612161638
+  \ Version 0.0.0+201612161642
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -144,6 +144,17 @@ men avariable stamina()
 /sconstants village$  ( n -- ca len )
 constant villages
   \ XXX TODO -- invert the order of the strings?
+
+  \ ............................
+  \ Cardinal points
+
+0
+  here ," oeste"
+  here ," este"
+  here ," sur"
+  here ," norte"
+/sconstants cardinal$
+constant cardinalPoints
 
   \ }}} ---------------------------------------------------------
   \ Functions {{{
@@ -575,8 +586,8 @@ nativeTellsClue6
   nativeSays  ;
 
 : nativeTellsClue5  ( -- )
-  nativeSays "Ir "+cardinal$(direction)+" desde poblado."
-  ;
+  s" Ir " direction @ cardinal$ s+ s" desde poblado." s+
+  nativeSays  ;
 
 : nativeTellsClue6  ( -- )
   nativeSays "Dar "+trunc$ n$(pace)+" paso"+("s" and (pace>1))+" desde poblado."
@@ -1747,16 +1758,8 @@ create islandEvents>  ( -- a )
   1 3 random-range tree !
   1 10 random-range village !
   1 2 random-range turn !
-  1 4 random-range direction !
+  0 3 random-range direction !
   1 9 random-range pace !
-
-  \ Cardinal points
-  dim cardinal$(4)
-  let \
-    cardinal$(1)="norte",\
-    cardinal$(2)="sur",\
-    cardinal$(3)="este",\
-    cardinal$(4)="oeste"
 
   \ Left and right
   dim hand$(2)
@@ -2018,7 +2021,7 @@ data ""
   23 15 at-xy option . \ XXX TODO -- adapt
   beep .2,30
   2 seconds
-  option direction = if  1 foundClues +!  then  \ XXX TODO --
+  option direction @ = if  1 foundClues +!  then  \ XXX TODO --
 
   7 13 at-xy ." ¿Cuántos"
   7 14 at-xy ." pasos,"
