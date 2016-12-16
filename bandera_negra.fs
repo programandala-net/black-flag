@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612161604
+  \ Version 0.0.0+201612161607
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -30,9 +30,8 @@ wordlist dup constant black-flag  dup >order  set-current
   \ }}} ---------------------------------------------------------
   \ Constants {{{
 
-135 constant locations
+135 constant /seaMap
   \ cells of the sea map (15 columns x 9 rows)
-  \ XXX TODO -- rename to `/seaMap`
 
 30 constant /islandMap
   \ cells of the island map
@@ -97,9 +96,9 @@ variable pace
   \ ............................
   \ Maps
 
-locations   avariable seaMap
+/seaMap     avariable seaMap
 /islandMap  avariable islandMap
-locations   avariable visited    \ flags for islands
+/seaMap     avariable visited    \ flags for islands
 
   \ ............................
   \ Crew
@@ -1662,12 +1661,12 @@ create islandEvents>  ( -- a )
   white ink  black paper  1 flash
   0 14 at-xy s" Preparando el viaje..." columns type-center
 
-  0 seaMap  locations cells erase
-  0 visited locations cells erase
+  0 seaMap  /seaMap cells erase
+  0 visited /seaMap cells erase
 
   \ Reefs around the sea map
   17 1 do  reef i seaMap !  loop  \ north
-  locations 1+ 120 do  reef i seaMap !  loop  \ south
+  /seaMap 1+ 120 do  reef i seaMap !  loop  \ south
   106 30 do  reef i seaMap !  15 +loop  \ east
   107 32 do  reef i seaMap !  15 +loop \ west
 
