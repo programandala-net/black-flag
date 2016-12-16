@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612161442
+  \ Version 0.0.0+201612161551
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -20,7 +20,7 @@ only forth definitions
 
 need chars>string  need string/  need columns  need inverse
 need seconds  need random-range  need at-x     need row
-need ruler    need avariable  need /sconstants
+need ruler    need avariable  need /sconstants need case
 
   \ XXX TODO -- make a version of `seconds` that can be
   \ interrupted with a key press
@@ -82,15 +82,32 @@ variable screenRestored   \ flag
 
 variable iPos             \ player position on the island
 
+  \ Clues
+
+variable path
+variable tree
+variable village
+variable turn
+variable direction
+variable pace
+
   \ }}} ---------------------------------------------------------
   \ Arrays {{{
 
-locations   avariable seaMap()
-locations   avariable visited()    \ flags for islands
-/islandMap  avariable islandMap()
-men         avariable stamina()
+  \ ............................
+  \ Maps
 
-  \ Ship damage descriptions:
+locations   avariable seaMap()
+/islandMap  avariable islandMap()
+locations   avariable visited()    \ flags for islands
+
+  \ ............................
+  \ Crew
+
+men avariable stamina()
+
+  \ ............................
+  \ Ship damage descriptions
 
 0
   here ," hundiéndose"            \ worst: sinking
@@ -106,6 +123,27 @@ men         avariable stamina()
   here ," impecable"            \ best: perfect
 /sconstants damageLevel$  ( n -- ca len )
             constast damageLevels
+
+  \ ............................
+  \ Village names
+
+  \ The names of the villages are Esperanto compound words with
+  \ funny sounds and meanings.
+
+0
+  here ," Mislongo"   \ mis-long-o= "wrong lenght"
+  here ," Ombreto"    \ ombr-et-o= "little shadow"
+  here ," Figokesto"  \ fig-o-kest-o
+  here ," Misedukota" \ mis-eduk-ot-a= "one to be miseducated"
+  here ," Topikega"   \ topik-eg-a=
+  here ," Fibaloto"   \ fi-balot-o
+  here ," Pomotruko"  \ pom-o-truk-o
+  here ," Putotombo"  \ put-o-tomb-o
+  here ," Ursorelo"   \ urs-orel-o= "ear of bear"
+  here ," Kukumemo"   \ kukum-em-o
+/sconstants village$  ( n -- ca len )
+constant villages
+  \ XXX TODO -- invert the order of the strings?
 
   \ }}} ---------------------------------------------------------
   \ Functions {{{
@@ -143,7 +181,9 @@ men         avariable stamina()
         10 of  s" diez"   endof
         11 of  s" once"   endof  endcase  ;
   \ Convert _n_ to text in string _ca len_.
-  \ XXX TODO -- use a faster vector table instead
+  \
+  \ XXX TODO -- use a faster vector table instead, or
+  \ `sconstants`
 
 : highlighted$ ( c -- ca len )  0 20 rot 1 20 5 chars>string  ;
   \ Convert _c_ to a string to print _c_ as a highlighted char.
@@ -532,8 +572,8 @@ nativeTellsClue6
   ;
 
 : nativeTellsClue4  ( -- )
-  nativeSays "Atravesar poblado "+village$(village)+"."
-  ;
+  s" Atravesar poblado " village @ village$ s+ s" ." s+
+  nativeSays  ;
 
 : nativeTellsClue5  ( -- )
   nativeSays "Ir "+cardinal$(direction)+" desde poblado."
@@ -1705,14 +1745,6 @@ create islandEvents>  ( -- a )
   1 4 random-range direction !
   1 9 random-range pace !
 
-  \ Villages
-  restore villageNamesData
-  dim village$(10)
-  11 1 do
-    \ XXX TODO -- `i` is the loop index:
-    read village$(i)
-  loop
-
   \ Cardinal points
   dim cardinal$(4)
   let \
@@ -1798,25 +1830,6 @@ create islandEvents>  ( -- a )
 
   \ }}} ---------------------------------------------------------
   \ Data {{{
-
-  \ .............................
-  \ Village names
-
-  \ (They are Esperanto compound words with funny sounds and meanings)
-
-label villageNamesData
-  \ XXX TODO translate
-data \
-  "Mislongo",\ \ mis-long-o = "wrong lenght"
-  "Ombreto",\ \ ombr-et-o = "little shadow"
-  "Figokesto",\ \ fig-o-kest-o
-  "Misedukota",\ \ mis-eduk-ot-a = "the one that will be wrongly educated"
-  "Topikega",\ \ topik-eg-a =
-  "Fibaloto",\ \ fi-balot-o
-  "Pomotruko",\ \ pom-o-truk-o
-  "Putotombo",\ \ put-o-tomb-o
-  "Ursorelo",\ \ urs-orel-o = "ear of bear"
-  "Kukumemo" \ kukum-em-o
 
   \ .............................
   \ Crew stamina descriptions
@@ -1969,11 +1982,11 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 
   wipeIsland
   black ink  yellow paper
-  8 3 do
-    1  i at-xy i 2-  . ."   " i 2-  village$() type
-    12 i at-xy i 3 + . ."   " i 3 + village$() type
+  6 2 do
+    1  i 1+ at-xy i 2-  dup . ."   " village$ type
+    12 i 1+ at-xy i 3 + dup . ."   " village$ type
   loop
-  black ink  yellow paper  12 7 at-xy ." 0  " village$(10) type
+  12 7 at-xy ." 0  " villages village$ type
   2 charset
   green ink  27 5 at-xy ." S\::T" 27 6 at-xy ." VUW"
 
@@ -1985,7 +1998,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   23 15 at-xy option  \ XXX TODO --
   beep .2,30
   2 seconds
-  option village = if  1 foundClues +!  then  \ XXX TODO --
+  option village @ = if  1 foundClues +!  then  \ XXX TODO --
 
   \ XXX TODO better, with letters
   7 13 at-xy ." ¿Qué camino"
