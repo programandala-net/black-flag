@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612161324
+  \ Version 0.0.0+201612161327
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -1663,16 +1663,14 @@ create islandEvents>  ( -- a )
 
   \ Ship damage labels
   damageLevels off
-  damageMaxLen off
   restore damageData
   do
     read i$
     let i=len i$
     exit if not i
     1 damageLevels +!
-    i damageMaxLen @ max damageMaxLen !
   loop
-  dim damage$(damageLevels,damageMaxLen)
+  dim damage$(damageLevels)
   restore damageData
   damageLevels @ +1 do
     \ XXX TODO -- `i` is the loop index:
@@ -1716,14 +1714,14 @@ create islandEvents>  ( -- a )
 
   \ Villages
   restore villageNamesData
-  dim village$(10,9)
+  dim village$(10)
   11 1 do
     \ XXX TODO -- `i` is the loop index:
     read village$(i)
   loop
 
   \ Cardinal points
-  dim cardinal$(4,5)
+  dim cardinal$(4)
   let \
     cardinal$(1)="norte",\
     cardinal$(2)="sur",\
@@ -1731,7 +1729,7 @@ create islandEvents>  ( -- a )
     cardinal$(4)="oeste"
 
   \ Left and right
-  dim hand$(2,9)
+  dim hand$(2)
   let \
     hand$(1)="izquierda",\
     hand$(2)="derecha"
@@ -1752,23 +1750,21 @@ create islandEvents>  ( -- a )
 
   let \
     names=0,\
-    nameMaxLen=0
   restore menNamesData
   do
     read i$
     let i=len i$
     exit if not i
     let \
-      names=names+1,\
-      nameMaxLen=max(nameMaxLen,i)
+      names=names+1
   loop
-  dim names$(names,nameMaxLen)
+  dim names$(names)
   restore menNamesData
   names 1+ 1 do
     \ XXX TODO -- `i` is the loop index:
     read names$(i)
   loop
-  dim name$(men,nameMaxLen)
+  dim name$(men)
   men 1+ 1 do
     \ XXX TODO -- `man` is the loop index:
     begin
