@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612161551
+  \ Version 0.0.0+201612161604
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -97,9 +97,9 @@ variable pace
   \ ............................
   \ Maps
 
-locations   avariable seaMap()
-/islandMap  avariable islandMap()
-locations   avariable visited()    \ flags for islands
+locations   avariable seaMap
+/islandMap  avariable islandMap
+locations   avariable visited    \ flags for islands
 
   \ ............................
   \ Crew
@@ -312,9 +312,8 @@ variable possibleWest           \ flag
 
     \ XXX TODO possibleDisembarking only if no enemy ship is present
 
-    \ let possibleDisembarking=(visited(shipPos)=false) or
-    \ (seaMap(shipPos)=treasureIsland)  \ XXX OLD
-    \ XXX TODO -- translate
+    shipPos visited @ 0=  shipPas seaMap @ treasureIsland =  or
+    possibleDisembanking !
 
     0 panel-y at-xy
     s" Desembarcar" 1 possibleDisembarking @ option$ type
@@ -330,9 +329,9 @@ variable possibleWest           \ flag
 
   \ XXX TODO check condition -- what about the enemy ship?
   \ XXX TODO several commands: attack ship/island/shark?
-  shipPos @ seaMap() @ 13 < 0=
-  shipPos @ seaMap() @ shark = or
-  shipPos @ seaMap() @ treasureIsland = or
+  shipPos @ seaMap @ 13 < 0=
+  shipPos @ seaMap @ shark = or
+  shipPos @ seaMap @ treasureIsland = or
   possibleAttacking !
     \ XXX TODO -- improve
 
@@ -401,9 +400,9 @@ variable possibleWest           \ flag
   ;
 
 : seaMove  ( offset -- )
-  dup shipPos + seaMap() @ reef = if    drop runAground
-                                  else  shipPos +!
-                                  then  drop  ;
+  dup shipPos + seaMap @ reef = if    drop runAground
+                                else  shipPos +!
+                                then  drop  ;
 
 : disembark  ( -- )
 
@@ -420,7 +419,7 @@ variable possibleWest           \ flag
   yellow ink blue paper
   21 0 do  i 11 at-xy ." <>" 10 pause  loop
   aboard off
-  shipPos seaMap() @ treasureIsland =
+  shipPos @ seaMap @ treasureIsland =
   if    enterTreasureIsland
   else  newIslandMap enterIslandLocation  then  ;
 
@@ -931,8 +930,8 @@ create islandEvents>  ( -- a )
   ammo @ 0=
   if  noAmmoLeft
   else
-    shipPos @ seaMap() @ 13 >=
-    shipPos @ seaMap() @ 16 <= and
+    shipPos @ seaMap @ 13 >=
+    shipPos @ seaMap @ 16 <= and
       \ XXX TODO -- improve the expression with `between`
     if  shipBattle  else  attackOwnBoat  then
   then  ;
@@ -1073,25 +1072,18 @@ create islandEvents>  ( -- a )
   2 seconds
   \ XXX TODO simpler and better
   \ XXX why this condition?:
-  shipPos @ seaMap() @ 13 >=
-  shipPos @ seaMap() @ 16 <= and
+  shipPos @ seaMap @ 13 >=
+  shipPos @ seaMap @ 16 <= and
     \ XXX TODO -- simplify the condition and factor out
   if  1 sunkShips +!  1000 score +!  done on  then
 
-  \ XXX --- original version:
-  if seaMap(shipPos)=13:let seaMap(shipPos)=10
-  else if seaMap(shipPos)=14:let seaMap(shipPos)=9
-  else if seaMap(shipPos)=15:let seaMap(shipPos)=8
-  else if seaMap(shipPos)=16:let seaMap(shipPos)=7
-  endif
-  \ XXX TODO deprecated, buggy alternative:
-  \   on fn max(1,seaMap(shipPos)-12):\ \ 13~16
-  \     let seaMap(shipPos)=10:\ \ 13
-  \     let seaMap(shipPos)=9:\ \ 14
-  \     let seaMap(shipPos)=8:\ \ 15
-  \     let seaMap(shipPos)=7: \ 16
-
-  ;
+  shipPos @ seaMap @ case
+    13 of  10  endof
+    14 of   9  endof
+    15 of   8  endof
+    16 of   7  endof
+  endcase  shipPos @ seaMap !  ;
+  \ XXX TODO -- use a calculation instead
 
   \ }}} ---------------------------------------------------------
   \ Crew stamina {{{
@@ -1218,7 +1210,7 @@ create islandEvents>  ( -- a )
 
 : seaScenery  ( -- )
   graphicWindow
-  seaAndSky redrawShip  shipPos @ seaMap() @ seaPicture  ;
+  seaAndSky redrawShip  shipPos @ seaMap @ seaPicture  ;
 
 : seaPicture  ( n -- )
 
@@ -1313,39 +1305,33 @@ create islandEvents>  ( -- a )
   \ .............................................................
   \ Reefs
 
-: drawReefs  ( -- )
-  if seaMap(shipPos+15)=1 then drawFarIslands
-  if seaMap(shipPos-15)=1 then bottomReef
-  if seaMap(shipPos-1)=1 then leftReef
-  if seaMap(shipPos+1)=1 then rightReef
-  ;
-
 : bottomReef  ( -- )
-  \ XXX FIXME still "Off the screen" error!
-  \ The reason is the window is changed
   black ink  blue paper
   2 14 at-xy ."  A  HI   HI       HI  HI  A"
   0 15 at-xy ." WXY  :\::\::\#127     Z123     :\::\::\#127"  ;
   \ XXX TODO -- adapt the graphic chars notation
+  \
+  \ XXX FIXME still "Off the screen" error!
+  \ The reason is the window is changed
 
 : leftReef  ( -- )
   black ink  blue paper
-  print \
-  0 4 at-xy ." A"
-  1 6 at-xy ." HI"
-  0 8 at-xy ." WXY"
-  1 11 at-xy ." A"
-  0 13 at-xy ." HI"
-  ;
+   0 4 at-xy ." A"   1 6 at-xy ." HI"  0 8 at-xy ." WXY"
+  1 11 at-xy ." A"  0 13 at-xy ." HI"  ;
 
 : rightReef  ( -- )
   black ink  blue paper
-  print \
-  30 4 at-xy ." HI"
-  28 6 at-xy ." A"
-  29 7 at-xy ." WXY"
-  31 9 at-xy ." A"
-  ;
+  30 4 at-xy ." HI"   28 6 at-xy ." A"
+  29 7 at-xy ." WXY"  31 9 at-xy ." A"  ;
+
+: reef?  ( n -- f )  seaMap @ reef =  ;
+  \ Is there a reef at ship position _n_?
+
+: drawReefs  ( -- )
+  shipPos @ 15 + reef? if  drawFarIslands  then
+  shipPos @ 15 - reef? if  bottomReef      then
+  shipPos @ 1-   reef? if  leftReef        then
+  shipPos @ 1+   reef? if  rightReef       then  ;
 
   \ .............................................................
   \ Islands
@@ -1676,28 +1662,26 @@ create islandEvents>  ( -- a )
   white ink  black paper  1 flash
   0 14 at-xy s" Preparando el viaje..." columns type-center
 
-  0 seaMap() locations cells erase
-  0 visited() locations cells erase
+  0 seaMap  locations cells erase
+  0 visited locations cells erase
 
   \ Reefs around the sea map
-  \ XXX TODO -- `i` is the loop index:
-  17 1 do  let seaMap(i)=reef  loop  \ north
-  locations 1+ 120 do  let seaMap(i)=reef  loop  \ south
-  106 30 do step 15 let seaMap(i)=reef 15 +loop  \ east
-  107 32 do  let seaMap(i)=reef 15 +loop \ west
+  17 1 do  reef i seaMap !  loop  \ north
+  locations 1+ 120 do  reef i seaMap !  loop  \ south
+  106 30 do  reef i seaMap !  15 +loop  \ east
+  107 32 do  reef i seaMap !  15 +loop \ west
 
   \ Normal islands
   120 17 do
-    \ XXX TODO -- `i` is the loop index:
-    i seaMap() @ reef <> if
-      2 21 random-range i seaMap() !  \ random type
+    i seaMap @ reef <> if
+      2 21 random-range i seaMap !  \ random type
       \ XXX TODO -- 21 is shark; these are picture types
     then
   loop
 
   \ Treasure island
   22 treasureIsland !
-  treasureIsland @ 94 104 random-range seaMap() !
+  treasureIsland @ 94 104 random-range seaMap !
 
   \ Ship position
   32 42 random-range shipPos !
@@ -2393,21 +2377,24 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   \ }}} ---------------------------------------------------------
   \ Meta {{{
 
+variable invflag
+  \ XXX TMP --
+
 : showSea  ( -- )
-  local x,y,invflag
+  local x,y
   cls
-  \ for y=0 to 8*2 step 2
+  \ for y=0 to 8*2 step 2 \ XXX OLD
   17 0 do
     \ XXX TODO -- `y` is the outer loop index:
-    \ for x=0 to 14
+    \ for x=0 to 14 \ XXX OLD
     15 0 do
       \ XXX TODO -- `x` is the inner loop index:
-      invflag inverse
-      print using$("##",seaMap(1+y*9+x));
-      let invflag=not invflag
+      invflag @ inverse
+      y 9 * x + 1+ seaMap @ .##
+      invflag @ 0= invflag !
     loop
     cr
-  loop
+  2 +loop
   mode 1  0 inverse  ;
 
 : showCharsets  ( -- )
