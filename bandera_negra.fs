@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612162202
+  \ Version 0.0.0+201612162220
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -19,8 +19,14 @@
 only forth definitions
 
 need chars>string  need string/  need columns  need inverse
-need seconds  need random-range  need at-x     need row
-need ruler    need avariable  need /sconstants need case
+need seconds  need random-range  need at-x  need row
+need ruler  need avariable  need cavariable  need sconstants
+need /sconstants  need case
+
+need black  need blue  need red  need green
+need cyan  need yellow  need white  need color!
+need papery  need brighty
+
 
   \ XXX TODO -- make a version of `seconds` that can be
   \ interrupted with a key press
@@ -37,9 +43,6 @@ wordlist dup constant black-flag  dup >order  set-current
   \ cells of the island map
 
 10 constant men
-
-0 constant minStamina
-4 constant maxStamina
 
 : islandName$  ( -- ca len )  s" Calavera"  ;
 
@@ -106,7 +109,7 @@ variable pace
   \ ............................
   \ Crew
 
-men avariable stamina()
+men avariable stamina
 
   \ Crew names are pun funny names in Spanish:
 
@@ -156,6 +159,24 @@ names men avariable usedNames  ( n -- a )
   \ An array to hold a true flag when the correspondent name
   \ in `names$` has been used in `name`. The goal is to prevent
   \ name duplicates in the crew.
+
+0
+  here ," en forma"
+  here ," magullado"
+  here ," herido leve"
+  here ," herido grave"
+  here ," muerto"
+/sconstants stamina$$  ( n -- ca len )
+1- constant maxStamina
+ 0 constant minStamina
+
+maxStamina 1+ cavariable staminaAttr
+
+ black white papery +           0 staminaAttr c!
+   red black papery + brighty + 1 staminaAttr c!
+   red black papery +           2 staminaAttr c!
+yellow black papery +           3 staminaAttr c!
+ green black papery +           4 staminaAttr c!
 
   \ ............................
   \ Ship damage descriptions
@@ -298,7 +319,7 @@ sconstants hand$  ( n -- ca len )
 : gameOver?  ( -- f )  failure? success? quitGame or or  ;
   \ Game over?
 
-: condition$ ( m -- ca len )  m stamina() @ stamina$() 2@  ;
+: condition$ ( m -- ca len )  m stamina @ stamina$() 2@  ;
   \ Physical condition of a crew member
   \ XXX TODO --
 
@@ -1175,9 +1196,9 @@ create islandEvents>  ( -- a )
 : manInjured  ( -- )
   begin
     1 men random-range dup injured !
-  stamina() @ until
-  -1 injured @ stamina() +!
-  injured @ stamina() @ 0<> alive +!  ;
+  stamina @ until
+  -1 injured @ stamina +!
+  injured @ stamina @ 0<> alive +!  ;
   \ A man is injured.
   \ Output: `injured` = his number
 
@@ -1186,8 +1207,8 @@ create islandEvents>  ( -- a )
   \ Output: dead = his number
   begin
     1 men random-range dup dead !
-  stamina() @ until
-  dead stamina() off
+  stamina @ until
+  dead stamina off
   -1 alive +!  ;
 
   \ }}} ---------------------------------------------------------
@@ -1619,12 +1640,9 @@ create islandEvents>  ( -- a )
     print \
     nameCol i 5 + at-xy name$(i) type
       \ XXX TODO -- convert array
-    i stamina() @ 1+ staminaPen() @ ink
-    i stamina() @ 1+ staminaPap() @ paper
-    i stamina() @ 1+ staminaBri() @ bright
+    i stamina @ staminaAttr @ color!
     dataCol i 5 + at-xy
-    i stamina() @ 1+ stamina$() 2@ 2dup uppers1 type
-      \ XXX TODO -- convert array
+    i stamina @ stamina$ 2@ 2dup uppers1 type
   loop
   reportEnd
   ;
@@ -1832,45 +1850,10 @@ create islandEvents>  ( -- a )
   \ Choose unused names for the crew members.
 
 : initCrewStamina  ( -- )
-
-  \ XXX TODO stamina levels = array indexes
-  men 0 do  maxStamina i stamina() !  loop
-
-  \ Stamina labels (1-5)
-  dim \
-    stamina$(5,13),\
-    staminaPen(5),\
-    staminaPap(5),\
-    staminaBri(5)
-  restore staminaData
-  6 1 do
-    \ XXX TODO -- `i` is the loop index:
-    read stamina$(i),staminaPen(i),staminaPap(i),staminaBri(i)
-  loop
-
-  \ Stamina colors (one string char per level)
-  let \
-    staminaPap$=chr$ white+chr$ black+chr$ black+chr$ black+chr$ black,\
-    staminaPen$=chr$ black+chr$ red+chr$ red+chr$ yellow+chr$ green,\
-    staminaBri$=chr$ 0+chr$ 1+chr$ 0+chr$ 0+chr$ 0
-
-  ;
+  men 0 do  maxStamina i stamina !  loop  ;
+  \ Set the stamina of the crew to its maximum.
 
 : initCrew  ( -- )  initCrewNames initCrewStamina  ;
-
-  \ }}} ---------------------------------------------------------
-  \ Data {{{
-
-  \ .............................
-  \ Crew stamina descriptions
-
-label staminaData
-  \ Data: label,pen,paper,bright
-data "muerto",black,white,0
-data "herido grave",red,black,1
-data "herido leve",red,black,0
-data "magullado",yellow,black,0
-data "en forma",green,black,0
 
   \ }}} ---------------------------------------------------------
   \ Island map {{{
