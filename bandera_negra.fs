@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612160245
+  \ Version 0.0.0+201612161324
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -19,7 +19,8 @@
 only forth definitions
 
 need chars>string  need string/  need columns  need inverse
-need seconds  need random-range  need at-x
+need seconds  need random-range  need at-x     need row
+need ruler    need avariable
 
   \ XXX TODO -- make a version of `seconds` that can be
   \ interrupted with a key press
@@ -27,7 +28,21 @@ need seconds  need random-range  need at-x
 wordlist dup constant black-flag  dup >order  set-current
 
   \ }}} ---------------------------------------------------------
-  \ Variables {{{
+  \ Data {{{
+
+  \ Constants
+
+135 constant locations
+  \ cells of the sea map (15 columns x 9 rows)
+  \ XXX TODO -- rename to `/seaMap`
+
+30 constant /islandMap
+  \ cells of the island map
+
+0 constant minStamina
+4 constant maxStamina
+
+  \ Variables
 
 variable aboard           \ flag
 variable alive            \ counter
@@ -49,22 +64,35 @@ variable screenRestored   \ flag
 
 variable iPos             \ player position on the island
 
+  \ Arrays
+
+locations avariable seaMap()
+locations avariable visited() \ flags for islands
+/islandMap avariable islandMap()
+men avariable stamina()
+
   \ }}} ---------------------------------------------------------
   \ Functions {{{
 
-: attrLine ( l -- a )  32 * attrAd +  ;
-  \ First attribute address of a character line (mode 1).
+22526 constant attributes
+  \ Address of the screen attributes (768 bytes)
 
-: attr$ ( paper ink bright -- c )  64 * + swap 8 * +  ;
-  \ XXX TODO -- rename
+: attrLine ( l -- a )  columns * attributes +  ;
+  \ First attribute address of a character line.
 
-: attrLines$ ( line paper ink bright -- ca len )
-  attr$  swap 32 *  string$  ;
-  \ XXX TODO -- finish
+: >attr ( paper ink bright -- c )  64 * + swap 8 * +  ;
+  \ Convert _paper_, _ink_ and _bright_ to an attribute byte
+  \ _c_.
+
+: attrLines$ ( lines paper ink bright -- ca len )
+  >attr  swap columns *  ruler  ;
+  \ Convert _paper_, _ink_ and _bright_ to a string _ca len_
+  \ that holds as many equivalent attribute bytes to cover
+  \ _lines_ lines of the screen.
 
 : dubloons$ ( n -- ca len )
   s" dobl " rot 1 > if s" ones"  else  s" ón"  then s+  ;
-  \ "doubloon" or "doubloons", depending on _n_
+  \ Return string "doubloon" or "doubloons", depending on _n_
 
 : number$ ( n -- ca len )
   case   1 of  s" un"     endof
@@ -99,18 +127,20 @@ variable iPos             \ player position on the island
   \ highlighted letter.
 
 : coins$ ( x -- ca len )
-  dup >r n>letters s"  " s+ r> dubloons$ s+  ;
+  dup >r number$ s"  " s+ r> dubloons$ s+  ;
   \ Return the text "x doubloons", with letters.
-  \ XXX TODO --
 
 : uppers1 ( ca len -- )  drop 1 uppers  ;
   \ Change the first char of _ca len_ to uppercase.
   \ XXX TODO -- move to the library of Solo Forth
 
+: damageIndex  ( -- n )  damage @ damageLevels @ * 101 / 1+  ;
+  \ XXX TODO -- use `*/`
+
 : failure  ( -- f )
   alive @ 0=
   morale @ 1 < or
-  damageIndex damageLevels = or
+  damageIndex damageLevels @ = or
   supplies @ 1 < or
   cash @ 1 < or  ;
   \ Failed mission?
@@ -120,17 +150,15 @@ variable iPos             \ player position on the island
 : success  ( -- f )  foundClues @ maxClues =  ;
   \ Success?
 
-: gameOver  ( -- f )  failure success quitGame or or  ;
+: gameOver?  ( -- f )  failure success quitGame or or  ;
   \ Game over?
 
-: condition$ ( m -- ca len )  stamina$(stamina(m))  ;
+: condition$ ( m -- ca len )  m stamina() @ stamina$() 2@  ;
   \ Physical condition of a crew member
   \ XXX TODO --
 
-: blankLine$  ( -- ca len )  string$(fn columns," ")  ;
+: blankLine$  ( -- ca len )  string$(columns," ")  ;
   \ XXX TODO --
-
-: damageIndex  ( -- n )  damage @ damageLevels @ 101 / 1+  ;
 
 : damage$  ( -- ca len )  damage$(damageIndex)  ;
   \ Damage description
@@ -143,14 +171,14 @@ variable iPos             \ player position on the island
 
 : shipName$  ( -- ca len )  s" Furioso"  ;
 
-  \ Ids of sea cells
+  \ Ids of sea and island cells
+  \ XXX TODO complete
  1 constant reef
- 2 constant coast
+ 1 constant coast
 21 constant shark
 
   \ Ids of island cells
   \ XXX TODO complete
-1 constant coast
 2 constant dubloonsFound
 3 constant nativeFights
 5 constant snake
@@ -170,15 +198,12 @@ main
   cls
   screenRestored off
   begin
-    screenRestored @ if
-      screenRestored off
-    else
-      \ XXX FIXME sometimes scenery is called here without reason
-      \ XXX The logic is wrong.
-      scenery
-    then  command
-  fn gameOver until
-  ;
+    screenRestored @ if    screenRestored off
+                     else  scenery
+                     then  command
+  gameOver? until  ;
+  \ XXX FIXME sometimes scenery is called here without reason
+  \ XXX The logic is wrong.
 
 : scenery  ( -- )
   \ XXX FIXME useScreen2 and usesCreen2 cause the sea
@@ -254,7 +279,11 @@ variable possibleWest           \ flag
 
   \ XXX TODO check condition -- what about the enemy ship?
   \ XXX TODO several commands: attack ship/island/shark?
-  let possibleAttacking=not (seaMap(shipPos)<13 or seaMap(shipPos)=shark or seaMap(shipPos)=treasureIsland)
+  shipPos @ seaMap() @ 13 < 0=
+  shipPos @ seaMap() @ shark = or
+  shipPos @ seaMap() @ treasureIsland = or
+  possibleAttacking !
+    \ XXX TODO -- improve
 
   16 panel-y 1+ at-xy
   s" Atacar" 1 possibleAttacking @ option$ type
@@ -321,13 +350,9 @@ variable possibleWest           \ flag
   ;
 
 : seaMove  ( offset -- )
-  if seaMap(shipPos+offset)=reef then \
-    runAground
-  else \
-    let shipPos=shipPos+offset
-    \ XXX OLD
-    #seaScenery
-  ;
+  dup shipPos + seaMap() @ reef = if    drop runAground
+                                  else  shipPos +!
+                                  then  drop  ;
 
 : disembark  ( -- )
 
@@ -344,12 +369,9 @@ variable possibleWest           \ flag
   yellow ink blue paper
   21 0 do  i 11 at-xy ." <>" 10 pause  loop
   aboard off
-  if seaMap(shipPos)=treasureIsland then \
-    enterTreasureIsland
-  else \
-    newIslandMap
-    enterIslandLocation
-  ;
+  shipPos seaMap() @ treasureIsland =
+  if    enterTreasureIsland
+  else  newIslandMap enterIslandLocation  then  ;
 
   \ }}} ---------------------------------------------------------
   \ Trading {{{
@@ -360,7 +382,7 @@ variable possibleWest           \ flag
   \ XXX TODO factor out:
   black ink  yellow paper
   16 3 do
-    0 i at-xy fn blankLine$ type
+    0 i at-xy blankLine$ type
   loop
   drawNative
   nativeSpeechBalloon
@@ -370,7 +392,7 @@ variable possibleWest           \ flag
   nativeSays "Yo vender pista de tesoro a tú."
 
   5 9 random-range price !
-  nativeSays "Precio ser "+fn coins$(price)+"."
+  nativeSays "Precio ser "+coins$(price)+"."
   \ XXX TODO pause or join:
   1 seconds
   nativeSays "¿Qué dar tú, blanco?"
@@ -394,7 +416,7 @@ variable possibleWest           \ flag
 
   \ He reduces the price by one dubloon
   let price=price-1
-  nativeSays "¡No! ¡Yo querer más! Tú darme "+fn coins$(price)+"."
+  nativeSays "¡No! ¡Yo querer más! Tú darme "+coins$(price)+"."
 
   label oneCoinLess
   \ He accepts one dubloon less
@@ -409,7 +431,7 @@ variable possibleWest           \ flag
   \ XXX TODO -- factor out
   \ He lowers the price by several dubloons
   -3 -2 random-range price +!
-  nativeSays "Bueno, tú darme... "+fn coins$(price)+" y no hablar más."
+  nativeSays "Bueno, tú darme... "+coins$(price)+" y no hablar más."
   makeOffer
   if offer>=price then \
     acceptedOffer
@@ -439,10 +461,10 @@ variable possibleWest           \ flag
 
   local maxOffer
   9 cash @ min maxOffer !
-  message "Tienes "+fn coins$(cash)+". ¿Qué oferta le haces? (1-"+str$ maxOffer+")"
+  message "Tienes "+coins$(cash)+". ¿Qué oferta le haces? (1-"+str$ maxOffer+")"
   digitTo offer,maxOffer
   beep .2,10
-  message "Le ofreces "+fn coins$(offer)+"."
+  message "Le ofreces "+coins$(offer)+"."
 
   ;
 
@@ -579,11 +601,11 @@ nativeTellsClue6
     message \
       "Un nativo intenta bloquear el paso y hiere a "+\
       name$(injured)+\
-      ", que resulta "+fn condition$(injured)+"."
+      ", que resulta "+condition$(injured)+"."
 
   else if islandMap(iPos)=dubloonsFound
     1 2 random-range dub !
-    message "Encuentras "+fn coins$(dub)+"."
+    message "Encuentras "+coins$(dub)+"."
     let cash=cash+dub
     drawDubloons dub
     let islandMap(iPos)=4
@@ -650,7 +672,7 @@ nativeTellsClue6
 
 : event7  ( -- )
   2 5 random-range dub !
-  message "Encuentras "+fn coins$(dub)+"."
+  message "Encuentras "+coins$(dub)+"."
   let cash=cash+dub
   drawDubloons dub
   ;
@@ -690,8 +712,8 @@ create islandEvents>  ( -- a )
 
   graphicWindow
   \ XXX OLD
-  \   load "attr/zp6i6b0l13" code fn attrLine(3)
-  poke fn attrLine(3),fn attrLines$(6,yellow,yellow,0)+fn attrLines$(7,yellow,yellow,0)
+  \   load "attr/zp6i6b0l13" code attrLine(3)
+  poke attrLine(3),attrLines$(6,yellow,yellow,0)+attrLines$(7,yellow,yellow,0)
   sunnySky
   if islandMap(iPos-6)=coast then drawBottomWaves
   if islandMap(iPos+6)=coast then drawHorizontWaves
@@ -855,15 +877,14 @@ create islandEvents>  ( -- a )
   \ Ship battle {{{
 
 : attackShip  ( -- )
-  if not ammo
-    noAmmoLeft
+  ammo @ 0=
+  if  noAmmoLeft
   else
-    if seaMap(shipPos)>=13 and seaMap(shipPos)<=16 then \
-      shipBattle
-    else \
-      attackOwnBoat
-  endif
-  ;
+    shipPos @ seaMap() @ 13 >=
+    shipPos @ seaMap() @ 16 <= and
+      \ XXX TODO -- improve the expression with `between`
+    if  shipBattle  else  attackOwnBoat  then
+  then  ;
 
 : attackOwnBoat  ( -- )
 
@@ -1001,11 +1022,10 @@ create islandEvents>  ( -- a )
   2 seconds
   \ XXX TODO simpler and better
   \ XXX why this condition?:
-  if seaMap(shipPos)>=13 and seaMap(shipPos)<=16 then \
-    let \
-      sunkShips=sunkShips+1,\
-      score=score+1000,\
-      done=true
+  shipPos @ seaMap() @ 13 >=
+  shipPos @ seaMap() @ 16 <= and
+    \ XXX TODO -- simplify the condition and factor out
+  if  1 sunkShips +!  1000 score +!  done on  then
 
   \ XXX --- original version:
   if seaMap(shipPos)=13:let seaMap(shipPos)=10
@@ -1026,35 +1046,33 @@ create islandEvents>  ( -- a )
   \ Crew stamina {{{
 
 : manInjured  ( -- )
-  \ A man is injured
-  \ Output: injured = his number
   begin
-    1 men random-range injured !
-  stamina(injured) until
-  let stamina(injured)=stamina(injured)-1
-  let alive=alive-not stamina(injured)
-  ;
+    1 men random-range dup injured !
+  stamina() @ until
+  -1 injured @ stamina() +!
+  injured @ stamina() @ 0<> alive +!  ;
+  \ A man is injured.
+  \ Output: `injured` = his number
 
 : manDead  ( -- )
   \ A man dies
   \ Output: dead = his number
   begin
-    1 men random-range dead !
-  stamina(dead) until
-  let \
-    stamina(dead)=0,\
-    alive=alive-1
-  ;
+    1 men random-range dup dead !
+  stamina() @ until
+  dead stamina() off
+  -1 alive +!  ;
 
   \ }}} ---------------------------------------------------------
   \ Attack {{{
 
 : attack  ( -- )
 
-  #!!!if islandMap(iPos)=2 or islandMap(iPos)=4 or islandMap(iPos)=6 then \
-    #gosub @impossible
-    #gosub @islandPanel
-    #exit proc
+  \ XXX OLD -- commented out in the original
+  \ if islandMap(iPos)=2 or islandMap(iPos)=4 or islandMap(iPos)=6 then \
+  \   gosub @impossible
+  \   gosub @islandPanel
+  \   exit proc
 
   s" Atacas al nativo..." message \ XXX OLD
   100 pause
@@ -1086,7 +1104,7 @@ create islandEvents>  ( -- a )
   else if kill>=3
     2 3 random-range dub !
     message \
-      "Encuentras "+fn coins$(dub)+\
+      "Encuentras "+coins$(dub)+\
       " en el cuerpo del nativo muerto."
     let cash=cash+dub
   endif
@@ -1121,7 +1139,7 @@ create islandEvents>  ( -- a )
   \ XXX TODO bright sky!
   white ink  cyan paper
   cloud0X 2 at-xy ."     " cloud1X 2 at-xy ."    "
-  message "Tras la tormenta, el barco está "+fn damage$+"."
+  message "Tras la tormenta, el barco está "+damage$+"."
   panel  ;
 
 : rain  ( -- )
@@ -1145,7 +1163,7 @@ create islandEvents>  ( -- a )
 
 : seaScenery  ( -- )
   graphicWindow
-  seaAndSky redrawShip seaPicture seaMap(shipPos)  ;
+  seaAndSky redrawShip  shipPos @ seaMap() @ seaPicture  ;
 
 : seaPicture  ( n -- )
 
@@ -1279,7 +1297,7 @@ create islandEvents>  ( -- a )
 
 : drawBigIsland5  ( -- )
   green ink  blue paper
-  print  
+  print
   18 7 at-xy ." HI A"
   17 8 at-xy ." G\::\::\::\::BC"
   16 9 at-xy ." F\::\::\::\::\::\::\::D"
@@ -1298,7 +1316,7 @@ create islandEvents>  ( -- a )
 
 : drawLittleIsland2  ( -- )
   green ink  blue paper
-  print 
+  print
   14 8 at-xy ." :\::\::C"
   16 7 at-xy ." A"
   13 9 at-xy ." :\::\::\::\::D"
@@ -1325,7 +1343,7 @@ create islandEvents>  ( -- a )
 
 : drawBigIsland2  ( -- )
   green ink  blue paper
-  print 
+  print
   17 7 at-xy ." Z123"
   14 8 at-xy ." F\::B\::\::\::\::\::C"
   13 9 at-xy ." G\::\::\::\::\::\::\::\::\::D"
@@ -1353,7 +1371,7 @@ create islandEvents>  ( -- a )
 
 : drawFarIslands  ( -- )
   green ink  cyan paper
-  print 
+  print
   0 2 at-xy ." Z123 HI A Z123 HI A Z123 HI Z123"
   ;
 
@@ -1389,8 +1407,8 @@ create islandEvents>  ( -- a )
   ;
 
 : wipeIsland  ( -- )
-  poke fn attrLine(3),fn attrLines$(5,6,6,0)
-  ;
+  poke attrLine(3),attrLines$(5,6,6,0)  ;
+  \ XXX TODO -- use `fill`
 
   \ .............................................................
   \ Ships
@@ -1401,7 +1419,7 @@ create islandEvents>  ( -- a )
 
 : drawShipUp  ( -- )
   white ink  blue paper
-  print 
+  print
   shipX shipY at-xy ." \A\B\C"
   shipX shipY+1 at-xy ." \D\E\F"
   shipX shipY+2 at-xy ." \G\H\I"
@@ -1409,7 +1427,7 @@ create islandEvents>  ( -- a )
 
 : drawShipDown  ( -- )
   white ink  blue paper
-  print 
+  print
   shipX shipY at-xy ." \J\K\L"
   shipX shipY+1 at-xy ." \M\N\O"
   shipX shipY+2 at-xy ." \P\Q\R"
@@ -1417,7 +1435,7 @@ create islandEvents>  ( -- a )
 
 : drawEnemyShip  ( -- )
   yellow ink  blue paper
-  print 
+  print
   11 4 at-xy ."  ab"
   11 5 at-xy ."  90"
   11 6 at-xy ." 678"
@@ -1425,7 +1443,7 @@ create islandEvents>  ( -- a )
 
 : wipeEnemyShip  ( -- )
   blue paper
-  print 
+  print
   11 4 at-xy ."    "
   11 5 at-xy ."    "
   11 6 at-xy ."    "
@@ -1475,11 +1493,11 @@ create islandEvents>  ( -- a )
     print \
     nameCol i 5 + at-xy name$(i) type
       \ XXX TODO -- convert array
-    staminaPen(stamina(i)+1) ink
-    staminaPap(stamina(i)+1) paper
-    staminaBri(stamina(i)+1) bright
+    i stamina() @ 1+ staminaPen() @ ink
+    i stamina() @ 1+ staminaPap() @ paper
+    i stamina() @ 1+ staminaBri() @ bright
     dataCol i 5 + at-xy
-    stamina$(stamina(i)+1) 2dup uppers1 type
+    i stamina() @ 1+ stamina$() 2@ 2dup uppers1 type
       \ XXX TODO -- convert array
   loop
   reportEnd
@@ -1554,7 +1572,7 @@ create islandEvents>  ( -- a )
   \ Landscape graphics {{{
 
 : stormySky  ( -- )
-  load "attr/zp5i5b0l03" code fn attrLine(0)
+  \ load "attr/zp5i5b0l03" code attrLine(0) \ XXX TODO --
   let noStorm=0
   false sunAndClouds  ;
 
@@ -1577,7 +1595,7 @@ create islandEvents>  ( -- a )
   ;
 
 : sunnySky  ( -- )
-  load "attr/zp5i5b1l03" code fn attrLine(0)
+  \ load "attr/zp5i5b1l03" code attrLine(0)
   \ XXX OLD -- where is it?:
   #finnishTheSky 1
   ;
@@ -1592,7 +1610,7 @@ create islandEvents>  ( -- a )
   1 charset  0 bright  ;
 
 : wipeSea  ( -- )
-  \ load "attr/zp1i1b0l13" code fn attrLine(3) \ XXX TODO --
+  \ load "attr/zp1i1b0l13" code attrLine(3) \ XXX TODO --
   ;
 
   \ }}} ---------------------------------------------------------
@@ -1605,15 +1623,12 @@ create islandEvents>  ( -- a )
   local i,i$
 
   randomize
-  \ load "attr/zp0i0b0l20" code fn attrLine(2) \ XXX TODO --
+  \ load "attr/zp0i0b0l20" code attrLine(2) \ XXX TODO --
   white ink  black paper  1 flash
   0 14 at-xy s" Preparando el viaje..." columns type-center
 
-  \ The sea map has 135 cells (9 rows, 15 columns)
-  let locations=135
-  dim seaMap(locations)
-  dim visited(locations) \ flags for islands
-
+  0 seaMap() locations cells erase
+  0 visited() locations cells erase
 
   \ Reefs around the sea map
   \ XXX TODO -- `i` is the loop index:
@@ -1625,9 +1640,10 @@ create islandEvents>  ( -- a )
   \ Normal islands
   120 17 do
     \ XXX TODO -- `i` is the loop index:
-    if seaMap(i)<>reef then \
-      let seaMap(i)=fn between (2,21)  \ random type
-      \ XXX 21 is shark; these are picture types
+    i seaMap() @ reef <> if
+      2 21 random-range i seaMap() !  \ random type
+      \ XXX TODO -- 21 is shark; these are picture types
+    then
   loop
 
   \ Treasure island
@@ -1635,10 +1651,10 @@ create islandEvents>  ( -- a )
   treasureIsland @ 94 104 random-range seaMap() !
 
   \ Ship position
-  let shipPos=fn between (32,42)
+  32 42 random-range shipPos !
 
   \ Ship coordinates
-  let shipY=9,shipX=4
+  9 shipY !  4 shipX !
 
   \ Panel lines
   let panelTop=17,panelBottom=21
@@ -1646,27 +1662,25 @@ create islandEvents>  ( -- a )
   initCrew
 
   \ Ship damage labels
-  let \
-    damageLevels=0
-    damageMaxLen=0
+  damageLevels off
+  damageMaxLen off
   restore damageData
   do
     read i$
     let i=len i$
     exit if not i
-    let \
-      damageLevels=damageLevels+1
-      damageMaxLen=fn max(damageMaxLen,i)
+    1 damageLevels +!
+    i damageMaxLen @ max damageMaxLen !
   loop
   dim damage$(damageLevels,damageMaxLen)
   restore damageData
-  damageLevels +1 do
+  damageLevels @ +1 do
     \ XXX TODO -- `i` is the loop index:
     read damage$(i)
   loop
 
-  \ Island map
-  dim islandMap(30)
+  0 islandMap() /islandMap erase
+
   let iPos=1 \ player position on the island
 
   initClues
@@ -1746,7 +1760,7 @@ create islandEvents>  ( -- a )
     exit if not i
     let \
       names=names+1,\
-      nameMaxLen=fn max(nameMaxLen,i)
+      nameMaxLen=max(nameMaxLen,i)
   loop
   dim names$(names,nameMaxLen)
   restore menNamesData
@@ -1770,16 +1784,8 @@ create islandEvents>  ( -- a )
 
 : initCrewStamina  ( -- )
 
-  local i
-
   \ XXX TODO stamina levels = array indexes
-  let minStamina=0
-  let maxStamina=4
-  dim stamina(men)
-  men 1+ 1 do
-    \ XXX TODO -- `i` is the loop index:
-    let stamina(i)=maxStamina
-  loop
+  men 1+ 1 do  maxStamina i stamina() !  loop
 
   \ Stamina labels (1-5)
   dim \
@@ -2190,8 +2196,9 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   local z
 
   2 seconds
-  load "attr/zp5i5b1l03" code fn attrLine(0)
-  load "attr/zp6i6b0l18" code fn attrLine(4)
+  \ load "attr/zp5i5b1l03" code attrLine(0)
+  \ load "attr/zp6i6b0l18" code attrLine(4)
+    \ XXX TODO --
   sunnySky
   23 7 do
     \ XXX TODO -- `z` is the loop index:
@@ -2311,9 +2318,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
 
 : initScreen  ( -- )
 
-  let attrAd=scrad+6144
   cls
-
 
   \ Some window parameters
   let introWinTop=3
@@ -2381,7 +2386,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   ;
 
 : wipeMessage  ( -- )
-  \ load "attr/zp0i0b0l06" code fn attrLine(panelTop-1)
+  \ load "attr/zp0i0b0l06" code attrLine(panelTop-1)
   \ XXX OLD
   messageWindow
   white ink  black paper  cls1  ;
@@ -2436,7 +2441,7 @@ data 1,2,3,4,5,6,7,12,13,18,19,24,25,26,27,28,29,30
   101 0 do
     \ XXX TODO -- `i` is the loop index:
     let damage=i
-    print damage,fn damageIndex;" ";damage$
+    print damage,damageIndex;" ";damage$
   loop  ;
 
   \ vim: set filetype:soloforth
