@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612170046
+  \ Version 0.0.0+201612170050
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -799,10 +799,10 @@ nativeTellsClue6
   endof
 
   dubloonsFound of
-    1 2 random-range dub !
-    s" Encuentras " dub @ coins$ s+ s" ." s+ message
-    dub @ cash +!
-    drawDubloons dub
+    1 2 random-range >r
+    s" Encuentras " r@ coins$ s+ s" ." s+ message
+    r@ cash +!
+    r> drawDubloons
     4 iPos @ islandMap !
       \ XXX TODO -- constant for 4
   endof
@@ -874,9 +874,9 @@ nativeTellsClue6
   ;
 
 : event7  ( -- )
-  2 5 random-range dub !
-  s" Encuentras " dub @ coins$ s+ s" ." s+ message
-  dub @ cash +!  drawDubloons dub  ;
+  2 5 random-range >r
+  s" Encuentras " r@ coins$ s+ s" ." s+ message
+  r@ cash +!  r> drawDubloons  ;
 
 : event8  ( -- )
   s" Sin novedad, capitán." message  ;
@@ -1291,10 +1291,10 @@ create islandEvents>  ( -- a )
     s"  escondidas en su taparrabos." s+ message
     let supplies=supplies+1
   else if kill>=3
-    2 3 random-range dub !
-    s" Encuentras " dub @ coins$ s+
+    2 3 random-range r>
+    s" Encuentras " r@ coins$ s+
     s"  en el cuerpo del nativo muerto." s+ message
-    dub @ cash +!
+    r> cash +!
   endif
 
   2 charset  black ink  yellow paper yellow
