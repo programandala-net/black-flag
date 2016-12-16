@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612170029
+  \ Version 0.0.0+201612170046
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -362,6 +362,60 @@ main
   aboard if  shipCommand  else  islandCommand  then  ;
 
   \ }}} ---------------------------------------------------------
+  \ Text output {{{
+
+: tell  ( ca len -- )
+  0 charset
+  begin  dup columns >  while
+    \ for char=cpl to 1 step -1 \ XXX OLD
+    0 columns do
+      over i + c@ bl = if
+        2dup drop i 1- type
+        i 1+ string/ \ XXX OLD: let text$=text$(char+1 to)
+                     \ XXX OLD -- `char` was the loop index
+        unloop leave
+      then
+    -1 +loop
+  repeat  type  ;
+
+: tellCR  ( ca len -- )  tell cr  ;
+
+: nativeSays  ( ca len -- )
+  nativeWindow cls1 tell
+  \ XXX OLD
+  \ wipeNativeWords
+  \ tellZone text$,12,6,16
+  ;
+
+: message  ( ca len -- )
+  0 charset  wipeMessage messageWindow tell graphicWindow  ;
+
+: tellZone  ( text$,width,row,col -- )
+
+  \ XXX OLD
+  \ XXX TODO use WINDOW instead
+
+  local char
+
+  0 charset
+  begin len text$<=width while
+    \ for char=width to 1 step -1
+    0 width do
+      \ XXX TODO -- `char` is the loop index:
+      if text$(char)=" " then \
+        col row at-xy
+          \ XXX TODO -- adapt
+        text$(to char-1) type
+          \ XXX TODO -- adapt
+        let text$=text$(char+1 to)
+        let row=row+1
+        exit for
+    -1 +loop
+  repeat
+  col row at-xy text$ type  ;
+  \ XXX TODO -- adapt
+
+  \ }}} ---------------------------------------------------------
   \ Command panel {{{
 
 22 constant panel-y
@@ -604,12 +658,12 @@ variable possibleWest           \ flag
 
   local maxOffer
   9 cash @ min maxOffer !
-  message "Tienes "+coins$(cash)+". ¿Qué oferta le haces? (1-"+str$ maxOffer+")"
+  s" Tienes " cash @ coins$ s+
+  s". ¿Qué oferta le haces? (1-" s+
+  maxOffer @ u>str s+ ." )" s+ message
   digitTo offer,maxOffer
   beep .2,10
-  message "Le ofreces "+coins$(offer)+"."
-
-  ;
+  s" Le ofreces " offer @ coins$ s+ s" ." s+ message  ;
 
 : rejectedOffer  ( -- )
 
@@ -739,15 +793,14 @@ nativeTellsClue6
 
   nativeFights of
     manInjured
-    message \
-      "Un nativo intenta bloquear el paso y hiere a "+\
-      injured @ name$ s+
-      ", que resulta "+condition$(injured)+"."
+    s" Un nativo intenta bloquear el paso y hiere a "
+    injured @ name$ s+ s" , que resulta " s+
+    injured @ condition$ s+ s" ." s+ message
   endof
 
   dubloonsFound of
     1 2 random-range dub !
-    message "Encuentras "+coins$(dub)+"."
+    s" Encuentras " dub @ coins$ s+ s" ." s+ message
     dub @ cash +!
     drawDubloons dub
     4 iPos @ islandMap !
@@ -793,13 +846,11 @@ nativeTellsClue6
 
 : event1  ( -- )
   manDead
-  dead @ name$ s"  se hunde en arenas movedizas." s+ message
-  ;
+  dead @ name$ s"  se hunde en arenas movedizas." s+ message  ;
 
 : event2  ( -- )
   manDead
-  dead @ name$ s"  se hunde en un pantano." s+ message
-  ;
+  dead @ name$ s"  se hunde en un pantano." s+ message  ;
 
 : event3  ( -- )
   manInjured
@@ -807,8 +858,8 @@ nativeTellsClue6
 
 : event4  ( -- )
   manInjured
-  message "A "+name$(injured)+" le pica un escorpión."
-  ;
+  s" A " injured @ name$ s+ s"  le pica un escorpión." s+
+  message  ;
 
 : event5  ( -- )
   \ XXX TODO only if supplies are not enough
@@ -824,35 +875,18 @@ nativeTellsClue6
 
 : event7  ( -- )
   2 5 random-range dub !
-  message "Encuentras "+coins$(dub)+"."
-  let cash=cash+dub
-  drawDubloons dub
-  ;
+  s" Encuentras " dub @ coins$ s+ s" ." s+ message
+  dub @ cash +!  drawDubloons dub  ;
 
 : event8  ( -- )
-  s" Sin novedad, capitán." message
-  ;
+  s" Sin novedad, capitán." message  ;
 
 : event9  ( -- )
-  s" La costa está despejada, capitán." message
-  ;
+  s" La costa está despejada, capitán." message  ;
 
 create islandEvents>  ( -- a )
-]
-    event1
-    event2
-    event3
-    event4
-    event5
-    event6
-    event7
-    event8
-    event8
-    event9
-    event9
-    noop
-    noop
-[
+] event1 event2 event3 event4 event5 event6
+  event7 event8 event8 event9 event9 noop noop [
 
 : islandEvents  ( -- )
   0 10 random-range cells islandEvents> + perform  ;
@@ -1051,7 +1085,8 @@ create islandEvents>  ( -- a )
   else
     s" Por suerte no hay munición para disparar..." message
     3 pause
-    s" Enseguida te das cuenta de que ibas a hundir uno de tus botes." message
+    s" Enseguida te das cuenta de que ibas a hundir"
+    s"  uno de tus botes." s+ message
     3 pause
     wipeMessage \ XXX needed?
   endif
@@ -1068,7 +1103,8 @@ create islandEvents>  ( -- a )
     s" Por suerte el disparo no ha dado en el blanco." message
   else
     \ XXX TODO inform about how many injured?
-    s" La bala alcanza su objetivo. Esto desmoraliza a la tripulación." message
+    s" La bala alcanza su objetivo."
+    s"  Esto desmoraliza a la tripulación." s+ message
     -2 morale +!
     3 4 random-range 1 ?do  manInjured  loop
   then
@@ -1251,14 +1287,14 @@ create islandEvents>  ( -- a )
     s" El nativo muere, pero antes mata a "
     dead @ name$ s+ s" ." s+ message
   else if kill=2
-    s" El nativo tiene provisiones escondidas en su taparrabos." message
+    s" El nativo tiene provisiones"
+    s"  escondidas en su taparrabos." s+ message
     let supplies=supplies+1
   else if kill>=3
     2 3 random-range dub !
-    message \
-      "Encuentras "+coins$(dub)+\
-      " en el cuerpo del nativo muerto."
-    let cash=cash+dub
+    s" Encuentras " dub @ coins$ s+
+    s"  en el cuerpo del nativo muerto." s+ message
+    dub @ cash +!
   endif
 
   2 charset  black ink  yellow paper yellow
@@ -1291,13 +1327,14 @@ create islandEvents>  ( -- a )
   wipePanel
   stormySky
   10 49 damaged
-  s" Se desata una tormenta que causa destrozos en el barco." message
+  s" Se desata una tormenta"
+  s"  que causa destrozos en el barco." s+ message
   rain
   \ XXX TODO bright sky!
   white ink  cyan paper
   cloud0X 2 at-xy ."     " cloud1X 2 at-xy ."    "
-  message "Tras la tormenta, el barco está "+damage$+"."
-  panel  ;
+  s" Tras la tormenta, el barco está "
+  damage$ s+ s" ." s+ message  panel  ;
 
 : rain  ( -- )
   local z
@@ -1699,7 +1736,8 @@ create islandEvents>  ( -- a )
 
   10 29 damaged
   \ XXX TODO improved message: "Por suerte, ..."
-  message "¡Has encallado! El barco está "+damage$+"."
+  s" ¡Has encallado! El barco está " damage$ s+ s" ." s+
+  message
   \ XXX TODO print at the proper zone:
   damage @ 100 =
   if  cyan ink  black paper  7 20 at-xy ." TOTAL"  then
@@ -2219,62 +2257,6 @@ create islandEvents>  ( -- a )
             home skulls 0 23 at-xy skulls
   1 charset  ;
   \ Draw top and bottom border of skulls.
-
-  \ }}} ---------------------------------------------------------
-  \ Text output {{{
-
-: tell  ( ca len -- )
-  0 charset
-  begin  dup columns >  while
-    \ for char=cpl to 1 step -1 \ XXX OLD
-    0 columns do
-      over i + c@ bl = if
-        2dup drop i 1- type
-        i 1+ string/ \ XXX OLD: let text$=text$(char+1 to)
-                     \ XXX OLD -- `char` was the loop index
-        unloop leave
-      then
-    -1 +loop
-  repeat  type  ;
-
-: tellCR  ( ca len -- )  tell cr  ;
-
-: nativeSays  ( ca len -- )
-  nativeWindow
-  cls1
-  tell
-  \ XXX OLD
-  #wipeNativeWords
-  #tellZone text$,12,6,16
-  ;
-
-: message  ( ca len -- )
-  0 charset  wipeMessage  messageWindow  tell  graphicWindow  ;
-
-: tellZone  ( text$,width,row,col -- )
-
-  \ XXX OLD
-  \ XXX TODO use WINDOW instead
-
-  local char
-
-  0 charset
-  begin len text$<=width while
-    \ for char=width to 1 step -1
-    0 width do
-      \ XXX TODO -- `char` is the loop index:
-      if text$(char)=" " then \
-        col row at-xy
-          \ XXX TODO -- adapt
-        text$(to char-1) type
-          \ XXX TODO -- adapt
-        let text$=text$(char+1 to)
-        let row=row+1
-        exit for
-    -1 +loop
-  repeat
-  col row at-xy text$ type  ;
-  \ XXX TODO -- adapt
 
   \ }}} ---------------------------------------------------------
   \ Screen {{{
