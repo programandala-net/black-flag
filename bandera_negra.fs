@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612161439
+  \ Version 0.0.0+201612161442
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -173,7 +173,7 @@ men         avariable stamina()
 : damageIndex  ( -- n )  damage @ damageLevels * 101 / 1+  ;
   \ XXX TODO -- use `*/`
 
-: failure  ( -- f )
+: failure?  ( -- f )
   alive @ 0=
   morale @ 1 < or
   damageIndex damageLevels = or
@@ -183,10 +183,10 @@ men         avariable stamina()
 
 6 constant maxClues
 
-: success  ( -- f )  foundClues @ maxClues =  ;
+: success?  ( -- f )  foundClues @ maxClues =  ;
   \ Success?
 
-: gameOver?  ( -- f )  failure success quitGame or or  ;
+: gameOver?  ( -- f )  failure? success? quitGame or or  ;
   \ Game over?
 
 : condition$ ( m -- ca len )  m stamina() @ stamina$() 2@  ;
@@ -219,13 +219,11 @@ main
   \ XXX The logic is wrong.
 
 : scenery  ( -- )
-  \ XXX FIXME useScreen2 and usesCreen2 cause the sea
-  \ background is missing
   useScreen2
   aboard if  seaScenery  else  islandScenery  then
-  panel
-  useScreen1
-  ;
+  panel useScreen1  ;
+  \ XXX FIXME useScreen2 and usesCreen2 cause the sea
+  \ background is missing
 
 : command  ( -- )
   aboard if  shipCommand  else  islandCommand  then  ;
@@ -1525,7 +1523,7 @@ create islandEvents>  ( -- a )
   day        @  200 * +
   sunkShips  @ 1000 * +
   trades     @  200 * +
-               4000 success and +
+               4000 success? and +
              score +!  ;
 
 : scoreReport  ( -- )
