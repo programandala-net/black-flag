@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612162220
+  \ Version 0.0.0+201612170027
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -154,6 +154,8 @@ constant names
 men 2avariable name  ( n -- a )
   \ A double-cell array to hold the address and length
   \ of the names of the crew members, compiled in `names$`.
+
+: name$  ( n -- ca len )  name 2@  ;
 
 names men avariable usedNames  ( n -- a )
   \ An array to hold a true flag when the correspondent name
@@ -730,14 +732,15 @@ nativeTellsClue6
 
   snake of
     manInjured
-    message "Una serpiente ha mordido a "+name$(injured)+"."
+    s" Una serpiente ha mordido a " injured @ name$ s+ s" ." s+
+    message
   endof
 
   nativeFights of
     manInjured
     message \
       "Un nativo intenta bloquear el paso y hiere a "+\
-      name$(injured)+\
+      injured @ name$ s+
       ", que resulta "+condition$(injured)+"."
   endof
 
@@ -789,18 +792,17 @@ nativeTellsClue6
 
 : event1  ( -- )
   manDead
-  message name$(dead)+" se hunde en arenas movedizas."
+  dead @ name$ s"  se hunde en arenas movedizas." s+ message
   ;
 
 : event2  ( -- )
   manDead
-  message name$(dead)+" se hunde en un pantano."
+  dead @ name$ s"  se hunde en un pantano." s+ message
   ;
 
 : event3  ( -- )
   manInjured
-  message "A "+name$(injured)+" le muerde una araña."
-  ;
+  "A " injured name$ s+ s"  le muerde una araña." s+ message  ;
 
 : event4  ( -- )
   manInjured
@@ -1228,17 +1230,16 @@ create islandEvents>  ( -- a )
   iPos @ islandMap @ 5 = if
     \ XXX TODO --  5=snake?
     manDead
-    message \
-      "Lo matas, pero la serpiente mata a "+\
-      name$(dead)+"."
+    s" Lo matas, pero la serpiente mata a "
+    dead @ name$ s+ s" ." s+ message
     goto L6897
   then
 
   iPos @ islandMap @ nativeVillage = if
     manDead
-    message \
-      "Un poblado entero es un enemigo muy difícil."+\
-      name$(dead)+" muere en el combate."
+    s" Un poblado entero es un enemigo muy difícil. "
+    dead @ name$ s+ s"  muere en el combate." s+
+    message
     goto L6898
   then
 
@@ -1246,8 +1247,8 @@ create islandEvents>  ( -- a )
   \ let z=int (rnd*2)+2
   if kill=1
     manDead
-    message \
-      "El nativo muere, pero antes mata a "+name$(dead)+"."
+    s" El nativo muere, pero antes mata a "
+    dead @ name$ s+ s" ." s+ message
   else if kill=2
     s" El nativo tiene provisiones escondidas en su taparrabos." message
     let supplies=supplies+1
@@ -1638,7 +1639,7 @@ create islandEvents>  ( -- a )
   men 0 do
     white ink
     print \
-    nameCol i 5 + at-xy name$(i) type
+    nameCol i 5 + at-xy i name$ type
       \ XXX TODO -- convert array
     i stamina @ staminaAttr @ color!
     dataCol i 5 + at-xy
