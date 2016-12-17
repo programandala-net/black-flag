@@ -380,12 +380,7 @@ main
 
 : tellCR  ( ca len -- )  tell cr  ;
 
-: nativeSays  ( ca len -- )
-  nativeWindow cls1 tell
-  \ XXX OLD
-  \ wipeNativeWords
-  \ tellZone text$,12,6,16
-  ;
+: nativeSays  ( ca len -- )  nativeWindow cls1 tell  ;
 
 : message  ( ca len -- )
   0 charset  wipeMessage messageWindow tell graphicWindow  ;
@@ -586,13 +581,13 @@ variable possibleWest           \ flag
   palm2 4,4
 
   s" Un comerciante nativo te sale al encuentro." message
-  nativeSays "Yo vender pista de tesoro a tú."
+  s" Yo vender pista de tesoro a tú." nativeSays
 
   5 9 random-range price !
-  nativeSays "Precio ser "+coins$(price)+"."
+  s" Precio ser " price @ coins$ s+ s" ." s+ nativeSays
   \ XXX TODO pause or join:
   1 seconds
-  nativeSays "¿Qué dar tú, blanco?"
+  s" ¿Qué dar tú, blanco?" nativeSays
   makeOffer
   \ One dubloon less is accepted:
   if offer>=(price-1) then \
@@ -613,7 +608,8 @@ variable possibleWest           \ flag
 
   \ He reduces the price by one dubloon
   let price=price-1
-  nativeSays "¡No! ¡Yo querer más! Tú darme "+coins$(price)+"."
+  s" ¡No! ¡Yo querer más! Tú darme " price @ coins$ s+ s" ." s+
+  nativeSays
 
   label oneCoinLess
   \ He accepts one dubloon less
@@ -628,7 +624,8 @@ variable possibleWest           \ flag
   \ XXX TODO -- factor out
   \ He lowers the price by several dubloons
   -3 -2 random-range price +!
-  nativeSays "Bueno, tú darme... "+coins$(price)+" y no hablar más."
+  s" Bueno, tú darme... " price @ coins$ s+
+  s"  y no hablar más." s+ nativeSays
   makeOffer
   if offer>=price then \
     acceptedOffer
@@ -666,67 +663,45 @@ variable possibleWest           \ flag
   s" Le ofreces " offer @ coins$ s+ s" ." s+ message  ;
 
 : rejectedOffer  ( -- )
-
-  2 seconds
-  nativeSays "¡Tú insultar! ¡Fuera de isla mía!"
-  4 seconds
-  embark
-
-  ;
+  2 seconds  s" ¡Tú insultar! ¡Fuera de isla mía!" nativeSays
+  4 seconds  embark  ;
 
 : acceptedOffer  ( -- )
-
   wipeMessage
-  let \
-    cash=cash-offer,\
-    score=score+200,\
-    trades=trades+1
-  nativeTellsClue
-  4 seconds
-  embark
-
-  ;
-
-create nativeTellsClues  ( -- a )
-]
-nativeTellsClue1
-nativeTellsClue2
-nativeTellsClue3
-nativeTellsClue4
-nativeTellsClue5
-nativeTellsClue6
-[
-
-: nativeTellsClue  ( -- )
-  nativeSays "Bien... Pista ser..."
-  2 seconds
-  0 5 random-range cells nativeTellsClues + perform
-  2 seconds
-  nativeSays "¡Buen viaje a isla de tesoro!"
-  ;
+  offer @ negate cash +!  200 score +!  1 trades +!
+  nativeTellsClue  4 seconds  embark  ;
 
 : nativeTellsClue1  ( -- )
-  nativeSays "Tomar camino "+trunc$ n$(path)+"."
-  ;
+  s" Tomar camino " path @ number$ s+ s" ." s+ nativeSays  ;
 
 : nativeTellsClue2  ( -- )
-  nativeSays "Parar en árbol "+trunc$ n$(tree)+"."
-  ;
+  s" Parar en árbol " tree @ number$ s+ s" ." s+ nativeSays  ;
 
 : nativeTellsClue3  ( -- )
-  s" Ir a " turn @ hand$ s+ s" en árbol." s+ nativeSays  ;
+  s" Ir a " turn @ hand$ s+ s"  en árbol." s+ nativeSays  ;
 
 : nativeTellsClue4  ( -- )
   s" Atravesar poblado " village @ village$ s+ s" ." s+
   nativeSays  ;
 
 : nativeTellsClue5  ( -- )
-  s" Ir " direction @ cardinal$ s+ s" desde poblado." s+
+  s" Ir " direction @ cardinal$ s+ s"  desde poblado." s+
   nativeSays  ;
 
 : nativeTellsClue6  ( -- )
-  nativeSays "Dar "+trunc$ n$(pace)+" paso"+("s" and (pace>1))+" desde poblado."
-  ;
+  s" Dar " pace @ number$ s+ s"  paso" s+
+  s" s" pace @ 1 > and s+
+  s" desde poblado." s+ nativeSays  ;
+
+create nativeTellsClues  ( -- a )
+] nativeTellsClue1 nativeTellsClue2 nativeTellsClue3
+  nativeTellsClue4 nativeTellsClue5 nativeTellsClue6 [
+
+: nativeTellsClue  ( -- )
+  s" Bien... Pista ser..." nativeSays
+  2 seconds  0 5 random-range cells nativeTellsClues + perform
+  2 seconds  s" ¡Buen viaje a isla de tesoro!" nativeSays  ;
+
 
   \ }}} ---------------------------------------------------------
   \ Commands on the island {{{
