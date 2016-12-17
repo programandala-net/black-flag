@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612170050
+  \ Version 0.0.0+201612170123
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -566,6 +566,164 @@ variable possibleWest           \ flag
   else  newIslandMap enterIslandLocation  then  ;
 
   \ }}} ---------------------------------------------------------
+  \ Island graphics {{{
+
+: islandScenery  ( -- )
+
+  graphicWindow
+  \ XXX OLD
+  \   load "attr/zp6i6b0l13" code attrLine(3)
+  poke attrLine(3),attrLines$(6,yellow,yellow,0)+attrLines$(7,yellow,yellow,0)
+  \ XXX TODO -- adapt
+
+  sunnySky
+
+  iPos @ 6 - islandMap @ coast = if  drawBottomWaves   then
+  iPos @ 6 + islandMap @ coast = if  drawHorizonWaves  then
+  iPos @ 1-  islandMap @ coast = if  drawLeftWaves     then
+  iPos @ 1+  islandMap @ coast = if  drawRightWaves    then
+
+  iPos @ islandMap @ case
+    nativeVillage of
+      drawVillage
+    endof
+    dubloonsFound of
+      4 8 palm2  14 5 palm2
+    endof
+    nativeFights of
+      14 5 palm2  25 8 palm2  drawNative
+    endof
+    4 of \ XXX TODO constant
+      25 8 palm2  4 8 palm2  16 5 palm2
+    endof
+    snake of
+      13 5 palm2  5 6 palm2  18 8 palm2  23 8 palm2  drawSnake
+    endof
+    6 of \ XXX TODO constant
+      23 8 palm2  17 5 palm2  4 8 palm2
+    endof
+    nativeSupplies of
+      drawSupplies  drawNative  16 4 palm2
+    endof
+    nativeAmmo of
+      drawAmmo  drawNative  20 5 palm2
+    endof
+  endcase  ;
+
+: drawHorizonWaves  ( -- )
+  white ink  blue paper
+  0 3 at-xy ."  kl  mn     nm    klk   nm nm n"  ;
+
+: drawBottomWaves  ( -- )
+  white ink  blue paper
+  0 14 at-xy ."  kl     mn  mn    kl    kl kl  m"
+             ."     mn      klmn   mn m  mn   "  ;
+
+: drawLeftWaves  ( -- )
+  white ink blue paper
+  16 3 do  0 i at-xy ."  "  loop
+  white ink  blue paper
+  0 6 at-xy ." mn" 0 10 at-xy ." kl" 0 13 at-xy ." k"
+  0 4 at-xy ." m" 1 8 at-xy ." l"
+  2 charset
+  yellow ink  blue paper
+  iPos @ 6 + islandMap @ coast <> if  2  3 at-xy 'A' emit  then
+  iPos @ 6 + islandMap @ coast =  if  2  4 at-xy 'A' emit  then
+  iPos @ 6 - islandMap @ coast =  if  2 13 at-xy 'C' emit  then
+  1 charset  ;
+
+: drawRightWaves  ( -- )
+  white ink  blue paper
+  16 3 do  30 i at-xy ."  "  loop
+  white ink  blue paper
+  30 6 at-xy ." mn" 30 10 at-xy ." kl" 31 13 at-xy ." k"
+  30 4 at-xy ." m" 31 8 at-xy ." l"
+  2 charset
+  yellow ink  blue paper
+  iPos @ 6 + islandMap @ coast =
+  if    29  4 at-xy 'B' emit  then
+  iPos @ 6 - islandMap @ coast =
+  if    29 13 at-xy 'D'
+  else  29  3 at-xy 'B'
+  then  emit  1 charset  ;
+
+: drawVillage  ( -- )
+
+  2 charset
+
+  green ink  yellow paper
+  print \
+  6  5 at-xy ."  S\::T    ST   S\::T"
+  6  6 at-xy ."  VUW    78   VUW   4"
+  4  8 at-xy ." S\::T   S\::T    S\::T S\::T  S\::T "
+  4  9 at-xy ." VUW   VUW  4 VUW VUW  VUW"
+  4 11 at-xy ." S\::T    S\::T ST  S\::T S\::T"
+  4 12 at-xy ." VUW  4 VUW 78  VUW VUW"
+
+  black ink  yellow paper
+  print \
+  7 12 at-xy ." X"
+  17 12 at-xy ." Y"
+  22 12 at-xy ." Z"
+  26 12 at-xy ." XY"
+  8 9 at-xy ." ZZ"
+  13 9 at-xy ." Y"
+  24 9 at-xy ." ZX"
+  10 6 at-xy ." XYZ"
+  17 6 at-xy ." YX"
+  26 6 at-xy ." Z"
+
+  1 charset
+
+  ;
+
+: drawNative  ( -- )
+  black ink  yellow paper
+  print \
+  8 10 at-xy ."  _ `"
+  8 11 at-xy ." }~.,"
+  8 12 at-xy ." {|\?"
+  ;
+
+: drawAmmo  ( -- )
+  black ink  yellow paper  14 12 at-xy ." hi"  ;
+
+: drawSupplies  ( -- )
+  2 charset
+  black ink  yellow paper 14 12 at-xy ." 90  9099 0009"
+  1 charset  ;
+  \ XXX TODO draw graphics depending on the actual ammount
+
+: drawSnake  ( -- )
+  2 charset  black ink  yellow paper  14 12 at-xy ." xy"
+  1 charset  ;
+
+: drawDubloons  ( coins -- )
+  2 charset  black ink  yellow paper
+  12 12 at-xy s" vw vw vw vw vw vw vw vw" drop coins @ 3 * type
+  1 charset  ;
+
+: palm1  ( x y -- )
+  green ink  blue paper  2dup    at-xy ." OPQR"
+                         2dup 1+ at-xy ." S TU"  yellow ink
+  1+ under+  \ increment x
+  1+ 2dup at-xy ." N"
+  1+ 2dup at-xy ." M"
+  1+      at-xy ." L"  ;
+  \ Print palm model 1 at characters coordinates _x y_.
+
+: palm2  ( x y -- )
+  green ink  yellow paper  2dup    at-xy ." OPQR"
+                           2dup 1+ at-xy ." S TU"  black ink
+  1+ under+  \ increment x
+  1+ 2dup at-xy ." N"
+  1+ 2dup at-xy ." M"
+  1+ 2dup at-xy ." L"
+  1+      at-xy ." V"  ;
+  \ Print palm model 2 at characters coordinates _x y_.
+
+
+  \ }}} ---------------------------------------------------------
   \ Trading {{{
 
 : trade  ( -- )
@@ -573,13 +731,10 @@ variable possibleWest           \ flag
   1 charset
   \ XXX TODO factor out:
   black ink  yellow paper
-  16 3 do
-    0 i at-xy blankLine$ type
-  loop
+  16 3 do  0 i at-xy blankLine$ type  loop
+  4 4 palm2
   drawNative
   nativeSpeechBalloon
-  palm2 4,4
-
   s" Un comerciante nativo te sale al encuentro." message
   s" Yo vender pista de tesoro a tú." nativeSays
 
@@ -865,180 +1020,6 @@ create islandEvents>  ( -- a )
 
 : islandEvents  ( -- )
   0 10 random-range cells islandEvents> + perform  ;
-
-  \ }}} ---------------------------------------------------------
-  \ Island graphics {{{
-
-: islandScenery  ( -- )
-
-  graphicWindow
-  \ XXX OLD
-  \   load "attr/zp6i6b0l13" code attrLine(3)
-  poke attrLine(3),attrLines$(6,yellow,yellow,0)+attrLines$(7,yellow,yellow,0)
-  \ XXX TODO -- adapt
-
-  sunnySky
-
-  iPos @ 6 - islandMap @ coast = if  drawBottomWaves   then
-  iPos @ 6 + islandMap @ coast = if  drawHorizonWaves  then
-  iPos @ 1-  islandMap @ coast = if  drawLeftWaves     then
-  iPos @ 1+  islandMap @ coast = if  drawRightWaves    then
-
-  iPos @ islandMap @ case
-    nativeVillage of
-      drawVillage
-    endof
-    dubloonsFound of
-      palm2 8,4
-      palm2 5,14
-    endof
-    nativeFights of
-      palm2 5,14
-      palm2 8,25
-      drawNative
-    endof
-    4 of \ XXX TODO constant
-      palm2 8,25
-      palm2 8,4
-      palm2 5,16
-    endof
-    snake of
-      palm2 5,13
-      palm2 6,5
-      palm2 8,18
-      palm2 8,23
-      drawSnake
-    endof
-    6 of \ XXX TODO constant
-      palm2 8,23
-      palm2 5,17
-      palm2 8,4
-    endof
-    nativeSupplies of
-      drawSupplies
-      drawNative
-      palm2 4,16
-    endof
-    nativeAmmo of
-      drawAmmo
-      drawNative
-      palm2 5,20
-    endof
-  endcase  ;
-
-: drawHorizonWaves  ( -- )
-  white ink  blue paper
-  0 3 at-xy ."  kl  mn     nm    klk   nm nm n"  ;
-
-: drawBottomWaves  ( -- )
-  white ink  blue paper
-  0 14 at-xy ."  kl     mn  mn    kl    kl kl  m"
-             ."     mn      klmn   mn m  mn   "  ;
-
-: drawLeftWaves  ( -- )
-  white ink blue paper
-  16 3 do  0 i at-xy ."  "  loop
-  white ink  blue paper
-  0 6 at-xy ." mn" 0 10 at-xy ." kl" 0 13 at-xy ." k"
-  0 4 at-xy ." m" 1 8 at-xy ." l"
-  2 charset
-  yellow ink  blue paper
-  iPos @ 6 + islandMap @ coast <> if  2  3 at-xy 'A' emit  then
-  iPos @ 6 + islandMap @ coast =  if  2  4 at-xy 'A' emit  then
-  iPos @ 6 - islandMap @ coast =  if  2 13 at-xy 'C' emit  then
-  1 charset  ;
-
-: drawRightWaves  ( -- )
-  white ink  blue paper
-  16 3 do  30 i at-xy ."  "  loop
-  white ink  blue paper
-  30 6 at-xy ." mn" 30 10 at-xy ." kl" 31 13 at-xy ." k"
-  30 4 at-xy ." m" 31 8 at-xy ." l"
-  2 charset
-  yellow ink  blue paper
-  iPos @ 6 + islandMap @ coast =
-  if    29  4 at-xy 'B' emit  then
-  iPos @ 6 - islandMap @ coast =
-  if    29 13 at-xy 'D'
-  else  29  3 at-xy 'B'
-  then  emit  1 charset  ;
-
-: drawVillage  ( -- )
-
-  2 charset
-
-  green ink  yellow paper
-  print \
-  6  5 at-xy ."  S\::T    ST   S\::T"
-  6  6 at-xy ."  VUW    78   VUW   4"
-  4  8 at-xy ." S\::T   S\::T    S\::T S\::T  S\::T "
-  4  9 at-xy ." VUW   VUW  4 VUW VUW  VUW"
-  4 11 at-xy ." S\::T    S\::T ST  S\::T S\::T"
-  4 12 at-xy ." VUW  4 VUW 78  VUW VUW"
-
-  black ink  yellow paper
-  print \
-  7 12 at-xy ." X"
-  17 12 at-xy ." Y"
-  22 12 at-xy ." Z"
-  26 12 at-xy ." XY"
-  8 9 at-xy ." ZZ"
-  13 9 at-xy ." Y"
-  24 9 at-xy ." ZX"
-  10 6 at-xy ." XYZ"
-  17 6 at-xy ." YX"
-  26 6 at-xy ." Z"
-
-  1 charset
-
-  ;
-
-: drawNative  ( -- )
-  black ink  yellow paper
-  print \
-  8 10 at-xy ."  _ `"
-  8 11 at-xy ." }~.,"
-  8 12 at-xy ." {|\?"
-  ;
-
-: drawAmmo  ( -- )
-  black ink  yellow paper  14 12 at-xy ." hi"  ;
-
-: drawSupplies  ( -- )
-  2 charset
-  black ink  yellow paper 14 12 at-xy ." 90  9099 0009"
-  1 charset  ;
-  \ XXX TODO draw graphics depending on the actual ammount
-
-: drawSnake  ( -- )
-  2 charset  black ink  yellow paper  14 12 at-xy ." xy"
-  1 charset  ;
-
-: drawDubloons  ( coins -- )
-  2 charset  black ink  yellow paper
-  12 12 at-xy s" vw vw vw vw vw vw vw vw" drop coins @ 3 * type
-  1 charset  ;
-
-: palm1  ( y,x -- )
-  green ink  blue paper
-  x y at-xy ." OPQR"
-  x y+1 at-xy ." S TU"
-  yellow ink
-  x+1 y+1 at-xy ." N"
-  x+1 y+2 at-xy ." M"
-  x+1 y+3 at-xy ." L"  ;
-
-: palm2  ( y,x -- )
-  green ink  yellow paper
-  print \
-  x y at-xy ." OPQR"
-  x y+1 at-xy ." S TU"
-  black ink
-  x+1 y+1 at-xy ." N"
-  x+1 y+2 at-xy ." M"
-  x+1 y+3 at-xy ." L"
-  x+1 y+4 at-xy ." V"
-  ;
 
   \ }}} ---------------------------------------------------------
   \ Ship battle {{{
@@ -1338,77 +1319,48 @@ create islandEvents>  ( -- a )
 
   if n=2
     drawBigIsland5
-    palm1 4,19
+    19 4 palm1
   else if n=3
     drawBigIsland4
-    palm1 4,14
-    palm1 4,19
-    palm1 4,24
-    drawShark
+    14 4 palm1  19 4 palm1  24 4 palm1  drawShark
   else if n=4
     drawLittleIsland2
-    palm1 4,14
+    14 4 palm1
   else if n=5
     drawLittleIsland1
-    palm1 4,24
+    24 4 palm1
   else if n=6
-    drawLittleIsland1
-    palm1 4,24
-    drawLittleIsland2
-    palm1 4,14
+    drawLittleIsland1  24 4 palm1
+    drawLittleIsland2  14 4 palm1
   else if n=7
-    drawBigIsland3
-    palm1 4,19
+    drawBigIsland3  19 4 palm1
   else if n=8
-    drawBigIsland2
-    palm1 4,14
-    drawShark
+    drawBigIsland2  14 4 palm1  drawShark
   else if n=9
-    drawBigIsland1
-    palm1 4,24
+    drawBigIsland1  24 4 palm1
   else if n=10
-    palm1 4,24
-    drawTwoLittleIslands
+    24 4 palm1  drawTwoLittleIslands
   else if n=11
     drawShark
-  #else if n=12:\ \ XXX not in the original
+  \ else if n=12:\ \ XXX not in the original
   else if n=13
-    palm1 4,24
-    drawTwoLittleIslands
-    drawEnemyShip
+    24 4 palm1  drawTwoLittleIslands  drawEnemyShip
   else if n=14
-    drawBigIsland1
-    palm1 4,24
-    drawEnemyShip
+    drawBigIsland1  24 4 palm1  drawEnemyShip
   else if n=15
-    drawBigIsland2
-    palm1 4,14
-    drawEnemyShip
+    drawBigIsland2  14 4 palm1  drawEnemyShip
   else if n=16
-    drawBigIsland3
-    palm1 4,19
-    drawEnemyShip
+    drawBigIsland3  19 4 palm1  drawEnemyShip
   else if n=17
-    drawLittleIsland2
-    palm1 4,14
-    drawBoat
-    drawLittleIsland1
-    palm1 4,24
+    drawLittleIsland2  14 4 palm1  drawBoat
+    drawLittleIsland1  24 4 palm1
   else if n=18
-    drawLittleIsland1
-    palm1 4,24
-    drawBoat
+    drawLittleIsland1  24 4 palm1  drawBoat
   else if n=19
     drawBigIsland4
-    palm1 4,14
-    palm1 4,19
-    palm1 4,24
-    drawBoat
-    drawShark
+    14 4 palm1  19 4 palm1  24 4 palm1  drawBoat  drawShark
   else if n=20
-    drawBigIsland5
-    palm1 4,19
-    drawBoat
+    drawBigIsland5  19 4 palm1  drawBoat
   else if n=shark:\ \ XXX TODO needed?
     drawShark
   endif
@@ -1417,7 +1369,6 @@ create islandEvents>  ( -- a )
 
   if n=treasureIsland then \
     drawTreasureIsland
-
   ;
 
 : drawShark  ( -- )
@@ -1556,9 +1507,7 @@ create islandEvents>  ( -- a )
   green ink  blue paper
   print \
   31 13 at-xy ." E"
-  palm1 4,19
-  palm1 4,24
-  palm1 4,14
+  19 4 palm1  24 4 palm1  14 4 palm1
   black ink  green paper
   22 9 at-xy ." \T\U":\ \ the treasure
   shipPos @ visited @ if
@@ -2048,28 +1997,17 @@ create islandEvents>  ( -- a )
   draw 0,14:draw 15,0
   ;
 
-: sailorSays  ( text$ -- )
-  \ XXX TODO use window instead
-  wipeSailorSpeech
-  tellZone text$,12,12,6
-  ;
-
 : wipeSailorSpeech  ( -- )
-  19 12 do
-    6 i at-xy ."            "
-  loop  ;
+  19 12 do  6 i at-xy ."            "  loop  ;
+
+: sailorSays  ( text$ -- )
+  wipeSailorSpeech tellZone text$,12,12,6  ;
+  \ XXX TODO use window instead
 
 : trees  ( -- )
-  local z
-  wipeIsland
-  black ink  yellow paper
-  print \
+  wipeIsland  black ink  yellow paper
   0 7 at-xy ."  1       2       3       4"
-  1 charset
-  27 2 do
-    \ XXX TODO -- `z` is the loop index:
-    palm2 3,z
-  8 +loop  ;
+  1 charset  27 2 do  i 3 palm2  8 +loop  ;
 
   \ }}} ---------------------------------------------------------
   \ User input {{{
@@ -2109,29 +2047,6 @@ create islandEvents>  ( -- a )
   \ }}} ---------------------------------------------------------
   \ Game over{{{
 
-: theEnd  ( -- )
-
-  local z
-
-  black ink yellow paper cls1
-
-  \ XXX TODO new graphic, based on the cause of the end
-  1 charset
-  #for z=1 to 15 step 7
-  16 1 do
-    \ XXX TODO -- `z` is the loop index:
-    palm2 z,27:palm2 z,1
-  7 +loop
-
-  if foundClues=6 then happyEnd:else sadEnd
-
-  s" Pulsa una tecla para ver tus puntos" message
-  0 pause
-  beep .2,30
-  scoreReport
-
-  ;
-
 : reallyQuit  ( -- )
   \ Confirm the quit
   \ XXX TODO
@@ -2161,47 +2076,38 @@ create islandEvents>  ( -- a )
   s" El barco está muy dañado y es imposible repararlo." tell
   if cash<=0 then \
   s" No te queda dinero." tell
-  window
-
-  ;
+  window  ;
 
 : treasureFound  ( -- )
-
-  \ XXX TODO use this proc instead of happyEnd?
-
-  local z
-
-  2 seconds
   \ load "attr/zp5i5b1l03" code attrLine(0)
   \ load "attr/zp6i6b0l18" code attrLine(4)
     \ XXX TODO --
   sunnySky
-  23 7 do
-    \ XXX TODO -- `z` is the loop index:
-    palm2 5,z
-  5 +loop
-  palm2 7,3:palm2 7,26
+  23 7 do  i 5 palm2  5 +loop  3 7 palm2  26 7 palm2
   \ Cofre del tesoro:
   black ink  yellow paper
-  print
   8 13 at-xy
   ." pq          xy                  "
   ." rs          vs                  tu      "
   ." \T\U    wu"
-  palm2 11,28:palm2 11,0
-  2 charset
-  blue ink  yellow paper
-  print
+  28 11 palm2  0 11 palm2
+  2 charset  blue ink  yellow paper
   13 17 at-xy ." l\::m"
   s" ¡Capitán, somos ricos!" message
-  4 seconds
-  1 charset
-
-  ;
+  4 seconds  1 charset  ;
+  \ XXX TODO use this proc instead of happyEnd?
 
 : happyEnd  ( -- )
   s" Lo lograste, capitán." message
   ;
+
+: theEnd  ( -- )
+  black ink yellow paper cls1
+  1 charset  16 1 do  27 i palm2  1 i palm2  7 +loop
+  success? if  happyEnd  else  sadEnd  then
+  s" Pulsa una tecla para ver tus puntos" message
+  0 pause beep .2,30 scoreReport  ;
+  \ XXX TODO new graphic, based on the cause of the end
 
   \ }}} ---------------------------------------------------------
   \ Intro {{{
