@@ -11,7 +11,10 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612181415
+  \ Version 0.0.0+201612181420
+  \
+  \ Note: Version 0.0.0 indicates the conversion from Master
+  \ BASIC (in MBim format) to Forth is still in progress.
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -403,7 +406,8 @@ main
         text$(to char-1) type
           \ XXX TODO -- adapt
         let text$=text$(char+1 to)
-        let row=row+1
+          \ XXX TODO -- adapt
+        1 row +!
         exit for
     -1 +loop
   repeat
@@ -746,7 +750,7 @@ variable possibleWest           \ flag
   \   goto newPrice
 
   \ He reduces the price by one dubloon
-  let price=price-1
+  -1 price +!
   s" ¡No! ¡Yo querer más! Tú darme " price @ coins$ s+ s" ." s+
   nativeSays
 
@@ -963,14 +967,12 @@ create nativeTellsClues  ( -- a )
 : event5  ( -- )
   \ XXX TODO only if supplies are not enough
   s" La tripulación está hambrienta." message
-  let morale=morale-1
-  ;
+  -1 morale +!  ;
 
 : event6  ( -- )
   \ XXX TODO only if supplies are not enough
   s" La tripulación está sedienta." message
-  let morale=morale-1
-  ;
+  -1 morale +!  ;
 
 : event7  ( -- )
   2 5 random-range >r
@@ -1827,7 +1829,7 @@ create islandEvents>  ( -- a )
   23 15 at-xy option ?
   beep .2,30
   2 seconds
-  if option=path then let foundClues=foundClues+1
+  option @ path @ = abs foundClues +!
 
   sailorSays "¿Qué árbol, capitán?"
   23 15 at-xy ." ? "
@@ -1837,7 +1839,7 @@ create islandEvents>  ( -- a )
     \ XXX TODO -- factor out
   trees
   2 seconds
-  if option=tree then let foundClues=foundClues+1
+  option @ tree @ = abs foundClues +!
 
   \ XXX TODO better, with letters
   black paper
@@ -1849,7 +1851,7 @@ create islandEvents>  ( -- a )
   23 15 at-xy option ?
   beep .2,30
   2 seconds
-  if option=turn then let foundClues=foundClues+1
+  option @ turn @ = abs foundClues +!
 
   wipeIsland
   black ink  yellow paper
