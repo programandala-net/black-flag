@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612182037
+  \ Version 0.0.0+201612182113
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -71,6 +71,11 @@ seaMapCols seaMapRows * constant /seaMap
 9 constant nativeVillage
 
 9 constant maxOffer
+
+ 3 constant seaTopY
+13 constant seaHeight  \ screen lines
+ 0 constant skyTopY
+ 3 constant skyHeight  \ screen lines
 
   \ Windows parameters
 3                                   constant introWinTop
@@ -286,12 +291,6 @@ sconstants hand$  ( n -- ca len )
 : >attr ( paper ink bright -- c )  64 * + swap 8 * +  ;
   \ Convert _paper_, _ink_ and _bright_ to an attribute byte
   \ _c_.
-
-: attrLines$ ( lines paper ink bright -- ca len )
-  >attr  swap columns *  ruler  ;
-  \ Convert _paper_, _ink_ and _bright_ to a string _ca len_
-  \ that holds as many equivalent attribute bytes to cover
-  \ _lines_ lines of the screen.
 
 : dubloons$ ( n -- ca len )
   s" dobl " rot 1 > if s" ones"  else  s" ón"  then s+  ;
@@ -595,15 +594,18 @@ variable possibleWest           \ flag
   \ ============================================================
   \ Island graphics {{{1
 
+: colorSea  ( c -- )
+  [ seaTopY attrLine ] literal
+  [ seaHeight columns * ] literal rot fill  ;
+  \ Color the sea with attribute _c_.
+
+: wipeSea  ( -- )  [ blue dup paperish + ] literal colorSea  ;
+
+: wipeIslandScenery  ( -- )
+  [ yellow dup paperish + ] literal colorSea  ;
+
 : islandScenery  ( -- )
-
-  graphicWindow
-  \ XXX OLD
-  \   load "attr/zp6i6b0l13" code attrLine(3)
-  poke attrLine(3),attrLines$(6,yellow,yellow,0)+attrLines$(7,yellow,yellow,0)
-  \ XXX TODO -- adapt
-
-  sunnySky
+  graphicWindow wipeIslandScenery sunnySky
 
   iPos @ 6 - islandMap @ coast = if  drawBottomWaves   then
   iPos @ 6 + islandMap @ coast = if  drawHorizonWaves  then
@@ -611,30 +613,20 @@ variable possibleWest           \ flag
   iPos @ 1+  islandMap @ coast = if  drawRightWaves    then
 
   iPos @ islandMap @ case
-    nativeVillage of
-      drawVillage
-    endof
-    dubloonsFound of
-      4 8 palm2  14 5 palm2
-    endof
-    nativeFights of
-      14 5 palm2  25 8 palm2  drawNative
-    endof
-    4 of \ XXX TODO constant
-      25 8 palm2  4 8 palm2  16 5 palm2
-    endof
+    nativeVillage of  drawVillage  endof
+    dubloonsFound of  4 8 palm2  14 5 palm2  endof
+    nativeFights of  14 5 palm2  25 8 palm2  drawNative  endof
+    4 of  25 8 palm2  4 8 palm2  16 5 palm2  endof
+    \ XXX TODO constant
     snake of
       13 5 palm2  5 6 palm2  18 8 palm2  23 8 palm2  drawSnake
     endof
-    6 of \ XXX TODO constant
-      23 8 palm2  17 5 palm2  4 8 palm2
-    endof
+    6 of  23 8 palm2  17 5 palm2  4 8 palm2  endof
+    \ XXX TODO constant
     nativeSupplies of
       drawSupplies  drawNative  16 4 palm2
     endof
-    nativeAmmo of
-      drawAmmo  drawNative  20 5 palm2
-    endof
+    nativeAmmo of  drawAmmo  drawNative  20 5 palm2  endof
   endcase  ;
 
 : drawHorizonWaves  ( -- )
@@ -1446,8 +1438,9 @@ variable done
   \ XXX TODO -- factor
 
 : wipeIsland  ( -- )
-  poke attrLine(3),attrLines$(5,6,6,0)  ;
-  \ XXX TODO -- use `fill`
+  [ 3 attrLine ] literal
+  [ 3 columns * ] literal
+  [ yellow dup paperish + ] literal fill  ;
 
   \ --------------------------------------------
   \ Ships {{{2
@@ -1585,9 +1578,14 @@ variable done
   \ ============================================================
   \ Landscape graphics {{{1
 
+: colorSky  ( c -- )
+  [ skyTopY attrLine ] literal
+  [ skyHeight columns * ] literal rot fill  ;
+  \ Color the sky with attribute _c_.
+
 : stormySky  ( -- )
-  \ load "attr/zp5i5b0l03" code attrLine(0) \ XXX TODO --
-  false sunAndClouds  ;
+  [ cyan dup paperish + ] colorSky  false sunAndClouds  ;
+  \ Make the sky stormy.
 
 : seaWaves  ( -- )
   1 charset cyan ink  blue paper
@@ -1598,17 +1596,13 @@ variable done
   loop  ;
 
 : seaAndSky  ( -- )
-  graphicWindow:\ \ XXX TMP needed, because the wipePanel before the calling
-  wipeSea
-  seaWaves
-  sunnySky
-  ;
+  graphicWindow wipeSea seaWaves sunnySky  ;
+  \ XXX TMP -- `graphicWindow` is needed, because of the
+  \ `wipePanel` before the calling
 
 : sunnySky  ( -- )
-  \ load "attr/zp5i5b1l03" code attrLine(0)
-  \ XXX OLD -- where is it?:
-  #finnishTheSky 1
-  ;
+  [ cyan dup papery + brighty ] colorSky  ;
+  \ Make the sky sunny.
 
 : sunAndClouds  ( f -- )
   2 charset  bright  yellow ink  cyan paper
@@ -1618,10 +1612,8 @@ variable done
   13 21 random-range dup cloud1X !
   dup 0 at-xy ." MNO"  1 at-xy ." PQR"
   1 charset  0 bright  ;
-
-: wipeSea  ( -- )
-  \ load "attr/zp1i1b0l13" code attrLine(3) \ XXX TODO --
-  ;
+  \ XXX TODO -- why the parameter, if this word is used only
+  \ once?
 
   \ ============================================================
   \ Setup {{{1
@@ -1670,7 +1662,9 @@ variable done
 
 : init  ( -- )
   randomize
-  \ load "attr/zp0i0b0l20" code attrLine(2) \ XXX TODO --
+  [ 2 attrLine ] literal [ 20 columns * ] literal erase
+    \ XXX TODO -- check if needed
+    \ XXX TODO -- use constant to define the zone
   white ink  black paper  1 flash
   0 14 at-xy s" Preparando el viaje..." columns type-center
   initSeaMap initShip initCrew initPlot  ;
@@ -1920,12 +1914,15 @@ variable done
   window  ;
 
 : treasureFound  ( -- )
-  \ load "attr/zp5i5b1l03" code attrLine(0)
-  \ load "attr/zp6i6b0l18" code attrLine(4)
-    \ XXX TODO --
+  [ 0 attrLine ] literal [ 3 columns * ] literal
+  [ cyan dup papery + brighty ] literal fill
+  [ 4 attrLine ] literal [ 18 columns * ] literal
+  [ yellow dup papery ] literal fill
+    \ XXX TODO -- factor the coloring
   sunnySky
+
   23 7 do  i 5 palm2  5 +loop  3 7 palm2  26 7 palm2
-  \ Cofre del tesoro:
+
   black ink  yellow paper
   8 13 at-xy
   ." pq          xy                  "
@@ -1934,6 +1931,8 @@ variable done
   28 11 palm2  0 11 palm2
   2 charset  blue ink  yellow paper
   13 17 at-xy ." l\::m"
+    \ XXX TODO -- factor the treasure
+
   s" ¡Capitán, somos ricos!" message
   4 seconds  1 charset  ;
   \ XXX TODO use this proc instead of happyEnd?
