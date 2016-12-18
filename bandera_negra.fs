@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612182116
+  \ Version 0.0.0+201612182118
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -356,8 +356,7 @@ sconstants hand$  ( n -- ca len )
 : condition$ ( n -- ca len )  stamina @ stamina$ 2@  ;
   \ Physical condition of a crew member
 
-: blankLine$  ( -- ca len )  string$(columns," ")  ;
-  \ XXX TODO --
+: blankLine$  ( -- ca len )  bl columns ruler  ;
 
 : damage$  ( -- ca len )  damageIndex damageLevel$  ;
   \ Damage description
@@ -742,6 +741,7 @@ variable possibleWest           \ flag
   \ XXX TODO factor out:
   black ink  yellow paper
   16 3 do  0 i at-xy blankLine$ type  loop
+    \ XXX TODO improve with `fill`
   4 4 palm2
   drawNative
   nativeSpeechBalloon
