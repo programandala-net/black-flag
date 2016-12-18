@@ -6,8 +6,11 @@
 
 - Convert `let`.
 - Review variables and constants.
-- Convert `if`.
 - Convert `plot` and `draw`.
+- Convert `exit proc`.
+- Convert `rnd()`.
+- Convert `local`.
+- Convert `default`.
 
 == Old notes (in Spanish) from the abandoned Master BASIC version
   

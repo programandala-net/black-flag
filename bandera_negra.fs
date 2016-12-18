@@ -25,6 +25,7 @@ need chars>string  need string/  need columns  need inverse
 need seconds  need random-range  need at-x  need row
 need ruler  need avariable  need cavariable  need sconstants
 need /sconstants  need case  need >=  need or-of  need inkey
+need <=
 
 need black  need blue  need red  need green
 need cyan  need yellow  need white  need color!
@@ -737,18 +738,15 @@ variable possibleWest           \ flag
   1 seconds
   s" ¿Qué dar tú, blanco?" nativeSays
   makeOffer
-  \ One dubloon less is accepted:
-  if offer>=(price-1) then \
-    acceptedOffer:exit proc
-  \ Too low offer is not accepted:
-  if offer<=(price-4) then \
-    rejectedOffer:exit proc
+  offer @ price @ 1-  >= if  acceptedOffer exit  then
+    \ One dubloon less is accepted.
+  offer @ price @ 4 - <= if  rejectedOffer exit  then
+    \ Too low offer is not accepted.
 
   \ You offered too few
-  1 4 random-range case
-    1 of  lowerPrice  endof
-    2 of  newPrice  endof
-  endcase
+  1 4 random-range case 1 of  lowerPrice  endof
+                        2 of  newPrice    endof  endcase
+
   \ XXX TODO -- the original does a `goto`, see:
   \ on fn between(1,4)
   \   goto lowerPrice
@@ -775,12 +773,9 @@ variable possibleWest           \ flag
   s" Bueno, tú darme... " price @ coins$ s+
   s"  y no hablar más." s+ nativeSays
   makeOffer
-  if offer>=price then \
-    acceptedOffer
-  else \
-    rejectedOffer
-
-  exit proc
+  offer @ price @ >= if    acceptedOffer
+                     else  rejectedOffer
+                     then  exit
 
   label newPrice
   \ XXX TODO -- factor out
@@ -1257,13 +1252,12 @@ variable done
   damage$ s+ s" ." s+ message  panel  ;
 
 : rain  ( -- )
-  local z
   1 charset
   71 1 do
     rainDrops ";"
     rainDrops "]"
     rainDrops "["
-    if not rnd(3) then redrawShip
+    3 random 0= if  redrawShip  then
   loop  ;
 
 : rainDrops  ( c$ -- )
@@ -1902,18 +1896,15 @@ variable done
 
   \ XXX TODO use tellZone
   black paper
-  if foundClues=6 then \
-    print
+  success? if
     7 13 at-xy ." ¡Hemos encontrado"
     7 14 at-xy ." el oro,"
-    7 16 at-xy ." capitán!"
-      treasureFound
-  else \
-    print
+    7 16 at-xy ." capitán!"  treasureFound
+  else
     7 13 at-xy ." ¡Nos hemos"
     7 14 at-xy ."  equivocado "
     7 16 at-xy ." capitán!"
-  2 seconds  1 charset  ;
+  then  2 seconds  1 charset  ;
 
 : sailorAndCaptain  ( -- )
   1 charset  cyan ink  black paper
@@ -1958,7 +1949,7 @@ variable done
   repeat
     0 pause
     inkey '0' - answer !
-    if answer<1 or answer>max then beep .1,10
+    answer<1 or answer>max if  beep .1,10  then
       \ XXX TODO -- adapt the condition
   \ loop until answer>0 and answer<=max  \ XXX OLD
   answer @ 0> answer @ max <= and until  ;
@@ -2001,18 +1992,19 @@ variable done
   white ink  red paper
   0 3 at-xy s" FIN DEL JUEGO" columns type-center
   window 5,26,2,21 \ XXX TODO
-  if supplies<=0 then \
-  s" Las provisiones se han agotado." tell
-  if morale<=0 then \
-  s" La tripulación se ha amotinado." tell
-  if ammo<=0 then \
-  s" La munición se ha terminado." tell
-  if not alive then \
-  s" Toda tu tripulación ha muerto." tell
-  if damage=100 then \
-  s" El barco está muy dañado y es imposible repararlo." tell
-  if cash<=0 then \
-  s" No te queda dinero." tell
+  supplies @ 0 <= if
+    s" Las provisiones se han agotado." tell  then
+  morale @ 0 <= if
+    s" La tripulación se ha amotinado." tell  then
+  ammo @ 0 <= if
+    s" La munición se ha terminado." tell  then
+  alive @ 0= if
+    s" Toda tu tripulación ha muerto." tell  then
+  damage @ 100 = if
+    s" El barco está muy dañado y es imposible repararlo." tell
+  then
+  cash @ 0 <= if
+    s" No te queda dinero." tell  then
   window  ;
 
 : treasureFound  ( -- )
