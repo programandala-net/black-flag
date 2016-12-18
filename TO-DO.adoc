@@ -6,7 +6,6 @@
 
 - Convert `let`.
 - Review variables and constants.
-- Convert `inkey$`.
 - Convert `if`.
 - Convert `plot` and `draw`.
 

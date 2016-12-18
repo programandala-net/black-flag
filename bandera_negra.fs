@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612181438
+  \ Version 0.0.0+201612181451
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -855,7 +855,7 @@ create nativeTellsClues  ( -- a )
   \ Commands on the island {{{
 
 : islandCommand  ( -- )
-  begin  let k=code inkey$ upper  case
+  begin  inkey upper  case
     'N' 11 or-of  \ "n" or up -- north
       possibleNorth @ if  islandMove 6      exit  then  endof
     'S' 10 or-of  \ "s" or down -- south
@@ -1034,20 +1034,20 @@ create islandEvents>  ( -- a )
     3 4 random-range 1 ?do  manInjured  loop
   then  5 seconds  wipeMessage  ;
 
+variable done
+  \ XXX TODO -- rename
+
 : shipBattle  ( -- )
-  local done,k
-  let done=false
+  done off
   saveScreen battleScenery
   begin
     moveEnemyShip
-    let k$=inkey$
-    instr("123",k$) if
-      on val k$
-        fire 3
-        fire 10
-        fire 17
-    then
-  done ammo 0= or until
+    inkey case  '1' of   3 fire  endof
+                '2' of  10 fire  endof
+                '3' of  17 fire  endof  endcase
+                  \ XXX TODO -- use a calculation or a
+                  \ table instead?
+  done @ ammo 0= or until
   restoreScreen
   ammo @ 0= if  noAmmoLeft  then  ;
 
@@ -1954,17 +1954,15 @@ create islandEvents>  ( -- a )
 : seconds  ( n -- )  50 * pause  ;
 
 : digitTo  \ XXX TODO -- parameters: ref answer,max
-
-  \ Return the digit number pressed by the player
-
   default max=9
-
-  do
+  repeat
     0 pause
-    let answer=code inkey$-code "0"
+    inkey '0' - answer !
     if answer<1 or answer>max then beep .1,10
+      \ XXX TODO -- adapt the condition
   \ loop until answer>0 and answer<=max  \ XXX OLD
   answer @ 0> answer @ max <= and until  ;
+  \ Return the digit number pressed by the player
 
   \ }}} ---------------------------------------------------------
   \ UDGs and charsets {{{
