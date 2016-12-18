@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612182126
+  \ Version 0.0.0+201612190025
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -78,28 +78,28 @@ seaMapCols seaMapRows * constant /seaMap
  3 constant skyHeight  \ screen lines
 
   \ Windows parameters
-3                                   constant introWinTop
-0                                   constant graphicWinTop
-15                                  constant graphicWinBottom
-0                                   constant graphicWinLeft
-31                                  constant graphicWinRight
+                                  3 constant introWinTop
+                                  0 constant graphicWinTop
+                                 15 constant graphicWinBottom
+                                  0 constant graphicWinLeft
+                                 31 constant graphicWinRight
 graphicWinRight graphicWinLeft - 1+ constant graphicWinWidth
 graphicWinBottom graphicWinTop - 1+ constant graphicWinHeight
-graphicWinWidth graphicWinHeight *  constant graphicWinChars
-21                                  constant lowWinTop
-23                                  constant lowWinBottom
-0                                   constant lowWinLeft
-31                                  constant lowWinRight
-lowWinRight lowWinLeft - 1+         constant lowWinWidth
-lowWinBottom lowWinTop - 1+         constant lowWinHeight
-lowWinWidth lowWinHeight *          constant lowWinChars
-17                                  constant messageWinTop
-19                                  constant messageWinBottom
-1                                   constant messageWinLeft
-30                                  constant messageWinRight
+ graphicWinWidth graphicWinHeight * constant graphicWinChars
+                                 21 constant lowWinTop
+                                 23 constant lowWinBottom
+                                  0 constant lowWinLeft
+                                 31 constant lowWinRight
+        lowWinRight lowWinLeft - 1+ constant lowWinWidth
+        lowWinBottom lowWinTop - 1+ constant lowWinHeight
+         lowWinWidth lowWinHeight * constant lowWinChars
+                                 17 constant messageWinTop
+                                 19 constant messageWinBottom
+                                  1 constant messageWinLeft
+                                 30 constant messageWinRight
 messageWinRight messageWinLeft - 1+ constant messageWinWidth
-messageWinBottom messageWinTop- 1+  constant messageWinHeight
-messageWinWidth messageWinHeight *  constant messageWinChars
+ messageWinBottom messageWinTop- 1+ constant messageWinHeight
+ messageWinWidth messageWinHeight * constant messageWinChars
 
   \ ============================================================
   \ Variables {{{1
@@ -1908,8 +1908,8 @@ variable done
   \ XXX TODO use this proc instead of happyEnd?
 
 : happyEnd  ( -- )
-  s" Lo lograste, capitán." message
-  ;
+  s" Lo lograste, capitán." message  ;
+  \ XXX TODO --
 
 : theEnd  ( -- )
   black ink yellow paper cls1
@@ -2022,7 +2022,6 @@ variable done
 
 : main  ( -- )
   initOnce  begin  intro init game theEnd  repeat  ;
-
 
   \ ============================================================
   \ Meta {{{1
