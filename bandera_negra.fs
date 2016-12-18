@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612182113
+  \ Version 0.0.0+201612182116
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -210,7 +210,7 @@ names men avariable usedNames  ( n -- a )
   here ," herido leve"
   here ," herido grave"
   here ," muerto"
-/sconstants stamina$$  ( n -- ca len )
+/sconstants stamina$  ( n -- ca len )
 1- constant maxStamina
  0 constant minStamina
 
@@ -353,9 +353,8 @@ sconstants hand$  ( n -- ca len )
 : gameOver?  ( -- f )  failure? success? quitGame or or  ;
   \ Game over?
 
-: condition$ ( m -- ca len )  m stamina @ stamina$() 2@  ;
+: condition$ ( n -- ca len )  stamina @ stamina$ 2@  ;
   \ Physical condition of a crew member
-  \ XXX TODO --
 
 : blankLine$  ( -- ca len )  string$(columns," ")  ;
   \ XXX TODO --
