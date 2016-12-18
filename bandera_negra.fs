@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612182013
+  \ Version 0.0.0+201612182028
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -743,6 +743,12 @@ variable possibleWest           \ flag
   \ ============================================================
   \ Trading {{{1
 
+: nativeSpeechBalloon  ( -- )
+  black ink
+  100 100 set-pixel  20 10 rdraw  0 30 rdraw  2 2 rdraw
+  100 0 rdraw  2 -2 rdraw  0 -60 rdraw  -2 -2 rdraw
+  -100 0 rdraw -2 2 rdraw  0 20 rdraw  -20 0 rdraw  ;
+
 : trade  ( -- )
 
   1 charset
@@ -807,13 +813,6 @@ variable possibleWest           \ flag
   goto oneCoinLess
 
   ;
-
-: nativeSpeechBalloon  ( -- )
-  black ink
-  plot 100,100: draw 20,10: draw 0,30: draw 2,2
-  draw 100,0: draw 2,-2: draw 0,-60: draw -2,-2: draw -100,0
-  draw -2,2: draw 0,20: draw -20,0
-  white ink  ;
 
 : makeOffer  ( -- )
   cash @ maxOffer min >r
@@ -1841,26 +1840,24 @@ variable done
     7 16 at-xy ." capitán!"
   then  2 seconds  1 charset  ;
 
+: sailorSpeechBalloon  ( -- )
+  25 44 set-pixel
+  20 10 rdraw 0 30 rdraw 2 2 rdraw 100 0 rdraw
+  2 -2 rdraw 0 -60 rdraw -2 -2 rdraw -100 0 rdraw
+  -2 2 rdraw 0 19 rdraw -20 0 rdraw  ;
+
+: captainSpeechBalloon  ( -- )
+  220 44 set-pixel
+  -15 5 rdraw 0 20 rdraw -2 2 rdraw -30 0 rdraw
+  -2 -2 rdraw 0 -40 rdraw 2 -2 rdraw 30 0 rdraw 2 2 rdraw
+  0 14 rdraw 15 0 rdraw  ;
+
 : sailorAndCaptain  ( -- )
   1 charset  cyan ink  black paper
   0 17 at-xy ."  xy" 28 at-x ." pq" cr
              ."  vs" 28 at-x ." rs" cr
              ."  wu" 28 at-x ." tu"
   sailorSpeechBalloon captainSpeechBalloon  ;
-
-: sailorSpeechBalloon  ( -- )
-  plot 25,44
-  draw 20,10:draw 0,30:draw 2,2:draw 100,0
-  draw 2,-2:draw 0,-60:draw -2,-2:draw -100,0
-  draw -2,2:draw 0,19:draw -20,0
-  ;
-
-: captainSpeechBalloon  ( -- )
-  plot 220,44
-  draw -15,5:draw 0,20:draw -2,2:draw -30,0
-  draw -2,-2:draw 0,-40:draw 2,-2:draw 30,0:draw 2,2
-  draw 0,14:draw 15,0
-  ;
 
 : wipeSailorSpeech  ( -- )
   19 12 do  6 i at-xy ."            "  loop  ;

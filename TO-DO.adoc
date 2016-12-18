@@ -5,7 +5,7 @@
 == New notes about the conversion to Forth
 
 - Review variables and constants.
-- Convert `plot` and `draw`.
+- Convert parameteres of `set-pixel` and `rdraw`.
 - Convert `beep`.
 - Convert graphic characters notation in strings.
 
