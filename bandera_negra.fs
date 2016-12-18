@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612181818
+  \ Version 0.0.0+201612181843
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -22,7 +22,7 @@
 only forth definitions
 
 need chars>string  need string/  need columns  need inverse
-need seconds  need random-range  need at-x  need row
+need random-range  need at-x  need row
 need ruler  need avariable  need cavariable  need sconstants
 need /sconstants  need case  need >=  need or-of  need inkey
 need <=
@@ -31,9 +31,6 @@ need black  need blue  need red  need green
 need cyan  need yellow  need white  need color!
 need papery  need brighty
 
-
-  \ XXX TODO -- make a version of `seconds` that can be
-  \ interrupted with a key press
 
 wordlist dup constant black-flag  dup >order  set-current
 
@@ -444,6 +441,19 @@ main
   \ XXX TODO use WINDOW instead
 
   \ }}} ---------------------------------------------------------
+  \ User input {{{
+
+: seconds  ( n -- )  50 * pause  ;
+
+: getDigit  ( n1 -- n2 )
+  begin  dup 0 pause inkey '0' - dup >r
+         1 < over r@ < or  while  r> drop beep .1,10
+  repeat  drop r>  ;
+  \ Wait for a digit to be pressed by the player, until its
+  \ value is greater than 0 and less than _n1_, then return it
+  \ as _n2_.
+
+  \ }}} ---------------------------------------------------------
   \ Command panel {{{
 
 22 constant panel-y
@@ -739,7 +749,6 @@ variable possibleWest           \ flag
   1+      at-xy ." V"  ;
   \ Print palm model 2 at characters coordinates _x y_.
 
-
   \ }}} ---------------------------------------------------------
   \ Trading {{{
 
@@ -824,7 +833,7 @@ variable possibleWest           \ flag
   s" Tienes " cash @ coins$ s+
   s". ¿Qué oferta le haces? (1-" s+
   maxOffer @ u>str s+ ." )" s+ message
-  digitTo offer,maxOffer
+  maxOffer @ getDigit offer !
   beep .2,10
   s" Le ofreces " offer @ coins$ s+ s" ." s+ message  ;
 
@@ -1836,7 +1845,7 @@ variable done
 
   sailorSays "¿Qué camino, capitán?"
   23 15 at-xy ." ?" \ XXX TODO better, in all cases
-  digitTo option
+  9 getDigit option !
   black paper
   23 15 at-xy option ?
   beep .2,30
@@ -1845,7 +1854,7 @@ variable done
 
   sailorSays "¿Qué árbol, capitán?"
   23 15 at-xy ." ? "
-  digitTo option
+  9 getDigit option !
   0 charset
   black paper  23 15 at-xy option ?  beep .2,30
     \ XXX TODO -- factor out
@@ -1858,7 +1867,7 @@ variable done
   7 14 at-xy ." Izquierda Derecha"
   8 16 at-xy ." I=1  D=2 "
   23 15 at-xy ." ? "
-  digitTo option
+  9 getDigit option !
   0 charset
   23 15 at-xy option ?
   beep .2,30
@@ -1879,7 +1888,7 @@ variable done
   black paper
   7 14 at-xy ."  Poblado  " 7 13 at-xy ." ¿Cuál"
   8 16 at-xy ."  capitán." 23 15 at-xy ." ? "
-  digitTo option
+  9 getDigit option !
   23 15 at-xy option  \ XXX TODO --
   beep .2,30
   2 seconds
@@ -1890,7 +1899,7 @@ variable done
   7 14 at-xy ." capitán?"
   7 16 at-xy ." 1N 2S 3E 4O"
   23 15 at-xy ." ? "
-  digitTo option \ XXX TODO -- adapt
+  9 getDigit option !
   23 15 at-xy option . \ XXX TODO -- adapt
   beep .2,30
   2 seconds
@@ -1900,7 +1909,7 @@ variable done
   7 14 at-xy ." pasos,"
   7 16 at-xy ." capitán?"
   23 15 at-xy ." ? "
-  digitTo option
+  9 getDigit option !
   23 15 at-xy option . \ XXX TODO -- adapt
   beep .2,30
   2 seconds
@@ -1950,22 +1959,6 @@ variable done
   wipeIsland  black ink  yellow paper
   0 7 at-xy ."  1       2       3       4"
   1 charset  27 2 do  i 3 palm2  8 +loop  ;
-
-  \ }}} ---------------------------------------------------------
-  \ User input {{{
-
-: seconds  ( n -- )  50 * pause  ;
-
-: digitTo  \ XXX TODO -- parameters: ref answer,max
-  default max=9
-  repeat
-    0 pause
-    inkey '0' - answer !
-    answer<1 or answer>max if  beep .1,10  then
-      \ XXX TODO -- adapt the condition
-  \ loop until answer>0 and answer<=max  \ XXX OLD
-  answer @ 0> answer @ max <= and until  ;
-  \ Return the digit number pressed by the player
 
   \ }}} ---------------------------------------------------------
   \ UDGs and charsets {{{
