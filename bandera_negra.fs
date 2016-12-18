@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612181843
+  \ Version 0.0.0+201612181856
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -55,6 +55,7 @@ wordlist dup constant black-flag  dup >order  set-current
  1 constant reef
  1 constant coast
 21 constant shark
+22 constant treasureIsland
 
   \ Ids of island cells
   \ XXX TODO complete
@@ -1678,82 +1679,52 @@ variable done
 
 : initOnce  ( -- )  initScreen  initUDG  ;
 
-: initSeaMap  ( -- )
-  0 seaMap  /seaMap cells erase
-  0 visited /seaMap cells erase
+: initSeaReefs  ( -- )
+            17 1 do  reef i seaMap !      loop     \ north
+  /seaMap 1+ 120 do  reef i seaMap !      loop     \ south
+          106 30 do  reef i seaMap !  15 +loop     \ east
+          107 32 do  reef i seaMap !  15 +loop  ;  \ west
 
-  \ Reefs around the sea map
-  17 1 do  reef i seaMap !  loop  \ north
-  /seaMap 1+ 120 do  reef i seaMap !  loop  \ south
-  106 30 do  reef i seaMap !  15 +loop  \ east
-  107 32 do  reef i seaMap !  15 +loop \ west
-
-  \ Normal islands
+: initSeaIslands  ( -- )
   120 17 do
     i seaMap @ reef <> if
       2 21 random-range i seaMap !  \ random type
       \ XXX TODO -- 21 is shark; these are picture types
     then
   loop
+  treasureIsland 94 104 random-range seaMap !  ;
 
-  \ Treasure island
-  22 treasureIsland !
-  treasureIsland @ 94 104 random-range seaMap !
-  ;
-  \ XXX TODO -- factor
+: emptySeaMap  ( -- )
+  0 seaMap  /seaMap cells erase
+  0 visited /seaMap cells erase  ;
 
-: init  ( -- )
+: initSeaMap  ( -- )
+  emptySeaMap initSeaReefs initSeaIslands  ;
 
-  local i,i$
-
-  randomize
-  \ load "attr/zp0i0b0l20" code attrLine(2) \ XXX TODO --
-  white ink  black paper  1 flash
-  0 14 at-xy s" Preparando el viaje..." columns type-center
-
-  initSeaMap
-
-  \ Ship position
-  32 42 random-range shipPos !
-
-  \ Ship coordinates
-  9 shipY !  4 shipX !
-
-  initCrew
-
-  1 iPos !
-
-  initClues
-
-  shipPicture off
-
-  \ Plot variables
-  aboard on
-  men alive !
-  2 ammo !
-  5 cash !
-  0 damage !
-  0 day !
-  0 foundClues !
-  10 morale !
-  0 score !
-  0 sunkShips !
-  10 supplies !
-  0 trades !
-  quitGame off
-    \ XXX TODO -- factor
-
-  ;
+: initShip  ( -- )
+  32 42 random-range shipPos !  9 shipY !  4 shipX !
+  shipPicture off  ;
 
 : initClues  ( -- )
-
-  \ Clues
   1 3 random-range path !  \ XXX TODO -- check range 0..?
   1 3 random-range tree !  \ XXX TODO -- check range 0..?
   0 9 random-range village !
   0 1 random-range turn !
   0 3 random-range direction !
   1 9 random-range pace !  ;  \ XXX TODO -- check range 0..?
+
+: initPlot  ( -- )
+  initClues  aboard on  1 iPos !
+  men alive !  2 ammo !  5 cash !  10 morale !  10 supplies !
+  quitGame off  damage off  day off  foundClues off  score off
+  sunkShips off  trades off  ;
+
+: init  ( -- )
+  randomize
+  \ load "attr/zp0i0b0l20" code attrLine(2) \ XXX TODO --
+  white ink  black paper  1 flash
+  0 14 at-xy s" Preparando el viaje..." columns type-center
+  initSeaMap initShip initCrew initPlot  ;
 
 : unusedName  ( -- n )
   0 begin
