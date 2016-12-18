@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612181451
+  \ Version 0.0.0+201612181818
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -68,6 +68,32 @@ wordlist dup constant black-flag  dup >order  set-current
 7 constant nativeSupplies
 8 constant nativeAmmo
 9 constant nativeVillage
+
+17 constant panelTopY \
+
+  \ Window parameters
+3                                   constant introWinTop
+0                                   constant graphicWinTop
+15                                  constant graphicWinBottom
+0                                   constant graphicWinLeft
+31                                  constant graphicWinRight
+graphicWinRight graphicWinLeft - 1+ constant graphicWinWidth
+graphicWinBottom graphicWinTop - 1+ constant graphicWinHeight
+graphicWinWidth graphicWinHeight *  constant graphicWinChars
+21                                  constant lowWinTop
+23                                  constant lowWinBottom
+0                                   constant lowWinLeft
+31                                  constant lowWinRight
+lowWinRight lowWinLeft - 1+         constant lowWinWidth
+lowWinBottom lowWinTop - 1+         constant lowWinHeight
+lowWinWidth lowWinHeight *          constant lowWinChars
+17                                  constant messageWinTop
+19                                  constant messageWinBottom
+1                                   constant messageWinLeft
+30                                  constant messageWinRight
+messageWinRight messageWinLeft - 1+ constant messageWinWidth
+messageWinBottom messageWinTop- 1+  constant messageWinHeight
+messageWinWidth messageWinHeight *  constant messageWinChars
 
   \ }}} ---------------------------------------------------------
   \ Variables {{{
@@ -395,17 +421,12 @@ main
   0 charset  wipeMessage messageWindow tell graphicWindow  ;
 
 : tellZone  ( text$,width,row,col -- )
-
-  \ XXX OLD
-  \ XXX TODO use WINDOW instead
-
-  local char
-
   0 charset
   begin len text$<=width while
     \ for char=width to 1 step -1
     0 width do
       \ XXX TODO -- `char` is the loop index:
+
       if text$(char)=" " then \
         col row at-xy
           \ XXX TODO -- adapt
@@ -418,7 +439,9 @@ main
     -1 +loop
   repeat
   col row at-xy text$ type  ;
+  \ XXX OLD
   \ XXX TODO -- adapt
+  \ XXX TODO use WINDOW instead
 
   \ }}} ---------------------------------------------------------
   \ Command panel {{{
@@ -1525,24 +1548,20 @@ variable done
   ." Munición:"     tab ammo @ .## cr cr
   reportEnd  ;
 
+ 1 constant nameX
+20 constant dataX
+
 : crewReport  ( -- )
-  local nameCol,dataCol
-  let nameCol=1,dataCol=20
   reportStart
   0 1 at-xy s" Informe de tripulación" columns type-center
-  4 nameCol at-xy ." Nombre"
-  4 dataCol at-xy ." Condición"
+  nameX 4 at-xy ." Nombre"  dataX 4 at-xy ." Condición"
   men 0 do
     white ink
-    print \
-    nameCol i 5 + at-xy i name$ type
-      \ XXX TODO -- convert array
+    nameX i 5 + at-xy i name$ type
     i stamina @ staminaAttr @ color!
-    dataCol i 5 + at-xy
+    dataX i 5 + at-xy
     i stamina @ stamina$ 2@ 2dup uppers1 type
-  loop
-  reportEnd
-  ;
+  loop  reportEnd  ;
 
 : updateScore  ( -- )
   foundClues @ 1000 *
@@ -1609,18 +1628,14 @@ variable done
 
 : stormySky  ( -- )
   \ load "attr/zp5i5b0l03" code attrLine(0) \ XXX TODO --
-  let noStorm=0
   false sunAndClouds  ;
 
 : seaWaves  ( -- )
-  local z
-  1 charset
-  cyan ink  blue paper
-  16 1 do
-    1 28 random-range 4 graphicWinBottom @ random-range
-    at-xy ." kl"
-    1 28 random-range 4 graphicWinBottom @ random-range
-    at-xy ." mn"
+  1 charset cyan ink  blue paper
+  16 1 do  1 28 random-range 4 graphicWinBottom @ random-range
+           at-xy ." kl"
+           1 28 random-range 4 graphicWinBottom @ random-range
+           at-xy ." mn"
   loop  ;
 
 : seaAndSky  ( -- )
@@ -1695,12 +1710,9 @@ variable done
   \ Ship coordinates
   9 shipY !  4 shipX !
 
-  \ Panel lines
-  let panelTop=17,panelBottom=21
-
   initCrew
 
-  let iPos=1 \ player position on the island
+  1 iPos !
 
   initClues
 
@@ -2071,80 +2083,38 @@ variable done
   \ }}} ---------------------------------------------------------
   \ Screen {{{
 
-: initScreen  ( -- )
+  \ XXX TODO -- `window`
 
-  cls
-
-  \ Some window parameters
-  let introWinTop=3
-  let \
-    graphicWinTop=0,\
-    graphicWinBottom=15,\
-    graphicWinLeft=0,\
-    graphicWinRight=31,\
-    graphicWinWidth=graphicWinRight-graphicWinLeft+1,\
-    graphicWinHeight=graphicWinBottom-graphicWinTop+1,\
-    graphicWinChars=graphicWinWidth*graphicWinHeight
-  let \
-    lowWinTop=21,\
-    lowWinBottom=23,\
-    lowWinLeft=0,\
-    lowWinRight=31,\
-    lowWinWidth=lowWinRight-lowWinLeft+1,\
-    lowWinHeight=lowWinBottom-lowWinTop+1,\
-    lowWinChars=lowWinWidth*lowWinHeight
-  let \
-    messageWinTop=17,\
-    messageWinBottom=19,\
-    messageWinLeft=1,\
-    messageWinRight=30,\
-    messageWinWidth=messageWinRight-messageWinLeft+1,\
-    messageWinHeight=messageWinBottom-messageWinTop+1,\
-    messageWinChars=messageWinWidth*messageWinHeight
-
-  graphicWindow
-  commandWindow
-
-  ;
-
-: wholeWindow  ( -- )
-  window 0,31,0,20  ;
+: wholeWindow  ( -- )  0 31 0 20 window  ;
 
 : graphicWindow  ( -- )
-  window graphicWinLeft,graphicWinRight,graphicWinTop,graphicWinBottom
-  1 charset  ;
+  graphicWinLeft graphicWinRight graphicWinTop graphicWinBottom
+  window  1 charset  ;
   \ Zone where graphics are shown
 
-: introWindow  ( -- )
-  window 2,29,introWinTop,21  ;
+: introWindow  ( -- )  2 29 introWinTop 21 window  ;
   \ Zone where intro text is shown
 
 : messageWindow  ( -- )
-  window messageWinLeft,messageWinRight,messageWinTop,messageWinBottom
-  ;
+  messageWinLeft messageWinRight messageWinTop messageWinBottom
+  window  ;
 
 : commandWindow  ( -- )
-  lowWindow lowWinLeft,lowWinRight,lowWinTop,lowWinBottom
-  ;
+  lowWinLeft lowWinRight lowWinTop lowWinBottom  window  ;
 
-: nativeWindow  ( -- )
+: nativeWindow  ( -- )  16 26 6 9 window  ;
   \ Window for native's speech
-  window 16,26,6,9
-  ;
 
-: lowWindow  ( left,right,top,bottom -- )
-  poke LWRHS,right,left,top,bottom
-  ;
+: initScreen  ( -- )  cls graphicWindow commandWindow  ;
 
 : wipePanel  ( -- )
-  print #0;paper black;at 0,0;string$(lowWinChars," ");
-  ;
+  print #0;paper black;at 0,0;string$(lowWinChars," ");  ;
+  \ XXX TODO --
 
 : wipeMessage  ( -- )
-  \ load "attr/zp0i0b0l06" code attrLine(panelTop-1)
+  \ load "attr/zp0i0b0l06" code attrLine(panelTopY-1)
   \ XXX OLD
-  messageWindow
-  white ink  black paper  cls1  ;
+  messageWindow  white ink  black paper  cls1  ;
 
 : saveScreen  ( -- )
   \ copy screen 1 to 2
@@ -2196,10 +2166,6 @@ variable invflag
 : showUDG  ( -- )  256 128 do  i emit  loop  ;
 
 : showDamages  ( -- )
-  101 0 do
-    \ XXX TODO -- `i` is the loop index:
-    let damage=i
-    print damage,damageIndex;" ";damage$
-  loop  ;
+  101 0 do  i . damageIndex . damage$ type cr  loop  ;
 
   \ vim: set filetype:soloforth

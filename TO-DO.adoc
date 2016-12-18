@@ -4,13 +4,13 @@
 
 == New notes about the conversion to Forth
 
-- Convert `let`.
 - Review variables and constants.
 - Convert `plot` and `draw`.
 - Convert `exit proc`.
 - Convert `rnd()`.
 - Convert `local`.
 - Convert `default`.
+- Convert `print`.
 
 == Old notes (in Spanish) from the abandoned Master BASIC version
   
