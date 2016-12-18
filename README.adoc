@@ -1,6 +1,6 @@
 == Bandera Negra
 :author: Marcos Cruz (programandala.net)
-:revdate: 2016-12-15
+:revdate: 2016-12-18
 
 Bandera Negra ("Black flag", in Spanish) is a Spanish remake of "Jolly
 Roger" (written by Barry Jones, published by Video Vault ltd. in
@@ -20,3 +20,9 @@ for SAM Coupé] from MasterBASIC to Solo Forth...
 Forth.
 
 2016-12-15: A Git repository is created to resume the development.
+
+== Versions
+
+Current version 0.0.0 indicates the conversion from Master BASIC to
+Forth is still in progress.
+

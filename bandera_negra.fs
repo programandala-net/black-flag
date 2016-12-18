@@ -11,10 +11,10 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612181420
+  \ Version 0.0.0+201612181438
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
-  \ BASIC (in MBim format) to Forth is still in progress.
+  \ BASIC to Forth is still in progress.
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -86,6 +86,11 @@ variable trades           \ counter
 variable quitGame         \ flag
 
 variable shipPicture      \ flag
+variable shipX
+variable shipY
+variable enemyShipMove
+variable enemyShipX
+variable enemyShipY
 
 variable screenRestored   \ flag
 
@@ -1065,7 +1070,7 @@ create islandEvents>  ( -- a )
                           1 i 1+ at-xy ." hi"
   7 +loop
 
-  let m=6: let n=20
+  6 enemyShipY !  20 enemyShipX !
   31 1 do  drawWave  loop  ;
 
 : fire  ( row -- )
@@ -1097,43 +1102,43 @@ create islandEvents>  ( -- a )
   \ or the money and part of the crew is captured
 
 : moveEnemyShip  ( -- )
-  1 5 random-range ship !
-  let n=n+(ship=1 and n<28)-(ship=2 and n>18)
-  let m=m+(ship=3 and m<17)-(ship=4 and m>1)
+  1 5 random-range enemyShipMove !
+    \ XXX TODO -- use the stack instead of `enemyShipMove`?
+
+  (enemyShipMove=1 and enemyShipX<28)-(enemyShipMove=2 and enemyShipX>18)
+    \ XXX TODO --adapt the expression
+  enemyShipX +!
+
+  (enemyShipMove=3 and enemyShipY<17)-(enemyShipMove=4 and enemyShipY>1)
+    \ XXX TODO --adapt the expression
+  enemyShipY +!
+
   white ink  blue paper
-  print
-  n m at-xy ."  ab "
-  n m+1 at-xy ."  90 "
-  n-1 m+2 at-xy ."  678 "
-  n m-1 at-xy ."    "
-  n m+3 at-xy ."    "
-  if ship=5 then \
-    drawWave
-  ;
+  enemyShipX @    enemyShipY @     at-xy ."  ab "
+  enemyShipX @    enemyShipY @ 1+  at-xy ."  90 "
+  enemyShipX @ 1- enemyShipY @ 2+  at-xy ."  678 "
+  enemyShipX @    enemyShipY @ 1-  at-xy ."    "
+  enemyShipX @    enemyShipY @ 3 + at-xy ."    "
+  enemyShipMove @ 5 = if  drawWave  then  ;
 
 : drawWave  ( -- )
   cyan ink 11 30 random-range 1 20 random-range at-xy ." kl"  ;
 
 : sunk  ( -- )
-
-  \ Sunk the enemy ship
-
   white ink  blue paper
-  print \
-  n m at-xy ."    "
-  n m+1 at-xy ."  ab"
-  n m+2 at-xy ."  90"
-  n m at-xy ."    "
-  n m+1 at-xy ."    "
-  n m+2 at-xy ."  ab"
-  n m at-xy ."    "
-  n m+1 at-xy ."    "
-  n m+2 at-xy ."    "
+  enemyShipX @ enemyShipY @    at-xy ."    "
+  enemyShipX @ enemyShipY @ 1+ at-xy ."  ab"
+  enemyShipX @ enemyShipY @ 2+ at-xy ."  90"
+  enemyShipX @ enemyShipY @    at-xy ."    "
+  enemyShipX @ enemyShipY @ 1+ at-xy ."    "
+  enemyShipX @ enemyShipY @ 2+ at-xy ."  ab"
+  enemyShipX @ enemyShipY @    at-xy ."    "
+  enemyShipX @ enemyShipY @ 1+ at-xy ."    "
+  enemyShipX @ enemyShipY @ 2+ at-xy ."    "
   2 seconds
-  \ XXX TODO simpler and better
-  \ XXX why this condition?:
   shipPos @ seaMap @ 13 >=
   shipPos @ seaMap @ 16 <= and
+    \ XXX why the condition?
     \ XXX TODO -- simplify the condition and factor out
   if  1 sunkShips +!  1000 score +!  done on  then
 
@@ -1143,7 +1148,8 @@ create islandEvents>  ( -- a )
     15 of   8  endof
     16 of   7  endof
   endcase  shipPos @ seaMap !  ;
-  \ XXX TODO -- use a calculation instead
+  \ Sunk the enemy ship
+  \ XXX TODO -- use a calculation instead the last `case`
 
   \ }}} ---------------------------------------------------------
   \ Crew stamina {{{

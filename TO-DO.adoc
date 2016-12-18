@@ -1,8 +1,16 @@
 = To-Do list of Bandera Negra
 :author: Marcos Cruz (programandala.net)
-:revdate: 2016-12-15
+:revdate: 2016-12-18
 
-== Notes (in Spanish) from the previous version for SAM Coupé
+== New notes about the conversion to Forth
+
+- Convert `let`.
+- Review variables and constants.
+- Convert `inkey$`.
+- Convert `if`.
+- Convert `plot` and `draw`.
+
+== Old notes (in Spanish) from the abandoned Master BASIC version
   
 Desligar los valores en seaMap and islandMap de los objetos que
 contienen (monedas, tiburón, barco enemigo, nativo...). Guardarlos en
