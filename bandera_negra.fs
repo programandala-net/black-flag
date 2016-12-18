@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612181926
+  \ Version 0.0.0+201612181959
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -25,7 +25,7 @@ need chars>string  need string/  need columns  need inverse
 need random-range  need at-x  need row
 need ruler  need avariable  need cavariable  need sconstants
 need /sconstants  need case  need >=  need or-of  need inkey
-need <=
+need <=  need j  need tab
 
 need black  need blue  need red  need green
 need cyan  need yellow  need white  need color!
@@ -72,9 +72,7 @@ seaMapCols seaMapRows * constant /seaMap
 
 9 constant maxOffer
 
-17 constant panelTopY \
-
-  \ Window parameters
+  \ Windows parameters
 3                                   constant introWinTop
 0                                   constant graphicWinTop
 15                                  constant graphicWinBottom
@@ -681,42 +679,29 @@ variable possibleWest           \ flag
   then  emit  1 charset  ;
 
 : drawVillage  ( -- )
-
-  2 charset
-
-  green ink  yellow paper
-  print \
+  2 charset  green ink  yellow paper
   6  5 at-xy ."  S\::T    ST   S\::T"
   6  6 at-xy ."  VUW    78   VUW   4"
   4  8 at-xy ." S\::T   S\::T    S\::T S\::T  S\::T "
   4  9 at-xy ." VUW   VUW  4 VUW VUW  VUW"
   4 11 at-xy ." S\::T    S\::T ST  S\::T S\::T"
   4 12 at-xy ." VUW  4 VUW 78  VUW VUW"
-
   black ink  yellow paper
-  print \
-  7 12 at-xy ." X"
+   7 12 at-xy ." X"
   17 12 at-xy ." Y"
   22 12 at-xy ." Z"
   26 12 at-xy ." XY"
-  8 9 at-xy ." ZZ"
-  13 9 at-xy ." Y"
-  24 9 at-xy ." ZX"
-  10 6 at-xy ." XYZ"
-  17 6 at-xy ." YX"
-  26 6 at-xy ." Z"
-
-  1 charset
-
-  ;
+   8  9 at-xy ." ZZ"
+  13  9 at-xy ." Y"
+  24  9 at-xy ." ZX"
+  10  6 at-xy ." XYZ"
+  17  6 at-xy ." YX"
+  26  6 at-xy ." Z"  1 charset  ;
 
 : drawNative  ( -- )
-  black ink  yellow paper
-  print \
-  8 10 at-xy ."  _ `"
-  8 11 at-xy ." }~.,"
-  8 12 at-xy ." {|\?"
-  ;
+  black ink  yellow paper  8 10 at-xy ."  _ `"
+                           8 11 at-xy ." }~.,"
+                           8 12 at-xy ." {|\?"  ;
 
 : drawAmmo  ( -- )
   black ink  yellow paper  14 12 at-xy ." hi"  ;
@@ -1378,101 +1363,81 @@ variable done
 
 : drawBigIsland5  ( -- )
   green ink  blue paper
-  print
-  18 7 at-xy ." HI A"
-  17 8 at-xy ." G\::\::\::\::BC"
-  16 9 at-xy ." F\::\::\::\::\::\::\::D"
+  18  7 at-xy ." HI A"
+  17  8 at-xy ." G\::\::\::\::BC"
+  16  9 at-xy ." F\::\::\::\::\::\::\::D"
   14 10 at-xy ." JK\::\::\::\::\::\::\::\::E"
-  13 11 at-xy ." F\::\::\::\::\::\::\::\::\::\::\::C"
-  ;
+  13 11 at-xy ." F\::\::\::\::\::\::\::\::\::\::\::C"  ;
 
 : drawBigIsland4  ( -- )
   green ink  blue paper
-  print \
-  16 7 at-xy ." WXYA"
-  14 8 at-xy ." :\::\::\::\::\::\::C F\::\::D"
-  13 9 at-xy ." :\::\::\::\::\::\::\::\::B\::\::\::E"
+  16  7 at-xy ." WXYA"
+  14  8 at-xy ." :\::\::\::\::\::\::C F\::\::D"
+  13  9 at-xy ." :\::\::\::\::\::\::\::\::B\::\::\::E"
   12 10 at-xy ." F\::\::\::\::\::\::\::\::\::\::\::\::\::\::C"
   ;
 
 : drawLittleIsland2  ( -- )
-  green ink  blue paper
-  print
-  14 8 at-xy ." :\::\::C"
-  16 7 at-xy ." A"
-  13 9 at-xy ." :\::\::\::\::D"
-  12 10 at-xy ." F\::\::\::\::\::E"
-  ;
+  green ink  blue paper  14  8 at-xy ." :\::\::C"
+                         16  7 at-xy ." A"
+                         13  9 at-xy ." :\::\::\::\::D"
+                         12 10 at-xy ." F\::\::\::\::\::E"  ;
 
 : drawLittleIsland1  ( -- )
-  green ink  blue paper
-  print \
-  23 8 at-xy ." JK\::C"
-  22 9 at-xy ." :\::\::\::\::D"
-  21 10 at-xy ." F\::\::\::\::\::E"
-  ;
+  green ink  blue paper  23  8 at-xy ." JK\::C"
+                         22  9 at-xy ." :\::\::\::\::D"
+                         21 10 at-xy ." F\::\::\::\::\::E"  ;
 
 : drawBigIsland3  ( -- )
   green ink  blue paper
-  print \
-  21 7 at-xy ." Z123"
-  19 8 at-xy ." :\::\::\::\::\::C"
-  18 9 at-xy ." :\::\::\::\::\::\::\::D"
+  21  7 at-xy ." Z123"
+  19  8 at-xy ." :\::\::\::\::\::C"
+  18  9 at-xy ." :\::\::\::\::\::\::\::D"
   15 10 at-xy ." F\::B\::\::\::\::\::\::\::\::E"
-  13 11 at-xy ." JK\::\::\::\::\::\::\::\::\::\::\::\::C"
-  ;
+  13 11 at-xy ." JK\::\::\::\::\::\::\::\::\::\::\::\::C"  ;
 
 : drawBigIsland2  ( -- )
   green ink  blue paper
-  print
-  17 7 at-xy ." Z123"
-  14 8 at-xy ." F\::B\::\::\::\::\::C"
-  13 9 at-xy ." G\::\::\::\::\::\::\::\::\::D"
-  12 10 at-xy ." F\::\::\::\::\::\::\::\::\::\::E;"
-  ;
+  17  7 at-xy ." Z123"
+  14  8 at-xy ." F\::B\::\::\::\::\::C"
+  13  9 at-xy ." G\::\::\::\::\::\::\::\::\::D"
+  12 10 at-xy ." F\::\::\::\::\::\::\::\::\::\::E;"  ;
 
 : drawBigIsland1  ( -- )
   green ink  blue paper
-  print \
-  20 7 at-xy ." HI A"
-  19 8 at-xy ." G\::\::B\::\::\::C"
-  18 9 at-xy ." F\::\::\::\::\::\::\::\::D"
-  16 10 at-xy ." JK\::\::\::\::\::\::\::\::\::E"
-  ;
+  20  7 at-xy ." HI A"
+  19  8 at-xy ." G\::\::B\::\::\::C"
+  18  9 at-xy ." F\::\::\::\::\::\::\::\::D"
+  16 10 at-xy ." JK\::\::\::\::\::\::\::\::\::E"  ;
 
 : drawTwoLittleIslands  ( -- )
   green ink  blue paper
-  print \
-17 6 at-xy ." WXY  A"
-16 7 at-xy ." A   A   F\::C"
-15 8 at-xy ." :\::\#127 :\::\#127 G\::\::\::D"
-14 9 at-xy ." G\::\::\::D   F\::\::\::\::E"
-13 10 at-xy ." F\::\::\::\::E"
-  ;
+  17  6 at-xy ." WXY  A"
+  16  7 at-xy ." A   A   F\::C"
+  15  8 at-xy ." :\::\#127 :\::\#127 G\::\::\::D"
+  14  9 at-xy ." G\::\::\::D   F\::\::\::\::E"
+  13 10 at-xy ." F\::\::\::\::E"  ;
 
 : drawFarIslands  ( -- )
   green ink  cyan paper
-  print
-  0 2 at-xy ." Z123 HI A Z123 HI A Z123 HI Z123"
-  ;
+  0 2 at-xy ." Z123 HI A Z123 HI A Z123 HI Z123"  ;
 
 : drawTreasureIsland  ( -- )
-
-  1 charset
-  green ink  blue paper
-  print \
-  16 7 at-xy ." A A   HI"
-  13 8 at-xy ." F\::\::\::B\::\::\::B\::\::B\::\::\::C"
-  12 9 at-xy ." G\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::D"
-  10 10 at-xy ." JK\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::E"
-  9 11 at-xy ." :\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::C"
-  8 12 at-xy ." F\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::\::D"
+  1 charset  green ink  blue paper
+  16  7 at-xy ." A A   HI"
+  13  8 at-xy ." F\::\::\::B\::\::\::B\::\::B\::\::\::C"
+  12  9 at-xy ." G\::\::\::\::\::\::\::"
+              ." \::\::\::\::\::\::\::\::\::D"
+  10 10 at-xy ." JK\::\::\::\::\::\::\::\::\::"
+              ." \::\::\::\::\::\::\::\::E"
+   9 11 at-xy ." :\::\::\::\::\::\::\::\::\::\::"
+              ." \::\::\::\::\::\::\::\::\::\::C"
+   8 12 at-xy ." F\::\::\::\::\::\::\::\::\::\::"
+              ." \::\::\::\::\::\::\::\::\::\::\::\::D"
   blue ink  green paper
-  print \
-  8 13 at-xy ."  HI Z123  HI A  A A  A "
+   8 13 at-xy ."  HI Z123  HI A  A A  A "
   20 14 at-xy ." B\::\::\::\::B"
   green ink  blue paper
-  print \
   31 13 at-xy ." E"
   19 4 palm1  24 4 palm1  14 4 palm1
   black ink  green paper
@@ -1483,6 +1448,7 @@ variable done
     s" Has encontrado la perdida isla de "
     islandName$ s+ s" ..."
   then  s+ message  1 charset  ;
+  \ XXX TODO -- factor
 
 : wipeIsland  ( -- )
   poke attrLine(3),attrLines$(5,6,6,0)  ;
@@ -1497,35 +1463,25 @@ variable done
 
 : drawShipUp  ( -- )
   white ink  blue paper
-  print
-  shipX shipY at-xy ." \A\B\C"
-  shipX shipY+1 at-xy ." \D\E\F"
-  shipX shipY+2 at-xy ." \G\H\I"
-  ;
+  shipX @ shipY @ 2dup    at-xy ." \A\B\C"
+                  2dup 1+ at-xy ." \D\E\F"
+                       2+ at-xy ." \G\H\I"  ;
 
 : drawShipDown  ( -- )
   white ink  blue paper
-  print
-  shipX shipY at-xy ." \J\K\L"
-  shipX shipY+1 at-xy ." \M\N\O"
-  shipX shipY+2 at-xy ." \P\Q\R"
-  ;
+  shipX @ shipY @ 2dup    at-xy ." \J\K\L"
+                  2dup 1+ at-xy ." \M\N\O"
+                       2+ at-xy ." \P\Q\R"  ;
 
 : drawEnemyShip  ( -- )
-  yellow ink  blue paper
-  print
-  11 4 at-xy ."  ab"
-  11 5 at-xy ."  90"
-  11 6 at-xy ." 678"
-  ;
+  yellow ink  blue paper  11 4 2dup    at-xy ."  ab"
+                               2dup 1+ at-xy ."  90"
+                                    2+ at-xy ." 678"  ;
 
 : wipeEnemyShip  ( -- )
-  blue paper
-  print
-  11 4 at-xy ."    "
-  11 5 at-xy ."    "
-  11 6 at-xy ."    "
-  ;
+  blue paper  11 4 2dup    at-xy ."    "
+                   2dup 1+ at-xy ."    "
+                        2+ at-xy ."    "  ;
 
 : drawBoat  ( -- )
   yellow ink  blue paper  11 7 at-xy ." <>"  ;
@@ -1586,14 +1542,13 @@ variable done
   reportStart
   0 1 at-xy s" Informe de puntuación" columns type-center
   0 4 at-xy
-    "Días",using$("####",day);" x  200" cr
-    "Hundimientos",using$("####",sunkShips);" x 1000" cr
-    "Negocios",using$("####",trades);" x  200" cr
-    "Pistas",using$("####",foundClues);" x 1000" cr
-    "Tesoro",using$("####",4000)
+  ." Días"         tab day        @ .#### ."  x  200" cr
+  ." Hundimientos" tab sunkShips  @ .#### ."  x 1000" cr
+  ." Negocios"     tab trades     @ .#### ."  x  200" cr
+  ." Pistas"       tab foundClues @ .#### ."  x 1000" cr
+  ." Tesoro"       tab 4000         .####             cr
   updateScore
-  print '"Total","       ";using$("####",score)
-  reportEnd  ;
+  ." Total"        tab ."       " score @ .####  reportEnd  ;
 
   \ .............................................................
   \ Run aground
@@ -1609,17 +1564,15 @@ variable done
   rightReef
 
   white ink
-  print
-  14 8 at-xy ." \A\B\C"
-  14 9 at-xy ." \D\E\F"
+  14  8 at-xy ." \A\B\C"
+  14  9 at-xy ." \D\E\F"
   14 10 at-xy ." \G\H\I"
   black ink  blue paper
-  print
   17 10 at-xy ." WXY     A"
-  19 6 at-xy ." A   Z123"
-  6 11 at-xy ." A   HI"
-  5 4 at-xy ." Z123    HI"
-  7 8 at-xy ." H\..I  A"
+  19  6 at-xy ." A   Z123"
+   6 11 at-xy ." A   HI"
+   5  4 at-xy ." Z123    HI"
+   7  8 at-xy ." H\..I  A"
 
   10 29 damaged
   \ XXX TODO improved message: "Por suerte, ..."
@@ -2062,12 +2015,9 @@ variable done
 : initScreen  ( -- )  cls graphicWindow commandWindow  ;
 
 : wipePanel  ( -- )
-  print #0;paper black;at 0,0;string$(lowWinChars," ");  ;
-  \ XXX TODO --
+  black paper 0 lowWinTop at-xy lowWinChars spaces  ;
 
 : wipeMessage  ( -- )
-  \ load "attr/zp0i0b0l06" code attrLine(panelTopY-1)
-  \ XXX OLD
   messageWindow  white ink  black paper  cls1  ;
 
 : saveScreen  ( -- )

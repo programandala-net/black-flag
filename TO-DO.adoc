@@ -6,8 +6,8 @@
 
 - Review variables and constants.
 - Convert `plot` and `draw`.
-- Convert `print`.
 - Convert `beep`.
+- Convert graphic characters notation in strings.
 
 == Old notes (in Spanish) from the abandoned Master BASIC version
   
