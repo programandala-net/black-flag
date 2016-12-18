@@ -11,13 +11,13 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612181959
+  \ Version 0.0.0+201612182013
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
 
-  \ }}} ---------------------------------------------------------
-  \ Requirements {{{
+  \ ============================================================
+  \ Requirements {{{1
 
 only forth definitions
 
@@ -34,8 +34,8 @@ need papery  need brighty
 
 wordlist dup constant black-flag  dup >order  set-current
 
-  \ }}} ---------------------------------------------------------
-  \ Constants {{{
+  \ ============================================================
+  \ Constants {{{1
 
 15 constant seaMapCols
  9 constant seaMapRows
@@ -96,8 +96,8 @@ messageWinRight messageWinLeft - 1+ constant messageWinWidth
 messageWinBottom messageWinTop- 1+  constant messageWinHeight
 messageWinWidth messageWinHeight *  constant messageWinChars
 
-  \ }}} ---------------------------------------------------------
-  \ Variables {{{
+  \ ============================================================
+  \ Variables {{{1
 
 variable aboard           \ flag
 variable alive            \ counter
@@ -133,18 +133,18 @@ variable turn
 variable direction
 variable pace
 
-  \ }}} ---------------------------------------------------------
-  \ Arrays {{{
+  \ ============================================================
+  \ Arrays {{{1
 
-  \ ............................
-  \ Maps
+  \ --------------------------------------------
+  \ Maps {{{2
 
 /seaMap     avariable seaMap
 /islandMap  avariable islandMap
 /seaMap     avariable visited    \ flags for islands
 
-  \ ............................
-  \ Crew
+  \ --------------------------------------------
+  \ Crew {{{2
 
 men avariable stamina
 
@@ -217,8 +217,8 @@ maxStamina 1+ cavariable staminaAttr
 yellow black papery +           3 staminaAttr c!
  green black papery +           4 staminaAttr c!
 
-  \ ............................
-  \ Ship damage descriptions
+  \ --------------------------------------------
+  \ Ship damage descriptions {{{2
 
 0
   here ," hundiéndose"            \ worst: sinking
@@ -235,8 +235,8 @@ yellow black papery +           3 staminaAttr c!
 /sconstants damageLevel$  ( n -- ca len )
             constast damageLevels
 
-  \ ............................
-  \ Village names
+  \ --------------------------------------------
+  \ Village names {{{2
 
   \ The names of the villages are Esperanto compound words with
   \ funny sounds and meanings.
@@ -256,8 +256,8 @@ yellow black papery +           3 staminaAttr c!
 constant villages
   \ XXX TODO -- invert the order of the strings?
 
-  \ ............................
-  \ Cardinal points
+  \ --------------------------------------------
+  \ Cardinal points {{{2
 
 0
   here ," oeste"
@@ -266,16 +266,16 @@ constant villages
   here ," norte"
 sconstants cardinal$  ( n -- ca len )
 
-  \ ............................
-  \ Hands
+  \ --------------------------------------------
+  \ Hands {{{2
 
 0
   here ," derecha"    \ right
   here ," izquierda"  \ left
 sconstants hand$  ( n -- ca len )
 
-  \ }}} ---------------------------------------------------------
-  \ Functions {{{
+  \ ============================================================
+  \ Functions {{{1
 
 22526 constant attributes
   \ Address of the screen attributes (768 bytes)
@@ -368,8 +368,8 @@ sconstants hand$  ( n -- ca len )
 : damage$  ( -- ca len )  damageIndex damageLevel$  ;
   \ Damage description
 
-  \ }}} ---------------------------------------------------------
-  \ Main {{{
+  \ ============================================================
+  \ Main {{{1
 
 main
 
@@ -397,8 +397,8 @@ main
 : command  ( -- )
   aboard if  shipCommand  else  islandCommand  then  ;
 
-  \ }}} ---------------------------------------------------------
-  \ Text output {{{
+  \ ============================================================
+  \ Text output {{{1
 
 : tell  ( ca len -- )
   0 charset
@@ -444,8 +444,8 @@ main
   \ XXX TODO -- adapt
   \ XXX TODO use WINDOW instead
 
-  \ }}} ---------------------------------------------------------
-  \ User input {{{
+  \ ============================================================
+  \ User input {{{1
 
 : seconds  ( n -- )  50 * pause  ;
 
@@ -457,8 +457,8 @@ main
   \ value is greater than 0 and less than _n1_, then return it
   \ as _n2_.
 
-  \ }}} ---------------------------------------------------------
-  \ Command panel {{{
+  \ ============================================================
+  \ Command panel {{{1
 
 22 constant panel-y
 
@@ -540,8 +540,8 @@ variable possibleWest           \ flag
   2 seconds  ;
   \ XXX not used yet
 
-  \ }}} ---------------------------------------------------------
-  \ Commands on the ship {{{
+  \ ============================================================
+  \ Commands on the ship {{{1
 
 : shipCommand  ( -- )
   begin
@@ -596,8 +596,8 @@ variable possibleWest           \ flag
   if    enterTreasureIsland
   else  newIslandMap enterIslandLocation  then  ;
 
-  \ }}} ---------------------------------------------------------
-  \ Island graphics {{{
+  \ ============================================================
+  \ Island graphics {{{1
 
 : islandScenery  ( -- )
 
@@ -740,8 +740,8 @@ variable possibleWest           \ flag
   1+      at-xy ." V"  ;
   \ Print palm model 2 at characters coordinates _x y_.
 
-  \ }}} ---------------------------------------------------------
-  \ Trading {{{
+  \ ============================================================
+  \ Trading {{{1
 
 : trade  ( -- )
 
@@ -867,8 +867,8 @@ create nativeTellsClues  ( -- a )
   2 seconds  s" ¡Buen viaje a isla de tesoro!" nativeSays  ;
 
 
-  \ }}} ---------------------------------------------------------
-  \ Commands on the island {{{
+  \ ============================================================
+  \ Commands on the island {{{1
 
 : islandCommand  ( -- )
   begin  inkey upper  case
@@ -899,8 +899,8 @@ create nativeTellsClues  ( -- a )
 : embark  ( -- )
   shipPos @ visited on  1 day +!  aboard on  ;
 
-  \ }}} ---------------------------------------------------------
-  \ Enter island location {{{
+  \ ============================================================
+  \ Enter island location {{{1
 
 : enterIslandLocation  ( -- )
 
@@ -965,8 +965,8 @@ create nativeTellsClues  ( -- a )
 
   ;
 
-  \ }}} ---------------------------------------------------------
-  \ Events on an island {{{
+  \ ============================================================
+  \ Events on an island {{{1
 
 : event1  ( -- )
   manDead
@@ -1013,8 +1013,8 @@ create islandEvents>  ( -- a )
 : islandEvents  ( -- )
   0 10 random-range cells islandEvents> + perform  ;
 
-  \ }}} ---------------------------------------------------------
-  \ Ship battle {{{
+  \ ============================================================
+  \ Ship battle {{{1
 
 : attackShip  ( -- )
   ammo @ 0=
@@ -1165,8 +1165,8 @@ variable done
   \ Sunk the enemy ship
   \ XXX TODO -- use a calculation instead the last `case`
 
-  \ }}} ---------------------------------------------------------
-  \ Crew stamina {{{
+  \ ============================================================
+  \ Crew stamina {{{1
 
 : manInjured  ( -- )
   begin
@@ -1186,8 +1186,8 @@ variable done
   dead stamina off
   -1 alive +!  ;
 
-  \ }}} ---------------------------------------------------------
-  \ Attack {{{
+  \ ============================================================
+  \ Attack {{{1
 
 : attack  ( -- )
 
@@ -1247,8 +1247,8 @@ variable done
 
   3 seconds  ;
 
-  \ }}} ---------------------------------------------------------
-  \ Storm {{{
+  \ ============================================================
+  \ Storm {{{1
 
 : damaged  ( min max -- )
   random-range damage +!  damage @ 100 min damage !  ;
@@ -1285,8 +1285,8 @@ variable done
   cloud1X @ 2 at-xy string$(3,c$) type
   3 pause  ;
 
-  \ }}} ---------------------------------------------------------
-  \ Sea graphics {{{
+  \ ============================================================
+  \ Sea graphics {{{1
 
 : seaScenery  ( -- )
   graphicWindow
@@ -1327,8 +1327,8 @@ variable done
   white ink  blue paper  18 13 at-xy ." \S"  ;
   \ XXX TODO -- adapt the UDG notation
 
-  \ .............................................................
-  \ Reefs
+  \ --------------------------------------------
+  \ Reefs {{{2
 
 : bottomReef  ( -- )
   black ink  blue paper
@@ -1358,8 +1358,8 @@ variable done
   shipPos @ 1-   reef? if  leftReef        then
   shipPos @ 1+   reef? if  rightReef       then  ;
 
-  \ .............................................................
-  \ Islands
+  \ --------------------------------------------
+  \ Islands {{{2
 
 : drawBigIsland5  ( -- )
   green ink  blue paper
@@ -1454,8 +1454,8 @@ variable done
   poke attrLine(3),attrLines$(5,6,6,0)  ;
   \ XXX TODO -- use `fill`
 
-  \ .............................................................
-  \ Ships
+  \ --------------------------------------------
+  \ Ships {{{2
 
 : redrawShip  ( -- )
   shipPicture @ if    drawShipDown shipPicture off
@@ -1486,8 +1486,8 @@ variable done
 : drawBoat  ( -- )
   yellow ink  blue paper  11 7 at-xy ." <>"  ;
 
-  \ }}} ---------------------------------------------------------
-  \ Reports {{{
+  \ ============================================================
+  \ Reports {{{1
 
 : reportStart  ( -- )  saveScreen cls window 0 charset  ;
   \ Common task at the start of all reports.
@@ -1550,8 +1550,8 @@ variable done
   updateScore
   ." Total"        tab ."       " score @ .####  reportEnd  ;
 
-  \ .............................................................
-  \ Run aground
+  \ ============================================================
+  \ Run aground {{{1
 
 : runAground  ( -- )
 
@@ -1587,8 +1587,8 @@ variable done
   manInjured manDead
   -4 -1 random-range morale +!  3 seconds  ;
 
-  \ }}} ---------------------------------------------------------
-  \ Landscape graphics {{{
+  \ ============================================================
+  \ Landscape graphics {{{1
 
 : stormySky  ( -- )
   \ load "attr/zp5i5b0l03" code attrLine(0) \ XXX TODO --
@@ -1628,8 +1628,8 @@ variable done
   \ load "attr/zp1i1b0l13" code attrLine(3) \ XXX TODO --
   ;
 
-  \ }}} ---------------------------------------------------------
-  \ Setup {{{
+  \ ============================================================
+  \ Setup {{{1
 
 : initOnce  ( -- )  initScreen  initUDG  ;
 
@@ -1699,8 +1699,8 @@ variable done
 
 : initCrew  ( -- )  initCrewNames initCrewStamina  ;
 
-  \ }}} ---------------------------------------------------------
-  \ Island map {{{
+  \ ============================================================
+  \ Island map {{{1
 
 : eraseIslandMap  ( -- )  0 islandMap /islandMap cells erase  ;
 
@@ -1727,8 +1727,8 @@ variable done
   nativeSupplies 8 11 random-range islandMap !
   8 11 random-range iPos !  ;
 
-  \ }}}----------------------------------------------------------
-  \ On the treasure island {{{
+  \ ============================================================
+  \ On the treasure island {{{1
 
 : enterTreasureIsland  ( -- )
 
@@ -1874,8 +1874,8 @@ variable done
   0 7 at-xy ."  1       2       3       4"
   1 charset  27 2 do  i 3 palm2  8 +loop  ;
 
-  \ }}} ---------------------------------------------------------
-  \ UDGs and charsets {{{
+  \ ============================================================
+  \ UDGs and charsets {{{1
 
   \ XXX TODO keep all the charsets and UDGs in RAM
 
@@ -1891,8 +1891,8 @@ variable done
   ;
   \ XXX TODO --
 
-  \ }}} ---------------------------------------------------------
-  \ Game over{{{
+  \ ============================================================
+  \ Game over {{{1
 
 : reallyQuit  ( -- )
   \ Confirm the quit
@@ -1957,8 +1957,8 @@ variable done
   0 pause beep .2,30 scoreReport  ;
   \ XXX TODO new graphic, based on the cause of the end
 
-  \ }}} ---------------------------------------------------------
-  \ Intro {{{
+  \ ============================================================
+  \ Intro {{{1
 
 : intro  ( -- )
   cls
@@ -1987,8 +1987,8 @@ variable done
   1 charset  ;
   \ Draw top and bottom border of skulls.
 
-  \ }}} ---------------------------------------------------------
-  \ Screen {{{
+  \ ============================================================
+  \ Screen {{{1
 
   \ XXX TODO -- `window`
 
@@ -2034,8 +2034,8 @@ variable done
 
 : useScreen1  ( -- )  restoreScreen 1 screen  ;
 
-  \ }}} ---------------------------------------------------------
-  \ Meta {{{
+  \ ============================================================
+  \ Meta {{{1
 
 variable invflag
   \ XXX TMP --
@@ -2064,4 +2064,4 @@ variable invflag
 : showDamages  ( -- )
   101 0 do  i . damageIndex . damage$ type cr  loop  ;
 
-  \ vim: set filetype:soloforth
+  \ vim: filetype:soloforth foldmethod=marker
