@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612170123
+  \ Version 0.0.0+201612181415
 
   \ }}} ---------------------------------------------------------
   \ Requirements {{{
@@ -21,7 +21,7 @@ only forth definitions
 need chars>string  need string/  need columns  need inverse
 need seconds  need random-range  need at-x  need row
 need ruler  need avariable  need cavariable  need sconstants
-need /sconstants  need case
+need /sconstants  need case  need >=  need or-of  need inkey
 
 need black  need blue  need red  need green
 need cyan  need yellow  need white  need color!
@@ -497,49 +497,33 @@ variable possibleWest           \ flag
   \ Commands on the ship {{{
 
 : shipCommand  ( -- )
-
-  \ XXX TODO simpler, with searchable string of keys and ON
-  local k,w
-
-  do
-
+  begin
     81 1 do
-      let k=code inkey$
-      if k=110 or k=11 \ "n" or up -- north
-        if possibleNorth then \
-         seaMove 15:exit do
-      else if k=115 or k=10 \ "s" or down -- south
-        if possibleSouth then \
-          seaMove -15:exit do
-      else if k=101 or k=9 \ "e" or right -- east
-        if possibleEast then \
-          seaMove 1:exit do
-      else if k=111 or k=8 \ "o" or left -- west
-        if possibleWest then \
-          seaMove -1:exit do
-      else if k=105:mainReport:exit do \ "i"
-      else if k=97 \ "a"
-        if possibleAttacking then \
-          attackShip:exit do
-      else if k=116:crewReport:exit do \ "t"
-      else if k=112:scoreReport:exit do \ "p"
-      else if k=100 \ "d"
-        if possibleDisembarking then \
-          disembark:exit do
-      else if k=70:let quitGame=true:exit do \ "F" XXX TODO lowercase
-      endif
-
-      \ if not (tics mod 5) then redrawShip  \ XXX OLD
-      i 40 = i 80 = or if  redrawShip  then
-
+      inkey upper case
+      'N' 11 or-of  \ north
+        possibleNorth @ if  15 seaMove exit  then  endof
+      'S' 10 or-of  \ south
+        possibleSouth @ if  -15 seaMove exit  then  endof
+      'E' 9 or-of  \ east
+        possibleEast @ if  1 seaMove exit  then  endof
+      'O' 8  or-of  \ west
+        possibleWest @ if  -1 seaMove -1 exit  then  endof
+      'I' of  mainReport exit  endof
+      'A' of
+        possibleAttacking @ if  attackShip exit then  endof
+      'T' of  crewReport exit  endof
+      'P' of  scoreReport exit  endof
+      'D' of
+        possibleDisembarking @ of  disembark exit  then  endof
+      'F' of  quitGame on  exit  endof
+      endcase
+      i 40 mod 0= if  redrawShip  then
+        \ XXX TODO -- use system frames instead?
     loop
-
-    \ XXX TODO increase the probability every day?
-    0 80 random-range 0= if  storm  then
-
-  loop
-
-  ;
+    80 random 0= if  storm  then
+      \ XXX TODO increase the probability every day?
+  repeat  ;
+  \ XXX TODO simpler, with searchable string of keys and ON
 
 : seaMove  ( offset -- )
   dup shipPos + seaMap @ reef = if    drop runAground
@@ -769,11 +753,11 @@ variable possibleWest           \ flag
   label oneCoinLess
   \ He accepts one dubloon less
   makeOffer
-  if offer>=(price-1)
-    acceptedOffer
-  else if offer<(price-1)
-    rejectedOffer
-  endif
+  offer @ price @ 1- >=
+  if  acceptedOffer
+  else offer @ price @ 1- < if  rejectedOffer  then
+  then
+  \ XXX TODO -- simplify
 
   label lowerPrice
   \ XXX TODO -- factor out
@@ -862,39 +846,24 @@ create nativeTellsClues  ( -- a )
   \ Commands on the island {{{
 
 : islandCommand  ( -- )
-
+  begin  let k=code inkey$ upper  case
+    'N' 11 or-of  \ "n" or up -- north
+      possibleNorth @ if  islandMove 6      exit  then  endof
+    'S' 10 or-of  \ "s" or down -- south
+      possibleSouth @ if  islandMove -6     exit  then  endof
+    'E' 9 or-of  \ "e" or right -- east
+      possibleEast @ if  islandMove 1       exit  then  endof
+    'O' 8 or-of  \ "o" or left -- west
+      possibleWest @ if  islandMove -1      exit  then  endof
+    'C' of  possibleTrading @ if  trade     exit  then  endof
+    'B' of  possibleEmbarking @ if  embark  exit  then  endof
+    'I' of  mainReport                      exit        endof
+    'M' of  possibleAttacking @ if  attack  exit  then  endof
+    'T' of  crewReport                      exit        endof
+    'P' of  scoreReport                     exit        endof
+    'F' of  quitGame on                     exit        endof
+  endcase  repeat  ;
   \ XXX TODO simpler, with searchable string of keys and ON
-
-  do
-    let k=code inkey$
-    if k=110 or k=11 \ "n" or up -- north
-      if possibleNorth then \
-        islandMove 6:exit do
-    else if k=115 or k=10 \ "s" or down -- south
-      if possibleSouth then \
-        islandMove -6:exit do
-    else if k=101 or k=9 \ "e" or right -- east
-      if possibleEast then \
-        islandMove 1:exit do
-    else if k=111 or k=8 \ "o" or left -- west
-      if possibleWest then \
-        islandMove -1:exit do
-    else if k=99 \ "c"
-      if possibleTrading then \
-        trade:exit do
-    else if k=98 \ "b"
-      if possibleEmbarking then \
-        embark:exit do
-    else if k=105:mainReport:exit do \ "i"
-    else if k=109 \ "m"
-      if possibleAttacking then \
-        attack:exit do
-    else if k=116:crewReport:exit do \ "t"
-    else if k=112:scoreReport:exit do \ "p"
-    else if k=70:let quitGame=true:exit do \ "F" XXX TODO lowercase
-    endif
-  loop
-  ;
 
 : islandMove  ( offset -- )
   dup iPos @ + islandMap @ coast <>
@@ -1035,26 +1004,19 @@ create islandEvents>  ( -- a )
   then  ;
 
 : attackOwnBoat  ( -- )
-
-  if ammo
-    doAttackOwnBoat
-  else
-    s" Por suerte no hay munición para disparar..." message
-    3 pause
-    s" Enseguida te das cuenta de que ibas a hundir"
-    s"  uno de tus botes." s+ message
-    3 pause
-    wipeMessage \ XXX needed?
-  endif
-
+  ammo @ if  doAttackOwnBoat exit  then
+  s" Por suerte no hay munición para disparar..." message
+  3 pause
+  s" Enseguida te das cuenta de que ibas a hundir"
+  s"  uno de tus botes." s+ message
+  3 pause
+  wipeMessage \ XXX TODO -- needed?
   ;
 
 : doAttackOwnBoat  ( -- )
-
-  let ammo=ammo-1
+  -1 ammo +!
   s" Disparas por error a uno de tus propios botes..." message
   5 seconds
-
   3 random if
     s" Por suerte el disparo no ha dado en el blanco." message
   else
@@ -1063,11 +1025,7 @@ create islandEvents>  ( -- a )
     s"  Esto desmoraliza a la tripulación." s+ message
     -2 morale +!
     3 4 random-range 1 ?do  manInjured  loop
-  then
-  5 seconds
-  wipeMessage
-
-  ;
+  then  5 seconds  wipeMessage  ;
 
 : shipBattle  ( -- )
   local done,k
@@ -1236,22 +1194,20 @@ create islandEvents>  ( -- a )
     goto L6898
   then
 
-  1 5 random-range kill !
-  \ let z=int (rnd*2)+2
-  if kill=1
-    manDead
-    s" El nativo muere, pero antes mata a "
-    dead @ name$ s+ s" ." s+ message
-  else if kill=2
-    s" El nativo tiene provisiones"
-    s"  escondidas en su taparrabos." s+ message
-    let supplies=supplies+1
-  else if kill>=3
+  1 5 random-range case
+  1 of  manDead
+        s" El nativo muere, pero antes mata a "
+        dead @ name$ s+ s" ." s+ message  endof
+  2 of  s" El nativo tiene provisiones"
+        s"  escondidas en su taparrabos." s+ message
+        1 supplies +!  endof
+
     2 3 random-range r>
     s" Encuentras " r@ coins$ s+
     s"  en el cuerpo del nativo muerto." s+ message
     r> cash +!
-  endif
+
+  endcase
 
   2 charset  black ink  yellow paper yellow
   14 10 do  8 i at-xy ." t   "  loop
@@ -1316,60 +1272,35 @@ create islandEvents>  ( -- a )
   seaAndSky redrawShip  shipPos @ seaMap @ seaPicture  ;
 
 : seaPicture  ( n -- )
-
-  if n=2
-    drawBigIsland5
-    19 4 palm1
-  else if n=3
-    drawBigIsland4
-    14 4 palm1  19 4 palm1  24 4 palm1  drawShark
-  else if n=4
-    drawLittleIsland2
-    14 4 palm1
-  else if n=5
-    drawLittleIsland1
-    24 4 palm1
-  else if n=6
-    drawLittleIsland1  24 4 palm1
-    drawLittleIsland2  14 4 palm1
-  else if n=7
-    drawBigIsland3  19 4 palm1
-  else if n=8
-    drawBigIsland2  14 4 palm1  drawShark
-  else if n=9
-    drawBigIsland1  24 4 palm1
-  else if n=10
-    24 4 palm1  drawTwoLittleIslands
-  else if n=11
-    drawShark
-  \ else if n=12:\ \ XXX not in the original
-  else if n=13
-    24 4 palm1  drawTwoLittleIslands  drawEnemyShip
-  else if n=14
-    drawBigIsland1  24 4 palm1  drawEnemyShip
-  else if n=15
-    drawBigIsland2  14 4 palm1  drawEnemyShip
-  else if n=16
-    drawBigIsland3  19 4 palm1  drawEnemyShip
-  else if n=17
-    drawLittleIsland2  14 4 palm1  drawBoat
-    drawLittleIsland1  24 4 palm1
-  else if n=18
-    drawLittleIsland1  24 4 palm1  drawBoat
-  else if n=19
-    drawBigIsland4
-    14 4 palm1  19 4 palm1  24 4 palm1  drawBoat  drawShark
-  else if n=20
-    drawBigIsland5  19 4 palm1  drawBoat
-  else if n=shark:\ \ XXX TODO needed?
-    drawShark
-  endif
-
-  drawReefs
-
-  if n=treasureIsland then \
-    drawTreasureIsland
-  ;
+  dup case
+   2 of  drawBigIsland5  19 4 palm1                       endof
+   3 of  drawBigIsland4                                   endof
+         14 4 palm1  19 4 palm1  24 4 palm1  drawShark    endof
+   4 of  drawLittleIsland2  14 4 palm1                    endof
+   5 of  drawLittleIsland1  24 4 palm1                    endof
+   6 of  drawLittleIsland1  24 4 palm1
+         drawLittleIsland2  14 4 palm1                    endof
+   7 of  drawBigIsland3  19 4 palm1                       endof
+   8 of  drawBigIsland2  14 4 palm1  drawShark            endof
+   9 of  drawBigIsland1  24 4 palm1                       endof
+  10 of  24 4 palm1  drawTwoLittleIslands                 endof
+  11 of  drawShark                                        endof
+  13 of  24 4 palm1  drawTwoLittleIslands  drawEnemyShip  endof
+  14 of  drawBigIsland1  24 4 palm1  drawEnemyShip        endof
+  15 of  drawBigIsland2  14 4 palm1  drawEnemyShip        endof
+  16 of  drawBigIsland3  19 4 palm1  drawEnemyShip        endof
+  17 of  drawLittleIsland2  14 4 palm1  drawBoat
+         drawLittleIsland1  24 4 palm1                    endof
+  18 of  drawLittleIsland1  24 4 palm1  drawBoat          endof
+  19 of  drawBigIsland4  14 4 palm1  19 4 palm1  24 4 palm1
+         drawBoat  drawShark                              endof
+  20 of  drawBigIsland5  19 4 palm1  drawBoat             endof
+  shark of  drawShark                                     endof
+    \ XXX TODO needed?
+  endcase
+  drawReefs treasureIsland = if  drawTreasureIsland  then  ;
+  \ XXX TODO -- `12 of` is not in the original
+  \ XXX TODO -- simpler, use an execution table
 
 : drawShark  ( -- )
   white ink  blue paper  18 13 at-xy ." \S"  ;
