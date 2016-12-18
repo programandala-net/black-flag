@@ -6,9 +6,6 @@
 
 - Review variables and constants.
 - Convert `plot` and `draw`.
-- Convert `exit proc`.
-- Convert `local`.
-- Convert `default`.
 - Convert `print`.
 - Convert `beep`.
 

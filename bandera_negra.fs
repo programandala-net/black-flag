@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612181856
+  \ Version 0.0.0+201612181926
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -37,8 +37,11 @@ wordlist dup constant black-flag  dup >order  set-current
   \ }}} ---------------------------------------------------------
   \ Constants {{{
 
-135 constant /seaMap
-  \ cells of the sea map (15 columns x 9 rows)
+15 constant seaMapCols
+ 9 constant seaMapRows
+
+seaMapCols seaMapRows * constant /seaMap
+  \ cells of the sea map
 
 30 constant /islandMap
   \ cells of the island map
@@ -66,6 +69,8 @@ wordlist dup constant black-flag  dup >order  set-current
 7 constant nativeSupplies
 8 constant nativeAmmo
 9 constant nativeVillage
+
+9 constant maxOffer
 
 17 constant panelTopY \
 
@@ -826,17 +831,15 @@ variable possibleWest           \ flag
   white ink  ;
 
 : makeOffer  ( -- )
-
-  \ Ask the player for an offer
-
-  local maxOffer
-  9 cash @ min maxOffer !
+  cash @ maxOffer min >r
   s" Tienes " cash @ coins$ s+
   s". ¿Qué oferta le haces? (1-" s+
-  maxOffer @ u>str s+ ." )" s+ message
-  maxOffer @ getDigit offer !
+  r@ u>str s+ ." )" s+ message
+  r> getDigit offer !
   beep .2,10
   s" Le ofreces " offer @ coins$ s+ s" ." s+ message  ;
+  \ Ask the player for an offer
+  \ XXX TODO -- check the note about the allowed range
 
 : rejectedOffer  ( -- )
   2 seconds  s" ¡Tú insultar! ¡Fuera de isla mía!" nativeSays
@@ -1102,7 +1105,6 @@ variable done
   31 1 do  drawWave  loop  ;
 
 : fire  ( row -- )
-  \ XXX TODO -- store _row_ in a variable, as local
   -1 ammo +!
   0 charset white ink  red paper 22 21 at-xy ammo ?
   1 charset
@@ -1113,7 +1115,6 @@ variable done
   9 over at-xy ."  j"
   moveEnemyShip
   31 9 do
-    \ XXX TODO -- `z` is the loop index:
     dup i swap at-xy ."  j"
     m=y and i=n or m=y-1 and i=n or m=y-2 and i=n
       \ XXX TODO -- convert expression
@@ -1121,8 +1122,8 @@ variable done
     m=y and i=n+1 or m=y-1 and i=n+1 or m=y-2 and i=n+1
       \ XXX TODO -- convert expression
     if  sunk  then
-  loop
-  blue paper 30 swap at-xy ."  "  ;
+  loop  blue paper 30 swap at-xy ."  "  ;
+  \ XXX TODO -- store _row_ in a variable, as local
 
 : noAmmoLeft  ( -- )
   s" Te quedaste sin munición." message  4 seconds  ;
@@ -1748,37 +1749,26 @@ variable done
   \ }}} ---------------------------------------------------------
   \ Island map {{{
 
+: eraseIslandMap  ( -- )  0 islandMap /islandMap cells erase  ;
+
+: createIslandCoast  ( -- )
+  coast  0 islandMap !  coast  1 islandMap !
+  coast  2 islandMap !  coast  3 islandMap !
+  coast  4 islandMap !  coast  5 islandMap !
+  coast  6 islandMap !  coast 11 islandMap !
+  coast 12 islandMap !  coast 17 islandMap !
+  coast 18 islandMap !  coast 23 islandMap !
+  coast 24 islandMap !  coast 25 islandMap !
+  coast 26 islandMap !  coast 27 islandMap !
+  coast 28 islandMap !  coast 29 islandMap !  ;
+
 : newIslandMap  ( -- )
-
-  local w,z
-
-  0 islandMap /islandMap cells erase
-
-  coast  0 islandMap !
-  coast  1 islandMap !
-  coast  2 islandMap !
-  coast  3 islandMap !
-  coast  4 islandMap !
-  coast  5 islandMap !
-  coast  6 islandMap !
-  coast 11 islandMap !
-  coast 12 islandMap !
-  coast 17 islandMap !
-  coast 18 islandMap !
-  coast 23 islandMap !
-  coast 24 islandMap !
-  coast 25 islandMap !
-  coast 26 islandMap !
-  coast 27 islandMap !
-  coast 28 islandMap !
-  coast 29 islandMap !
-
+  eraseIslandMap  createIslandCoast
   23 7 do
     i islandMap @ coast <>
     if  2 5 random-range i islandMap !  then
-      \ XXX TODO -- use constant instead of `2 5`
+      \ XXX TODO -- use constants instead of `2 5`
   loop
-
   nativeVillage 20 23 random-range islandMap !
   nativeAmmo 14 17 random-range islandMap !
   nativeSupplies 8 11 random-range islandMap !
@@ -2101,21 +2091,13 @@ variable invflag
   \ XXX TMP --
 
 : showSea  ( -- )
-  local x,y
   cls
-  \ for y=0 to 8*2 step 2 \ XXX OLD
-  17 0 do
-    \ XXX TODO -- `y` is the outer loop index:
-    \ for x=0 to 14 \ XXX OLD
-    15 0 do
-      \ XXX TODO -- `x` is the inner loop index:
-      invflag @ inverse
-      y 9 * x + 1+ seaMap @ .##
+  seaMapRows 2* 0 do
+    seaMapCols 0 do
+      invflag @ inverse  j seaMapRows * i + 1+ seaMap @ .##
       invflag @ 0= invflag !
-    loop
-    cr
-  2 +loop
-  mode 1  0 inverse  ;
+    loop  cr
+  2 +loop  mode 1  0 inverse  ;
 
 : showCharsets  ( -- )
   cls  3 0 do  i showCharset  loop
