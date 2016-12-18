@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612182118
+  \ Version 0.0.0+201612182126
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -362,35 +362,6 @@ sconstants hand$  ( n -- ca len )
   \ Damage description
 
   \ ============================================================
-  \ Main {{{1
-
-main
-
-: main  ( -- )
-  initOnce  begin  intro init game theEnd  repeat  ;
-
-: game  ( -- )
-  cls
-  screenRestored off
-  begin
-    screenRestored @ if    screenRestored off
-                     else  scenery
-                     then  command
-  gameOver? until  ;
-  \ XXX FIXME sometimes scenery is called here without reason
-  \ XXX The logic is wrong.
-
-: scenery  ( -- )
-  useScreen2
-  aboard if  seaScenery  else  islandScenery  then
-  panel useScreen1  ;
-  \ XXX FIXME useScreen2 and usesCreen2 cause the sea
-  \ background is missing
-
-: command  ( -- )
-  aboard if  shipCommand  else  islandCommand  then  ;
-
-  \ ============================================================
   \ Text output {{{1
 
 : tell  ( ca len -- )
@@ -490,7 +461,7 @@ variable possibleWest           \ flag
                   s" Tripulación" 1 true option$ type cr
                   s" Puntuación"  1 true option$ type cr
 
-  aboard if
+  aboard @ if
 
     \ XXX TODO possibleDisembarking only if no enemy ship is present
 
@@ -2024,6 +1995,34 @@ variable done
 : useScreen2  ( -- )  saveScreen 2 screen  ;
 
 : useScreen1  ( -- )  restoreScreen 1 screen  ;
+
+  \ ============================================================
+  \ Main {{{1
+
+: scenery  ( -- )
+  useScreen2
+  aboard @ if  seaScenery  else  islandScenery  then
+  panel useScreen1  ;
+  \ XXX FIXME useScreen2 and usesCreen2 cause the sea
+  \ background is missing
+
+: command  ( -- )
+  aboard @ if  shipCommand  else  islandCommand  then  ;
+
+: game  ( -- )
+  cls
+  screenRestored off
+  begin
+    screenRestored @ if    screenRestored off
+                     else  scenery
+                     then  command
+  gameOver? until  ;
+  \ XXX FIXME sometimes scenery is called here without reason
+  \ XXX The logic is wrong.
+
+: main  ( -- )
+  initOnce  begin  intro init game theEnd  repeat  ;
+
 
   \ ============================================================
   \ Meta {{{1
