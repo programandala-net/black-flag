@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612182028
+  \ Version 0.0.0+201612182037
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -25,7 +25,7 @@ need chars>string  need string/  need columns  need inverse
 need random-range  need at-x  need row
 need ruler  need avariable  need cavariable  need sconstants
 need /sconstants  need case  need >=  need or-of  need inkey
-need <=  need j  need tab
+need <=  need j  need tab  need uppers1
 
 need black  need blue  need red  need green
 need cyan  need yellow  need white  need color!
@@ -334,10 +334,6 @@ sconstants hand$  ( n -- ca len )
 : coins$ ( x -- ca len )
   dup >r number$ s"  " s+ r> dubloons$ s+  ;
   \ Return the text "x doubloons", with letters.
-
-: uppers1 ( ca len -- )  drop 1 uppers  ;
-  \ Change the first char of _ca len_ to uppercase.
-  \ XXX TODO -- move to the library of Solo Forth
 
 : damageIndex  ( -- n )  damage @ damageLevels * 101 / 1+  ;
   \ XXX TODO -- use `*/`
