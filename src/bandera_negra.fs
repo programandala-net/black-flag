@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612190234
+  \ Version 0.0.0+201612190236
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -601,7 +601,7 @@ variable cloud1x
   \ Color the sky with attribute _c_.
 
 : stormySky  ( -- )
-  [ cyan dup paperish + ] colorSky  false sunAndClouds  ;
+  [ cyan dup papery + ] colorSky  false sunAndClouds  ;
   \ Make the sky stormy.
 
 : seaWaves  ( -- )
@@ -684,10 +684,10 @@ variable cloud1x
   [ seaHeight columns * ] literal rot fill  ;
   \ Color the sea with attribute _c_.
 
-: wipeSea  ( -- )  [ blue dup paperish + ] literal colorSea  ;
+: wipeSea  ( -- )  [ blue dup papery + ] literal colorSea  ;
 
 : wipeIslandScenery  ( -- )
-  [ yellow dup paperish + ] literal colorSea  ;
+  [ yellow dup papery + ] literal colorSea  ;
 
 : islandScenery  ( -- )
   graphicWindow wipeIslandScenery sunnySky
@@ -1522,7 +1522,7 @@ variable done
 : wipeIsland  ( -- )
   [ 3 attrLine ] literal
   [ 3 columns * ] literal
-  [ yellow dup paperish + ] literal fill  ;
+  [ yellow dup papery + ] literal fill  ;
 
   \ --------------------------------------------
   \ Ships {{{2
