@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612200014
+  \ Version 0.0.0+201612200044
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -1673,6 +1673,8 @@ create islandEvents>  ( -- a )
   100 100 set-pixel  20 10 rdraw  0 30 rdraw  2 2 rdraw
   100 0 rdraw  2 -2 rdraw  0 -60 rdraw  -2 -2 rdraw
   -100 0 rdraw -2 2 rdraw  0 20 rdraw  -20 0 rdraw  ;
+
+variable price
 
 : trade  ( -- )
 
