@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612190236
+  \ Version 0.0.0+201612190241
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -601,7 +601,8 @@ variable cloud1x
   \ Color the sky with attribute _c_.
 
 : stormySky  ( -- )
-  [ cyan dup papery + ] colorSky  false sunAndClouds  ;
+  [ cyan dup papery + ] literal colorSky
+  false sunAndClouds  ;
   \ Make the sky stormy.
 
 : seaWaves  ( -- )
@@ -613,7 +614,7 @@ variable cloud1x
   loop  ;
 
 : sunnySky  ( -- )
-  [ cyan dup papery + brighty ] colorSky  ;
+  [ cyan dup papery + brighty ] literal colorSky  ;
   \ Make the sky sunny.
 
 : seaAndSky  ( -- )
