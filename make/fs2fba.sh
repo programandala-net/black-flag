@@ -1,5 +1,5 @@
 #!/bin/sh
-# fs2fba.sh 
+# fs2fba.sh
 
 # This file is part of Solo Forth
 # http://programandala.net/en.program.solo_forth.html
@@ -36,7 +36,7 @@
 
 # 2016-05-13: Start, based on <fs2fb.sh>, by the same author.
 # 2016-06-01: Fix description.
-# 2016-12-19: Fix problem with grep
+# 2016-12-19: Fix problem with grep.
 
 # --------------------------------------------------------------
 
@@ -56,8 +56,9 @@ do
 
   # Remove empty lines and metacomments:
 
-  # XXX OLD -- this expression removes lines that contain latin1
-  # non-ASCII chars, but it works fine with UTF-8 texts, why?:
+  # XXX OLD -- 2016-12-19: this expression removes lines that contain
+  # Latin1 non-ASCII chars, but it works fine with UTF-8 texts, why?:
+  #
   # grep "^.\+$" $file | \
 
   # XXX NEW -- 2016-12-19: the problem is solved when `$` is removed,
