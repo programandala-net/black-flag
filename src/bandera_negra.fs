@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612190025
+  \ Version 0.0.0+201612190119
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -25,7 +25,7 @@ need chars>string  need string/  need columns  need inverse
 need random-range  need at-x  need row
 need ruler  need avariable  need cavariable  need sconstants
 need /sconstants  need case  need >=  need or-of  need inkey
-need <=  need j  need tab  need uppers1
+need <=  need j  need tab  need uppers1  need pick
 
 need black  need blue  need red  need green
 need cyan  need yellow  need white  need color!
@@ -362,6 +362,34 @@ sconstants hand$  ( n -- ca len )
   \ Damage description
 
   \ ============================================================
+  \ Windows {{{1
+
+: window  ( leftX rightX topY bottomY -- )  2drop 2drop  ;
+  \ XXX TODO --
+
+: noWindow  ( -- )  0 31 0 23 window  ;
+
+: wholeWindow  ( -- )  0 31 0 20 window  ;
+
+: graphicWindow  ( -- )
+  graphicWinLeft graphicWinRight graphicWinTop graphicWinBottom
+  window  1 charset  ;
+  \ Zone where graphics are shown
+
+: introWindow  ( -- )  2 29 introWinTop 21 window  ;
+  \ Zone where intro text is shown
+
+: messageWindow  ( -- )
+  messageWinLeft messageWinRight messageWinTop messageWinBottom
+  window  ;
+
+: commandWindow  ( -- )
+  lowWinLeft lowWinRight lowWinTop lowWinBottom  window  ;
+
+: nativeWindow  ( -- )  16 26 6 9 window  ;
+  \ Window for native's speech
+
+  \ ============================================================
   \ Text output {{{1
 
 : tell  ( ca len -- )
@@ -370,10 +398,7 @@ sconstants hand$  ( n -- ca len )
     \ for char=cpl to 1 step -1 \ XXX OLD
     0 columns do
       over i + c@ bl = if
-        2dup drop i 1- type
-        i 1+ string/ \ XXX OLD: let text$=text$(char+1 to)
-                     \ XXX OLD -- `char` was the loop index
-        unloop leave
+        2dup drop i 1- type  i 1+ string/  unloop leave
       then
     -1 +loop
   repeat  type  ;
@@ -385,27 +410,18 @@ sconstants hand$  ( n -- ca len )
 : message  ( ca len -- )
   0 charset  wipeMessage messageWindow tell graphicWindow  ;
 
-: tellZone  ( text$,width,row,col -- )
+: tellZone  ( ca len n x y -- )
   0 charset
-  begin len text$<=width while
-    \ for char=width to 1 step -1
-    0 width do
-      \ XXX TODO -- `char` is the loop index:
-
-      if text$(char)=" " then \
-        col row at-xy
-          \ XXX TODO -- adapt
-        text$(to char-1) type
-          \ XXX TODO -- adapt
-        let text$=text$(char+1 to)
-          \ XXX TODO -- adapt
-        1 row +!
-        exit for
+  begin  2over <=  while
+    2over nip 0 swap ( 0 n ) do
+      4 pick i + c@ bl = if
+        2dup at-xy
+        2>r >r  2dup drop i 1- type  i 1+ string/  r> 2r>
+        1+  unloop leave
+      then
     -1 +loop
-  repeat
-  col row at-xy text$ type  ;
-  \ XXX OLD
-  \ XXX TODO -- adapt
+  repeat  at-xy drop type  ;
+  \ Print _ca len_ at _x y_ on a window of _n_ chars width.
   \ XXX TODO use WINDOW instead
 
   \ ============================================================
@@ -1025,7 +1041,7 @@ variable done
   ammo @ 0= if  noAmmoLeft  then  ;
 
 : battleScenery  ( -- )
-  window  blue paper cls  0 charset
+  noWindow  blue paper cls  0 charset
   white ink  red paper  10 21 at-xy ." Munición = " ammo ?
 
   black ink yellow paper
@@ -1447,7 +1463,7 @@ variable done
   \ ============================================================
   \ Reports {{{1
 
-: reportStart  ( -- )  saveScreen cls window 0 charset  ;
+: reportStart  ( -- )  saveScreen cls noWindow 0 charset  ;
   \ Common task at the start of all reports.
 
 : reportEnd  ( -- )  1000 pause restoreScreen  ;
@@ -1822,8 +1838,8 @@ variable done
 : wipeSailorSpeech  ( -- )
   19 12 do  6 i at-xy ."            "  loop  ;
 
-: sailorSays  ( text$ -- )
-  wipeSailorSpeech tellZone text$,12,12,6  ;
+: sailorSays  ( ca len -- )
+  wipeSailorSpeech  12 12 6 tellZone  ;
   \ XXX TODO use window instead
 
 : trees  ( -- )
@@ -1862,12 +1878,10 @@ variable done
   ;
 
 : sadEnd  ( -- )
-
-  \ XXX TODO uset TellZone
   0 charset
   white ink  red paper
   0 3 at-xy s" FIN DEL JUEGO" columns type-center
-  window 5,26,2,21 \ XXX TODO
+  5 26 2 21 window
   supplies @ 0 <= if
     s" Las provisiones se han agotado." tell  then
   morale @ 0 <= if
@@ -1881,7 +1895,8 @@ variable done
   then
   cash @ 0 <= if
     s" No te queda dinero." tell  then
-  window  ;
+  noWindow  ;
+  \ XXX TODO uset TellZone
 
 : treasureFound  ( -- )
   [ 0 attrLine ] literal [ 3 columns * ] literal
@@ -1954,26 +1969,6 @@ variable done
 
   \ XXX TODO -- `window`
 
-: wholeWindow  ( -- )  0 31 0 20 window  ;
-
-: graphicWindow  ( -- )
-  graphicWinLeft graphicWinRight graphicWinTop graphicWinBottom
-  window  1 charset  ;
-  \ Zone where graphics are shown
-
-: introWindow  ( -- )  2 29 introWinTop 21 window  ;
-  \ Zone where intro text is shown
-
-: messageWindow  ( -- )
-  messageWinLeft messageWinRight messageWinTop messageWinBottom
-  window  ;
-
-: commandWindow  ( -- )
-  lowWinLeft lowWinRight lowWinTop lowWinBottom  window  ;
-
-: nativeWindow  ( -- )  16 26 6 9 window  ;
-  \ Window for native's speech
-
 : initScreen  ( -- )  cls graphicWindow commandWindow  ;
 
 : wipePanel  ( -- )
@@ -1983,12 +1978,12 @@ variable done
   messageWindow  white ink  black paper  cls1  ;
 
 : saveScreen  ( -- )
-  \ copy screen 1 to 2
+  \ copy screen 1 to 2  \ XXX OLD
   ;
   \ XXX TODO --
 
 : restoreScreen  ( -- )
-  \ copy screen 2 to 1
+  \ copy screen 2 to 1  \ XXX OLD
   screenRestored on  ;
   \ XXX TODO --
 
