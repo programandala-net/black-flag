@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612190232
+  \ Version 0.0.0+201612190234
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -1343,20 +1343,16 @@ variable done
   s" Tras la tormenta, el barco está "
   damage$ s+ s" ." s+ message  panel  ;
 
+: rainDrops  ( c -- )
+  white ink  cyan paper
+  cloud0x @ 2 at-xy dup 4 ruler type
+  cloud1x @ 2 at-xy     3 ruler type  3 pause  ;
+
 : rain  ( -- )
-  1 charset
-  71 1 do
-    rainDrops ";"
-    rainDrops "]"
-    rainDrops "["
+  1 charset  71 1 do
+    ';' rainDrops  ']' rainDrops  '[' rainDrops
     3 random 0= if  redrawShip  then
   loop  ;
-
-: rainDrops  ( c$ -- )
-  white ink  cyan paper
-  cloud0x @ 2 at-xy string$(4,c$) type
-  cloud1x @ 2 at-xy string$(3,c$) type
-  3 pause  ;
 
   \ ============================================================
   \ Sea graphics {{{1
