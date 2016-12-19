@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612190119
+  \ Version 0.0.0+201612190232
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -22,15 +22,15 @@
 only forth definitions
 
 need chars>string  need string/  need columns  need inverse
-need random-range  need at-x  need row
-need ruler  need avariable  need cavariable  need sconstants
-need /sconstants  need case  need >=  need or-of  need inkey
-need <=  need j  need tab  need uppers1  need pick
+need random-range  need at-x  need row  need ruler  need pick
+need 2avariable  need avariable  need cavariable
+need sconstants  need /sconstants  need case  need >=  need s+
+need or-of  need inkey  need <=  need j  need tab  need uppers1
+need pause
 
 need black  need blue  need red  need green
 need cyan  need yellow  need white  need color!
 need papery  need brighty
-
 
 wordlist dup constant black-flag  dup >order  set-current
 
@@ -98,7 +98,7 @@ graphicWinBottom graphicWinTop - 1+ constant graphicWinHeight
                                   1 constant messageWinLeft
                                  30 constant messageWinRight
 messageWinRight messageWinLeft - 1+ constant messageWinWidth
- messageWinBottom messageWinTop- 1+ constant messageWinHeight
+messageWinBottom messageWinTop - 1+ constant messageWinHeight
  messageWinWidth messageWinHeight * constant messageWinChars
 
   \ ============================================================
@@ -121,6 +121,7 @@ variable quitGame         \ flag
 variable shipPicture      \ flag
 variable shipX
 variable shipY
+variable shipPos
 variable enemyShipMove
 variable enemyShipX
 variable enemyShipY
@@ -238,7 +239,7 @@ yellow black papery +           3 staminaAttr c!
   here ," casi como nuevo"
   here ," impecable"            \ best: perfect
 /sconstants damageLevel$  ( n -- ca len )
-            constast damageLevels
+            constant damageLevels
 
   \ --------------------------------------------
   \ Village names {{{2
@@ -258,7 +259,7 @@ yellow black papery +           3 staminaAttr c!
   here ," Ursorelo"   \ urs-orel-o= "ear of bear"
   here ," Kukumemo"   \ kukum-em-o
 /sconstants village$  ( n -- ca len )
-constant villages
+            constant villages
   \ XXX TODO -- invert the order of the strings?
 
   \ --------------------------------------------
@@ -282,21 +283,21 @@ sconstants hand$  ( n -- ca len )
   \ ============================================================
   \ Functions {{{1
 
-22526 constant attributes
+22528 constant attributes
   \ Address of the screen attributes (768 bytes)
 
-: attrLine ( l -- a )  columns * attributes +  ;
+: attrLine  ( l -- a )  columns * attributes +  ;
   \ First attribute address of a character line.
 
-: >attr ( paper ink bright -- c )  64 * + swap 8 * +  ;
+: >attr  ( paper ink bright -- c )  64 * + swap 8 * +  ;
   \ Convert _paper_, _ink_ and _bright_ to an attribute byte
   \ _c_.
 
-: dubloons$ ( n -- ca len )
-  s" dobl " rot 1 > if s" ones"  else  s" ón"  then s+  ;
-  \ Return string "doubloon" or "doubloons", depending on _n_
+: dubloons$  ( n -- ca len )
+  s" dobl " rot 1 > if  s" ones"  else  s" On"  then  s+  ;
+  \ Return string "doubloon" or "doubloons", depending on _n_.
 
-: number$ ( n -- ca len )
+: number$  ( n -- ca len )
   case   1 of  s" un"     endof
          2 of  s" dos"    endof
          3 of  s" tres"   endof
@@ -313,7 +314,8 @@ sconstants hand$  ( n -- ca len )
   \ XXX TODO -- use a faster vector table instead, or
   \ `sconstants`
 
-: highlighted$ ( c -- ca len )  0 20 rot 1 20 5 chars>string  ;
+: highlighted$  ( c -- ca len )
+  0 20 rot 1 20 5 chars>string  ;
   \ Convert _c_ to a string to print _c_ as a highlighted char.
 
 : activeOption$  ( ca1 len1 n -- ca2 len2 )
@@ -324,13 +326,13 @@ sconstants hand$  ( n -- ca len )
   \ with character at position _n_ highlighted with control
   \ characters.
 
-: option$ ( ca1 len1 n f -- ca1 len1 | ca2 len2 )
+: option$  ( ca1 len1 n f -- ca1 len1 | ca2 len2 )
   if  activeOption$  then  ;
   \ Prepare a panel option _ca1 len1_.  If the option is
   \ active, _f_ is true and _n_ is the position of its
   \ highlighted letter.
 
-: coins$ ( x -- ca len )
+: coins$  ( x -- ca len )
   dup >r number$ s"  " s+ r> dubloons$ s+  ;
   \ Return the text "x doubloons", with letters.
 
@@ -353,7 +355,7 @@ sconstants hand$  ( n -- ca len )
 : gameOver?  ( -- f )  failure? success? quitGame or or  ;
   \ Game over?
 
-: condition$ ( n -- ca len )  stamina @ stamina$ 2@  ;
+: condition$  ( n -- ca len )  stamina @ stamina$ 2@  ;
   \ Physical condition of a crew member
 
 : blankLine$  ( -- ca len )  bl columns ruler  ;
@@ -362,7 +364,27 @@ sconstants hand$  ( n -- ca len )
   \ Damage description
 
   \ ============================================================
+  \ UDGs and charsets {{{1
+
+  \ XXX TODO keep all the charsets and UDGs in RAM
+
+: charset  ( n -- )  drop  ;
+  \ XXX TODO --
+
+: c0  ( -- )  0 charset  ;
+  \ XXX TMP for debugging after an error
+
+: initUDG  ( -- )
+  \ load "udg128" code udg chr$ 128 \ Spanish chars 128-143
+  \ load "udg144" code udg chr$ 144 \ Graphics 144-168
+  ;
+  \ XXX TODO --
+
+  \ ============================================================
   \ Windows {{{1
+
+: cls1  ( -- )  ;
+  \ XXX TODO --
 
 : window  ( leftX rightX topY bottomY -- )  2drop 2drop  ;
   \ XXX TODO --
@@ -374,10 +396,10 @@ sconstants hand$  ( n -- ca len )
 : graphicWindow  ( -- )
   graphicWinLeft graphicWinRight graphicWinTop graphicWinBottom
   window  1 charset  ;
-  \ Zone where graphics are shown
+  \ Zone where graphics are shown.
 
 : introWindow  ( -- )  2 29 introWinTop 21 window  ;
-  \ Zone where intro text is shown
+  \ Zone where intro text is shown.
 
 : messageWindow  ( -- )
   messageWinLeft messageWinRight messageWinTop messageWinBottom
@@ -387,7 +409,35 @@ sconstants hand$  ( n -- ca len )
   lowWinLeft lowWinRight lowWinTop lowWinBottom  window  ;
 
 : nativeWindow  ( -- )  16 26 6 9 window  ;
-  \ Window for native's speech
+  \ Window for native's speech.
+
+  \ ============================================================
+  \ Screen {{{1
+
+: initScreen  ( -- )  cls graphicWindow commandWindow  ;
+
+: wipePanel  ( -- )
+  black paper 0 lowWinTop at-xy lowWinChars spaces  ;
+
+: wipeMessage  ( -- )
+  messageWindow  white ink  black paper  cls1  ;
+
+: saveScreen  ( -- )
+  \ copy screen 1 to 2  \ XXX OLD
+  ;
+  \ XXX TODO --
+
+: restoreScreen  ( -- )
+  \ copy screen 2 to 1  \ XXX OLD
+  screenRestored on  ;
+  \ XXX TODO --
+
+: screen  ( n -- )  drop  ;
+  \ XXX TODO --
+
+: useScreen2  ( -- )  saveScreen 2 screen  ;
+
+: useScreen1  ( -- )  restoreScreen 1 screen  ;
 
   \ ============================================================
   \ Text output {{{1
@@ -425,6 +475,13 @@ sconstants hand$  ( n -- ca len )
   \ XXX TODO use WINDOW instead
 
   \ ============================================================
+  \ Sound  {{{1
+
+: beep  ( "ccc" -- )  parse-name 2drop  ; immediate
+  \ XXX TMP --
+  \ XXX TODO --
+
+  \ ============================================================
   \ User input {{{1
 
 : seconds  ( n -- )  50 * pause  ;
@@ -445,6 +502,7 @@ sconstants hand$  ( n -- ca len )
 variable possibleDisembarking   \ flag
 variable possibleEmbarking      \ flag
 variable possibleAttacking      \ flag
+variable possibleTrading        \ flag
 
 variable possibleNorth          \ flag
 variable possibleSouth          \ flag
@@ -482,8 +540,8 @@ variable possibleWest           \ flag
     \ XXX TODO possibleDisembarking only if no enemy ship is present
 
     shipPos @ visited @ 0=
-    shipPas seaMap @ treasureIsland =  or
-    possibleDisembanking !
+    shipPos @ seaMap @ treasureIsland =  or
+    possibleDisembarking !
 
     0 panel-y at-xy
     s" Desembarcar" 1 possibleDisembarking @ option$ type
@@ -521,7 +579,55 @@ variable possibleWest           \ flag
   \ XXX not used yet
 
   \ ============================================================
+  \ Landscape graphics {{{1
+
+variable cloud0x
+variable cloud1x
+
+: sunAndClouds  ( f -- )
+  2 charset  bright  yellow ink  cyan paper
+  26 0 at-xy ." AB"  1 26 at-xy ." CD"  white ink
+  1 9 random-range dup cloud0x !
+  dup 0 at-xy ." EFGH" 1 at-xy ." IJKL"
+  13 21 random-range dup cloud1x !
+  dup 0 at-xy ." MNO"  1 at-xy ." PQR"
+  1 charset  0 bright  ;
+  \ XXX TODO -- why the parameter, if this word is used only
+  \ once?
+
+: colorSky  ( c -- )
+  [ skyTopY attrLine ] literal
+  [ skyHeight columns * ] literal rot fill  ;
+  \ Color the sky with attribute _c_.
+
+: stormySky  ( -- )
+  [ cyan dup paperish + ] colorSky  false sunAndClouds  ;
+  \ Make the sky stormy.
+
+: seaWaves  ( -- )
+  1 charset cyan ink  blue paper
+  16 1 do  1 28 random-range 4 graphicWinBottom @ random-range
+           at-xy ." kl"
+           1 28 random-range 4 graphicWinBottom @ random-range
+           at-xy ." mn"
+  loop  ;
+
+: sunnySky  ( -- )
+  [ cyan dup papery + brighty ] colorSky  ;
+  \ Make the sky sunny.
+
+: seaAndSky  ( -- )
+  graphicWindow wipeSea seaWaves sunnySky  ;
+  \ XXX TMP -- `graphicWindow` is needed, because of the
+  \ `wipePanel` before the calling
+
+  \ ============================================================
   \ Commands on the ship {{{1
+
+: seaMove  ( offset -- )
+  dup shipPos + seaMap @ reef = if    drop runAground
+                                else  shipPos +!
+                                then  drop  ;
 
 : shipCommand  ( -- )
   begin
@@ -552,29 +658,23 @@ variable possibleWest           \ flag
   repeat  ;
   \ XXX TODO simpler, with searchable string of keys and ON
 
-: seaMove  ( offset -- )
-  dup shipPos + seaMap @ reef = if    drop runAground
-                                else  shipPos +!
-                                then  drop  ;
-
-: disembark  ( -- )
-
-  -2 -1 random-range supplies +!
-  wipeMessage
-  seaAndSky
-
-  \ Disembarking scene
+: disembarkingScene  ( -- )
   1 charset  green ink  blue paper
   31  8 at-xy ." :"
   37  9 at-xy ." HI :\::"
   25 10 at-xy ." F\::\::\::\::\::\::"
   23 11 at-xy ." JK\::\::\::\::\::\::\::"
   yellow ink blue paper
-  21 0 do  i 11 at-xy ." <>" 10 pause  loop
-  aboard off
-  shipPos @ seaMap @ treasureIsland =
+  21 0 do  i 11 at-xy ."  <>" 10 pause  loop  ;
+
+: enterIsland  ( -- )
+  aboard off  shipPos @ seaMap @ treasureIsland =
   if    enterTreasureIsland
   else  newIslandMap enterIslandLocation  then  ;
+
+: disembark  ( -- )
+  -2 -1 random-range supplies +!
+  wipeMessage seaAndSky disembarkingScene enterIsland  ;
 
   \ ============================================================
   \ Island graphics {{{1
@@ -1239,7 +1339,7 @@ variable done
   rain
   \ XXX TODO bright sky!
   white ink  cyan paper
-  cloud0X 2 at-xy ."     " cloud1X 2 at-xy ."    "
+  cloud0x 2 at-xy ."     " cloud1x 2 at-xy ."    "
   s" Tras la tormenta, el barco está "
   damage$ s+ s" ." s+ message  panel  ;
 
@@ -1254,8 +1354,8 @@ variable done
 
 : rainDrops  ( c$ -- )
   white ink  cyan paper
-  cloud0X @ 2 at-xy string$(4,c$) type
-  cloud1X @ 2 at-xy string$(3,c$) type
+  cloud0x @ 2 at-xy string$(4,c$) type
+  cloud1x @ 2 at-xy string$(3,c$) type
   3 pause  ;
 
   \ ============================================================
@@ -1529,7 +1629,7 @@ variable done
 
 : runAground  ( -- )
 
-  wipeMessage:\ \ XXX TODO remove?
+  wipeMessage  \ XXX TODO remove?
   1 charset
   wipeSea
   drawFarIslands
@@ -1560,46 +1660,6 @@ variable done
   \ XXX TODO choose more men, and inform about them
   manInjured manDead
   -4 -1 random-range morale +!  3 seconds  ;
-
-  \ ============================================================
-  \ Landscape graphics {{{1
-
-: colorSky  ( c -- )
-  [ skyTopY attrLine ] literal
-  [ skyHeight columns * ] literal rot fill  ;
-  \ Color the sky with attribute _c_.
-
-: stormySky  ( -- )
-  [ cyan dup paperish + ] colorSky  false sunAndClouds  ;
-  \ Make the sky stormy.
-
-: seaWaves  ( -- )
-  1 charset cyan ink  blue paper
-  16 1 do  1 28 random-range 4 graphicWinBottom @ random-range
-           at-xy ." kl"
-           1 28 random-range 4 graphicWinBottom @ random-range
-           at-xy ." mn"
-  loop  ;
-
-: seaAndSky  ( -- )
-  graphicWindow wipeSea seaWaves sunnySky  ;
-  \ XXX TMP -- `graphicWindow` is needed, because of the
-  \ `wipePanel` before the calling
-
-: sunnySky  ( -- )
-  [ cyan dup papery + brighty ] colorSky  ;
-  \ Make the sky sunny.
-
-: sunAndClouds  ( f -- )
-  2 charset  bright  yellow ink  cyan paper
-  26 0 at-xy ." AB"  1 26 at-xy ." CD"  white ink
-  1 9 random-range dup cloud0X !
-  dup 0 at-xy ." EFGH" 1 at-xy ." IJKL"
-  13 21 random-range dup cloud1X !
-  dup 0 at-xy ." MNO"  1 at-xy ." PQR"
-  1 charset  0 bright  ;
-  \ XXX TODO -- why the parameter, if this word is used only
-  \ once?
 
   \ ============================================================
   \ Setup {{{1
@@ -1848,23 +1908,6 @@ variable done
   1 charset  27 2 do  i 3 palm2  8 +loop  ;
 
   \ ============================================================
-  \ UDGs and charsets {{{1
-
-  \ XXX TODO keep all the charsets and UDGs in RAM
-
-: charset  ( n -- )  drop  ;
-  \ XXX TODO --
-
-: c0  ( -- )  0 charset  ;
-  \ XXX TMP for debugging after an error
-
-: initUDG  ( -- )
-  \ load "udg128" code udg chr$ 128 \ Spanish chars 128-143
-  \ load "udg144" code udg chr$ 144 \ Graphics 144-168
-  ;
-  \ XXX TODO --
-
-  \ ============================================================
   \ Game over {{{1
 
 : reallyQuit  ( -- )
@@ -1963,33 +2006,6 @@ variable done
             home skulls 0 23 at-xy skulls
   1 charset  ;
   \ Draw top and bottom border of skulls.
-
-  \ ============================================================
-  \ Screen {{{1
-
-  \ XXX TODO -- `window`
-
-: initScreen  ( -- )  cls graphicWindow commandWindow  ;
-
-: wipePanel  ( -- )
-  black paper 0 lowWinTop at-xy lowWinChars spaces  ;
-
-: wipeMessage  ( -- )
-  messageWindow  white ink  black paper  cls1  ;
-
-: saveScreen  ( -- )
-  \ copy screen 1 to 2  \ XXX OLD
-  ;
-  \ XXX TODO --
-
-: restoreScreen  ( -- )
-  \ copy screen 2 to 1  \ XXX OLD
-  screenRestored on  ;
-  \ XXX TODO --
-
-: useScreen2  ( -- )  saveScreen 2 screen  ;
-
-: useScreen1  ( -- )  restoreScreen 1 screen  ;
 
   \ ============================================================
   \ Main {{{1
