@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612200144
+  \ Version 0.0.0+201612200258
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -27,7 +27,7 @@ need 2avariable  need avariable  need cavariable
 need sconstants  need /sconstants  need case  need >=  need s+
 need or-of  need inkey  need <=  need j  need tab  need uppers1
 need pause  need under+  need type-center  need set-pixel
-need rdraw
+need rdraw  need u>str  need randomize0
 
 need black  need blue  need red  need green
 need cyan  need yellow  need white  need color!
@@ -487,7 +487,7 @@ sconstants hand$  ( n -- ca len )
   \ ============================================================
   \ Sound  {{{1
 
-: beep  ( "ccc" -- )  parse-name 2drop  ; immediate
+: beep  ( "name" -- )  parse-name 2drop  ; immediate
   \ XXX TMP --
   \ XXX TODO --
 
@@ -1720,12 +1720,12 @@ create nativeTellsClues  ( -- a )
   100 0 rdraw  2 -2 rdraw  0 -60 rdraw  -2 -2 rdraw
   -100 0 rdraw -2 2 rdraw  0 20 rdraw  -20 0 rdraw  ;
 
-variable price
+variable price  variable offer
 
 : makeOffer  ( -- )
   cash @ maxOffer min >r
   s" Tienes " cash @ coins$ s+
-  s". ¿Qué oferta le haces? (1-" s+
+  s" . ¿Qué oferta le haces? (1-" s+
   r@ u>str s+ ." )" s+ message
   r> getDigit offer !
   beep .2,10
@@ -1809,6 +1809,11 @@ variable price
   \ ============================================================
   \ Attack {{{1
 
+: label  ( "name" -- )  parse-name 2drop  ; immediate
+  \ XXX TMP --
+: goto   ( "name" -- )  parse-name 2drop  ; immediate
+  \ XXX TMP --
+
 : attack  ( -- )
 
   \ XXX OLD -- commented out in the original
@@ -1888,7 +1893,7 @@ variable price
     'P' of  scoreReport                     exit        endof
     'F' of  quitGame on                     exit        endof
     \ XXX TODO -- use constant for control chars
-  endcase  repeat  ;
+  endcase  again  ;
   \ XXX TODO simpler, with searchable string of keys and ON
 
   \ ============================================================
@@ -1936,19 +1941,9 @@ variable price
   quitGame off  damage off  day off  foundClues off  score off
   sunkShips off  trades off  ;
 
-: init  ( -- )
-  randomize
-  [ 2 attrLine ] literal [ 20 columns * ] literal erase
-    \ XXX TODO -- check if needed
-    \ XXX TODO -- use constant to define the zone
-  white ink  black paper  1 flash
-  0 14 at-xy s" Preparando el viaje..." columns type-center
-  initSeaMap initShip initCrew initPlot  ;
-
 : unusedName  ( -- n )
-  0 begin
-    drop  0 [ names 1- ] literal random-range
-  dup usedNames @ 0= until  ;
+  0  begin  drop  0 [ names 1- ] literal random-range
+     dup usedNames @ 0= until  ;
   \ Return the random identifier _n_ of an unused name.
 
 : initCrewName  ( n -- )
@@ -1963,6 +1958,15 @@ variable price
   \ Set the stamina of the crew to its maximum.
 
 : initCrew  ( -- )  initCrewNames initCrewStamina  ;
+
+: init  ( -- )
+  randomize0
+  [ 2 attrLine ] literal [ 20 columns * ] literal erase
+    \ XXX TODO -- check if needed
+    \ XXX TODO -- use constant to define the zone
+  white ink  black paper  1 flash
+  0 14 at-xy s" Preparando el viaje..." columns type-center
+  initSeaMap initShip initCrew initPlot  ;
 
   \ ============================================================
   \ Game over {{{1
@@ -2013,10 +2017,18 @@ variable price
   \ ============================================================
   \ Intro {{{1
 
+: skulls  ( -- )
+  ."   nop  nop  nop  nop  nop  nop  " cr
+  ."   qrs  qrs  qrs  qrs  qrs  qrs  "  ;
+  \ Draw a row of six skulls.
+
+: skullBorder  ( -- )
+  2 charset white ink  black paper  1 bright
+            home skulls 0 23 at-xy skulls  1 charset  ;
+  \ Draw top and bottom border of skulls.
+
 : intro  ( -- )
-  cls
-  skullBorder
-  introWindow
+  cls skullBorder introWindow
   s" Viejas leyendas hablan del tesoro" tell
   s" que esconde la perdida isla de" tell
   islandName$ s" ." s+ tellCR
@@ -2028,17 +2040,6 @@ variable price
   s" y sigue las pistas hasta el tesoro..." tell
   0 row 1+ s" Pulsa una tecla" columns type-center
   6000 pause  ;
-
-: skulls  ( -- )
-  ."   nop  nop  nop  nop  nop  nop  " cr
-  ."   qrs  qrs  qrs  qrs  qrs  qrs  "  ;
-  \ Draw a row of six skulls.
-
-: skullBorder  ( -- )
-  2 charset white ink  black paper  1 bright
-            home skulls 0 23 at-xy skulls
-  1 charset  ;
-  \ Draw top and bottom border of skulls.
 
   \ ============================================================
   \ Main {{{1
@@ -2054,8 +2055,7 @@ variable price
   aboard @ if  shipCommand  else  islandCommand  then  ;
 
 : game  ( -- )
-  cls
-  screenRestored off
+  cls  screenRestored off
   begin
     screenRestored @ if    screenRestored off
                      else  scenery
@@ -2065,7 +2065,7 @@ variable price
   \ XXX The logic is wrong.
 
 : main  ( -- )
-  initOnce  begin  intro init game theEnd  repeat  ;
+  initOnce  begin  intro init game theEnd  again  ;
 
   \ ============================================================
   \ Meta {{{1
@@ -2080,21 +2080,22 @@ variable invflag
       invflag @ inverse  j seaMapRows * i + 1+ seaMap @ .##
       invflag @ 0= invflag !
     loop  cr
-  2 +loop  mode 1  0 inverse  ;
-
-: showCharsets  ( -- )
-  cls  3 0 do  i showCharset  loop
-       0 charset cr ." UDG" showUdg  ;
-
-: showCharset  ( n -- )
-  0 charset cr ." charset " n .
-  n charset showASCII  ;
+  2 +loop  0 inverse  ;
 
 : showASCII  ( -- )  128 32 do  i emit  loop  ;
 
 : showUDG  ( -- )  256 128 do  i emit  loop  ;
 
+: showCharset  ( n -- )
+  0 charset cr ." charset " dup . charset showASCII  ;
+
+: showCharsets  ( -- )
+  cls  3 0 do  i showCharset  loop
+       0 charset cr ." UDG" showUdg  ;
+
 : showDamages  ( -- )
   101 0 do  i . damageIndex . damage$ type cr  loop  ;
+
+end-app
 
   \ vim: filetype:soloforth foldmethod=marker
