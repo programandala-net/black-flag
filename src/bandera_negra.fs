@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612200044
+  \ Version 0.0.0+201612200144
   \
   \ Note: Version 0.0.0 indicates the conversion from Master
   \ BASIC to Forth is still in progress.
@@ -1666,101 +1666,19 @@ create islandEvents>  ( -- a )
   \ XXX TODO simpler, with searchable string of keys and ON
 
   \ ============================================================
-  \ Trading {{{1
+  \ Misc commands on the island {{{1
 
-: nativeSpeechBalloon  ( -- )
-  black ink
-  100 100 set-pixel  20 10 rdraw  0 30 rdraw  2 2 rdraw
-  100 0 rdraw  2 -2 rdraw  0 -60 rdraw  -2 -2 rdraw
-  -100 0 rdraw -2 2 rdraw  0 20 rdraw  -20 0 rdraw  ;
+: embark  ( -- )
+  shipPos @ visited on  1 day +!  aboard on  ;
 
-variable price
+: islandMove  ( offset -- )
+  dup iPos @ + islandMap @ coast <>
+  if    iPos +!  enterIslandLocation
+  else  drop
+  then  ;
 
-: trade  ( -- )
-
-  1 charset
-  \ XXX TODO factor out:
-  black ink  yellow paper
-  16 3 do  0 i at-xy blankLine$ type  loop
-    \ XXX TODO improve with `fill`
-  4 4 palm2
-  drawNative
-  nativeSpeechBalloon
-  s" Un comerciante nativo te sale al encuentro." message
-  s" Yo vender pista de tesoro a tú." nativeSays
-
-  5 9 random-range price !
-  s" Precio ser " price @ coins$ s+ s" ." s+ nativeSays
-  \ XXX TODO pause or join:
-  1 seconds
-  s" ¿Qué dar tú, blanco?" nativeSays
-  makeOffer
-  offer @ price @ 1-  >= if  acceptedOffer exit  then
-    \ One dubloon less is accepted.
-  offer @ price @ 4 - <= if  rejectedOffer exit  then
-    \ Too low offer is not accepted.
-
-  \ You offered too few
-  1 4 random-range case 1 of  lowerPrice  endof
-                        2 of  newPrice    endof  endcase
-
-  \ XXX TODO -- the original does a `goto`, see:
-  \ on fn between(1,4)
-  \   goto lowerPrice
-  \   goto newPrice
-
-  \ He reduces the price by one dubloon
-  -1 price +!
-  s" ¡No! ¡Yo querer más! Tú darme " price @ coins$ s+ s" ." s+
-  nativeSays
-
-  label oneCoinLess
-  \ He accepts one dubloon less
-  makeOffer
-  offer @ price @ 1- >=
-  if  acceptedOffer
-  else offer @ price @ 1- < if  rejectedOffer  then
-  then
-  \ XXX TODO -- simplify
-
-  label lowerPrice
-  \ XXX TODO -- factor out
-  \ He lowers the price by several dubloons
-  -3 -2 random-range price +!
-  s" Bueno, tú darme... " price @ coins$ s+
-  s"  y no hablar más." s+ nativeSays
-  makeOffer
-  offer @ price @ >= if    acceptedOffer
-                     else  rejectedOffer
-                     then  exit
-
-  label newPrice
-  \ XXX TODO -- factor out
-  3 8 random-range dup price ! coins$ 2dup uppers1
-  s"  ser nuevo precio, blanco." s+ nativeSays
-  goto oneCoinLess
-
-  ;
-
-: makeOffer  ( -- )
-  cash @ maxOffer min >r
-  s" Tienes " cash @ coins$ s+
-  s". ¿Qué oferta le haces? (1-" s+
-  r@ u>str s+ ." )" s+ message
-  r> getDigit offer !
-  beep .2,10
-  s" Le ofreces " offer @ coins$ s+ s" ." s+ message  ;
-  \ Ask the player for an offer
-  \ XXX TODO -- check the note about the allowed range
-
-: rejectedOffer  ( -- )
-  2 seconds  s" ¡Tú insultar! ¡Fuera de isla mía!" nativeSays
-  4 seconds  embark  ;
-
-: acceptedOffer  ( -- )
-  wipeMessage
-  offer @ negate cash +!  200 score +!  1 trades +!
-  nativeTellsClue  4 seconds  embark  ;
+  \ ============================================================
+  \ Clues {{{1
 
 : nativeTellsClue1  ( -- )
   s" Tomar camino " path @ number$ s+ s" ." s+ nativeSays  ;
@@ -1793,39 +1711,100 @@ create nativeTellsClues  ( -- a )
   2 seconds  0 5 random-range cells nativeTellsClues + perform
   2 seconds  s" ¡Buen viaje a isla de tesoro!" nativeSays  ;
 
-
   \ ============================================================
-  \ Commands on the island {{{1
+  \ Trading {{{1
 
-: islandCommand  ( -- )
-  begin  inkey upper  case
-    'N' 11 or-of  \ "n" or up -- north
-      possibleNorth @ if  islandMove 6      exit  then  endof
-    'S' 10 or-of  \ "s" or down -- south
-      possibleSouth @ if  islandMove -6     exit  then  endof
-    'E' 9 or-of  \ "e" or right -- east
-      possibleEast @ if  islandMove 1       exit  then  endof
-    'O' 8 or-of  \ "o" or left -- west
-      possibleWest @ if  islandMove -1      exit  then  endof
-    'C' of  possibleTrading @ if  trade     exit  then  endof
-    'B' of  possibleEmbarking @ if  embark  exit  then  endof
-    'I' of  mainReport                      exit        endof
-    'M' of  possibleAttacking @ if  attack  exit  then  endof
-    'T' of  crewReport                      exit        endof
-    'P' of  scoreReport                     exit        endof
-    'F' of  quitGame on                     exit        endof
-    \ XXX TODO -- use constant for control chars
-  endcase  repeat  ;
-  \ XXX TODO simpler, with searchable string of keys and ON
+: nativeSpeechBalloon  ( -- )
+  black ink
+  100 100 set-pixel  20 10 rdraw  0 30 rdraw  2 2 rdraw
+  100 0 rdraw  2 -2 rdraw  0 -60 rdraw  -2 -2 rdraw
+  -100 0 rdraw -2 2 rdraw  0 20 rdraw  -20 0 rdraw  ;
 
-: islandMove  ( offset -- )
-  dup iPos @ + islandMap @ coast <>
-  if    iPos +!  enterIslandLocation
-  else  drop
-  then  ;
+variable price
 
-: embark  ( -- )
-  shipPos @ visited on  1 day +!  aboard on  ;
+: makeOffer  ( -- )
+  cash @ maxOffer min >r
+  s" Tienes " cash @ coins$ s+
+  s". ¿Qué oferta le haces? (1-" s+
+  r@ u>str s+ ." )" s+ message
+  r> getDigit offer !
+  beep .2,10
+  s" Le ofreces " offer @ coins$ s+ s" ." s+ message  ;
+  \ Ask the player for an offer.
+  \ XXX TODO -- check the note about the allowed range
+
+: rejectedOffer  ( -- )
+  2 seconds  s" ¡Tú insultar! ¡Fuera de isla mía!" nativeSays
+  4 seconds  embark  ;
+
+: acceptedOffer  ( -- )
+  wipeMessage
+  offer @ negate cash +!  200 score +!  1 trades +!
+  nativeTellsClue  4 seconds  embark  ;
+
+: newPrice  ( -- )
+  3 8 random-range dup price ! coins$ 2dup uppers1
+  s"  ser nuevo precio, blanco." s+ nativeSays  ;
+  \ The native decides a new price.
+
+: lowerPrice  ( -- )
+  -3 -2 random-range price +!
+  s" Bueno, tú darme... " price @ coins$ s+
+  s"  y no hablar más." s+ nativeSays
+  makeOffer offer @ price @ >=
+  if  acceptedOffer  else  rejectedOffer  then  ;
+  \ The native lowers the price by several dubloons.
+
+: oneCoinLess  ( -- )
+  makeOffer offer @ price @ 1- >=
+  if   acceptedOffer
+  else offer @ price @ 1- < if  rejectedOffer  then
+  then
+  \ XXX TODO -- simplify
+
+  \ label lowerPrice
+  \ \ He lowers the price by several dubloons
+  \ -3 -2 random-range price +!
+  \ s" Bueno, tú darme... " price @ coins$ s+
+  \ s"  y no hablar más." s+ nativeSays
+  \ makeOffer
+  \ offer @ price @ >= if    acceptedOffer
+  \                    else  rejectedOffer
+  \                    then  exit
+  lowerPrice
+
+  \ label newPrice
+  \ 3 8 random-range dup price ! coins$ 2dup uppers1
+  \ s"  ser nuevo precio, blanco." s+ nativeSays
+  \ goto oneCoinLess
+  ;
+  \ He accepts one dubloon less
+
+: initTrade  ( -- )
+  1 charset  black ink  yellow paper
+  16 3 do  0 i at-xy blankLine$ type  loop
+    \ XXX TODO improve with `fill`
+  4 4 palm2  drawNative nativeSpeechBalloon
+  s" Un comerciante nativo te sale al encuentro." message  ;
+
+: trade  ( -- )
+  initTrade  s" Yo vender pista de tesoro a tú." nativeSays
+  5 9 random-range price !
+  s" Precio ser " price @ coins$ s+ s" ." s+ nativeSays
+  \ XXX TODO pause or join:
+  1 seconds  s" ¿Qué dar tú, blanco?" nativeSays  makeOffer
+  offer @ price @ 1-  >= if  acceptedOffer exit  then
+    \ One dubloon less is accepted.
+  offer @ price @ 4 - <= if  rejectedOffer exit  then
+    \ Too low offer is not accepted.
+
+  \ You offered too few
+  4 random case 0 of  lowerPrice           exit  endof
+                1 of  newPrice oneCoinLess exit  endof  endcase
+
+  -1 price +!
+  s" ¡No! ¡Yo querer más! Tú darme " price @ coins$ s+ s" ." s+
+  nativeSays  oneCoinLess  ;
 
   \ ============================================================
   \ Attack {{{1
@@ -1887,6 +1866,30 @@ create nativeTellsClues  ( -- a )
   label L6898
 
   3 seconds  ;
+
+  \ ============================================================
+  \ Command dispatcher on the island {{{1
+
+: islandCommand  ( -- )
+  begin  inkey upper  case
+    'N' 11 or-of  \ "n" or up -- north
+      possibleNorth @ if  islandMove 6      exit  then  endof
+    'S' 10 or-of  \ "s" or down -- south
+      possibleSouth @ if  islandMove -6     exit  then  endof
+    'E' 9 or-of  \ "e" or right -- east
+      possibleEast @ if  islandMove 1       exit  then  endof
+    'O' 8 or-of  \ "o" or left -- west
+      possibleWest @ if  islandMove -1      exit  then  endof
+    'C' of  possibleTrading @ if  trade     exit  then  endof
+    'B' of  possibleEmbarking @ if  embark  exit  then  endof
+    'I' of  mainReport                      exit        endof
+    'M' of  possibleAttacking @ if  attack  exit  then  endof
+    'T' of  crewReport                      exit        endof
+    'P' of  scoreReport                     exit        endof
+    'F' of  quitGame on                     exit        endof
+    \ XXX TODO -- use constant for control chars
+  endcase  repeat  ;
+  \ XXX TODO simpler, with searchable string of keys and ON
 
   \ ============================================================
   \ Setup {{{1
