@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.1.0+201612201349
+  \ Version 0.1.1+201612202050
 
   \ ============================================================
   \ Requirements {{{1
@@ -326,26 +326,18 @@ sconstants hand$  ( n -- ca len )
   \ Convert _c_ to a string to print _c_ as a highlighted char.
 
 : >option$  ( ca1 len1 n -- ca2 len2 )
-  >r 2dup r@ 1- string/
+  >r 2dup drop r@
   2over drop r@ + c@ highlighted$ s+
   2swap r> 1+ /string s+  ;
   \ Convert menu option _ca len_ to an active menu option
-  \ with character at position _n_ highlighted with control
-  \ characters.
-  \
-  \ XXX TODO -- search for the uppercase letter, therefore
-  \ making _n_ unneccessary -- but it would be slow
-  \
-  \ XXX TODO -- _n_ should be _0..len1-1_, not _1..len1_.
+  \ with character at position _n_ (0..len1-1) highlighted with
+  \ control characters.
 
 : ?>option$  ( ca1 len1 n f -- ca1 len1 | ca2 len2 )
   if  >option$  else  drop  then  ;
   \ Prepare a panel option _ca1 len1_.  If the option is
   \ active, _f_ is true and _n_ is the position of its
-  \ highlighted letter.
-  \
-  \ XXX TODO -- use _n_ as flag, therefore making _f_
-  \ unneccessary
+  \ highlighted letter (0..len1-1).
 
 : coins$  ( x -- ca len )
   dup >r number$ s"  " s+ r> dubloons$ s+  ;
@@ -514,7 +506,7 @@ sconstants hand$  ( n -- ca len )
   \ ============================================================
   \ Command panel {{{1
 
-22 constant panel-y
+21 constant panel-y
 
 variable possibleDisembarking   \ flag
 variable possibleEmbarking      \ flag
@@ -548,10 +540,11 @@ variable possibleWest           \ flag
 
 : panel  ( -- )
   wipePanel  0 charset  white ink
-  0 panel-y at-xy s" Información" 1 >option$ type cr
-                  s" Tripulación" 1 >option$ type cr
-                  s" Puntuación"  1 >option$ type cr
+  0 panel-y at-xy s" Información" 0 >option$ type cr
+                  s" Tripulación" 0 >option$ type cr
+                  s" Puntuación"  0 >option$ type
 
+  16 panel-y at-xy
   aboard @ if
 
     \ XXX TODO -- `possibleDisembarking` only if no enemy ship
@@ -560,17 +553,19 @@ variable possibleWest           \ flag
     shipPos @ visited @ 0=
     shipPos @ seaMap @ treasureIsland =  or
       \ XXX TODO -- factor both conditions
+
     possibleDisembarking !
 
-    0 panel-y at-xy
-    s" Desembarcar" 1 possibleDisembarking @ ?>option$ type
+    s" Desembarcar" 0 possibleDisembarking @ ?>option$ type
 
   else
 
     possibleEmbarking on
-      \ XXX TODO only if iPos is coast
-    16 panel-y at-xy
-    s" emBarcar" 3 possibleEmbarking @ ?>option$ type
+      \ XXX TODO -- only if iPos is coast
+      \ XXX TODO -- better yet, only if iPos is the
+      \ disembarking position
+
+    s" emBarcar" 2 possibleEmbarking @ ?>option$ type
 
   then
 
@@ -583,12 +578,12 @@ variable possibleWest           \ flag
     \ XXX TODO -- improve
 
   16 panel-y 1+ at-xy
-  s" Atacar" 1 possibleAttacking @ ?>option$ type
+  s" Atacar" 0 possibleAttacking @ ?>option$ type
 
   iPos @ islandMap @ nativeVillage = possibleTrading !
 
   16 panel-y 2+ at-xy
-  s" Comerciar" 1 possibleTrading @ ?>option$ type
+  s" Comerciar" 0 possibleTrading @ ?>option$ type
 
   directionsMenu  ;
 
@@ -2101,7 +2096,10 @@ variable invflag
        0 charset cr ." UDG" showUdg  ;
 
 : showDamages  ( -- )
-  101 0 do  i . damageIndex . damage$ type cr  loop  ;
+  101 0 do
+    cr i . damageIndex . damage$ type
+    key drop
+  loop  ;
 
 end-app
 
