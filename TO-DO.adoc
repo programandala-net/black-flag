@@ -1,6 +1,6 @@
 = To-Do list of Bandera Negra
 :author: Marcos Cruz (programandala.net)
-:revdate: 2016-12-18
+:revdate: 2016-12-20
 
 == New notes about the conversion to Forth
 
@@ -8,6 +8,7 @@
 - Convert parameteres of `set-pixel` and `rdraw`.
 - Convert `beep`.
 - Convert graphic characters notation in strings.
+- Convert `goto` and `label`.
 
 == Old notes (in Spanish) from the abandoned Master BASIC version
   
@@ -20,9 +21,9 @@ esa celda del mapa.
 
 Condiciones para los comandos del panel: 
 
-Comerciar: `islandMap(iPos)=nativeVillage`
-
-Matar: `not(islandMap(iPos)=2 or islandMap(iPos)=4 or islandMap(iPos)=6)`
+- Comerciar: `islandMap(iPos)=nativeVillage`
+- Matar: `not(islandMap(iPos)=2 or islandMap(iPos)=4 or
+  islandMap(iPos)=6)`
 
 Cambiar la medida del daño del barco (variable «damage») por su
 estado, analógamente a la tripulación, y mostrarlo en forma de texto.
@@ -80,7 +81,7 @@ Cambiar el aspecto de las pantallas finales: negras y con calaveras.
 
 Hacer que el jugador pueda elegir nombre al capitán. 
 
-Añadir Fin a la lista de comandos
+Añadir Fin a la lista de comandos.
 
 Al embarcar, borrar panel antes de redibujar pantalla.
 

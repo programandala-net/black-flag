@@ -11,10 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.0.0+201612200258
-  \
-  \ Note: Version 0.0.0 indicates the conversion from Master
-  \ BASIC to Forth is still in progress.
+  \ Version 0.1.0+201612201349
 
   \ ============================================================
   \ Requirements {{{1
@@ -328,19 +325,27 @@ sconstants hand$  ( n -- ca len )
   0 20 rot 1 20 5 chars>string  ;
   \ Convert _c_ to a string to print _c_ as a highlighted char.
 
-: activeOption$  ( ca1 len1 n -- ca2 len2 )
+: >option$  ( ca1 len1 n -- ca2 len2 )
   >r 2dup r@ 1- string/
   2over drop r@ + c@ highlighted$ s+
   2swap r> 1+ /string s+  ;
   \ Convert menu option _ca len_ to an active menu option
   \ with character at position _n_ highlighted with control
   \ characters.
+  \
+  \ XXX TODO -- search for the uppercase letter, therefore
+  \ making _n_ unneccessary -- but it would be slow
+  \
+  \ XXX TODO -- _n_ should be _0..len1-1_, not _1..len1_.
 
-: option$  ( ca1 len1 n f -- ca1 len1 | ca2 len2 )
-  if  activeOption$  then  ;
+: ?>option$  ( ca1 len1 n f -- ca1 len1 | ca2 len2 )
+  if  >option$  else  drop  then  ;
   \ Prepare a panel option _ca1 len1_.  If the option is
   \ active, _f_ is true and _n_ is the position of its
   \ highlighted letter.
+  \
+  \ XXX TODO -- use _n_ as flag, therefore making _f_
+  \ unneccessary
 
 : coins$  ( x -- ca len )
   dup >r number$ s"  " s+ r> dubloons$ s+  ;
@@ -356,6 +361,8 @@ sconstants hand$  ( n -- ca len )
   supplies @ 1 < or
   cash @ 1 < or  ;
   \ Failed mission?
+  \
+  \ XXX TODO -- use `0=` instead of `1 <`
 
 6 constant maxClues
 
@@ -541,9 +548,9 @@ variable possibleWest           \ flag
 
 : panel  ( -- )
   wipePanel  0 charset  white ink
-  0 panel-y at-xy s" Información" 1 true option$ type cr
-                  s" Tripulación" 1 true option$ type cr
-                  s" Puntuación"  1 true option$ type cr
+  0 panel-y at-xy s" Información" 1 >option$ type cr
+                  s" Tripulación" 1 >option$ type cr
+                  s" Puntuación"  1 >option$ type cr
 
   aboard @ if
 
@@ -556,14 +563,14 @@ variable possibleWest           \ flag
     possibleDisembarking !
 
     0 panel-y at-xy
-    s" Desembarcar" 1 possibleDisembarking @ option$ type
+    s" Desembarcar" 1 possibleDisembarking @ ?>option$ type
 
   else
 
     possibleEmbarking on
       \ XXX TODO only if iPos is coast
     16 panel-y at-xy
-    s" emBarcar" 3 possibleEmbarking @ option$ type
+    s" emBarcar" 3 possibleEmbarking @ ?>option$ type
 
   then
 
@@ -576,12 +583,12 @@ variable possibleWest           \ flag
     \ XXX TODO -- improve
 
   16 panel-y 1+ at-xy
-  s" Atacar" 1 possibleAttacking @ option$ type
+  s" Atacar" 1 possibleAttacking @ ?>option$ type
 
   iPos @ islandMap @ nativeVillage = possibleTrading !
 
   16 panel-y 2+ at-xy
-  s" Comerciar" 1 possibleTrading @ option$ type
+  s" Comerciar" 1 possibleTrading @ ?>option$ type
 
   directionsMenu  ;
 
