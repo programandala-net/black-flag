@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.1.2+201612202117
+  \ Version 0.1.3+201612202134
 
   \ ============================================================
   \ Requirements {{{1
@@ -617,16 +617,19 @@ variable cloud1x
   \ Color the sky with attribute _c_.
 
 : stormySky  ( -- )
-  [ cyan dup papery + ] literal colorSky
-  false sunAndClouds  ;
+  [ cyan dup papery + ] literal colorSky  false sunAndClouds  ;
   \ Make the sky stormy.
+
+: seaWaveCoords  ( -- x y )
+  1 28 random-range 4 graphicWinBottom random-range  ;
+  \ Return random coordinates _x y_ for a sea wave.
+
+: atSeaWaveCoords  ( -- )  seaWaveCoords  at-xy  ;
+  \ Set the cursor at random coordinates for a sea wave.
 
 : seaWaves  ( -- )
   1 charset cyan ink  blue paper
-  16 1 do  1 28 random-range 4 graphicWinBottom @ random-range
-           at-xy ." kl"
-           1 28 random-range 4 graphicWinBottom @ random-range
-           at-xy ." mn"
+  15 0 do  atSeaWaveCoords ." kl"  atSeaWaveCoords ." mn"
   loop  ;
 
 : sunnySky  ( -- )
@@ -1968,7 +1971,7 @@ variable price  variable offer
   [ 2 attrLine ] literal [ 20 columns * ] literal erase
     \ XXX TODO -- check if needed
     \ XXX TODO -- use constant to define the zone
-  white ink  black paper  1 flash
+  white ink  black paper
   0 14 at-xy s" Preparando el viaje..." columns type-center
   initSeaMap initShip initCrew initPlot  ;
 
