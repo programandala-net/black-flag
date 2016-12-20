@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.1.1+201612202050
+  \ Version 0.1.2+201612202117
 
   \ ============================================================
   \ Requirements {{{1
@@ -198,8 +198,8 @@ men avariable stamina
   here ," Zacarías Queroso"
   here ," Óscar Romato"
   here ," Óscar Terista"
-/sconstants names$  ( n -- ca len )
-constant names
+/sconstants stockName$  ( n -- ca len )
+constant stockNames
 
 men 2avariable name  ( n -- a )
   \ A double-cell array to hold the address and length
@@ -207,7 +207,7 @@ men 2avariable name  ( n -- a )
 
 : name$  ( n -- ca len )  name 2@  ;
 
-names men avariable usedNames  ( n -- a )
+stockNames avariable usedName  ( n -- a )
   \ An array to hold a true flag when the correspondent name
   \ in `names$` has been used in `name`. The goal is to prevent
   \ name duplicates in the crew.
@@ -224,11 +224,11 @@ names men avariable usedNames  ( n -- a )
 
 maxStamina 1+ cavariable staminaAttr
 
- black white papery +           0 staminaAttr c!
-   red black papery + brighty + 1 staminaAttr c!
-   red black papery +           2 staminaAttr c!
-yellow black papery +           3 staminaAttr c!
- green black papery +           4 staminaAttr c!
+ black white papery +         0 staminaAttr c!
+   red black papery + brighty 1 staminaAttr c!
+   red black papery +         2 staminaAttr c!
+yellow black papery +         3 staminaAttr c!
+ green black papery +         4 staminaAttr c!
 
   \ --------------------------------------------
   \ Ship damage descriptions {{{2
@@ -423,7 +423,9 @@ sconstants hand$  ( n -- ca len )
   \ ============================================================
   \ Screen {{{1
 
-: initScreen  ( -- )  cls graphicWindow commandWindow  ;
+: initScreen  ( -- )
+  white ink blue dup paper border cls
+  graphicWindow commandWindow  ;
 
 : wipePanel  ( -- )
   black paper 0 lowWinTop at-xy lowWinChars spaces  ;
@@ -1944,12 +1946,12 @@ variable price  variable offer
   sunkShips off  trades off  ;
 
 : unusedName  ( -- n )
-  0  begin  drop  0 [ names 1- ] literal random-range
-     dup usedNames @ 0= until  ;
+  0  begin  drop  0 [ stockNames 1- ] literal random-range
+     dup usedName @ 0= until  ;
   \ Return the random identifier _n_ of an unused name.
 
 : initCrewName  ( n -- )
-  unusedName  dup usedNames on  names$ name 2!  ;
+  unusedName  dup usedName on  stockName$ rot name 2!  ;
   \ Choose an unused name for crew member _n_.
 
 : initCrewNames  ( -- )  men 0 do  i initCrewName  loop  ;
@@ -1962,7 +1964,7 @@ variable price  variable offer
 : initCrew  ( -- )  initCrewNames initCrewStamina  ;
 
 : init  ( -- )
-  randomize0
+  0 randomize0
   [ 2 attrLine ] literal [ 20 columns * ] literal erase
     \ XXX TODO -- check if needed
     \ XXX TODO -- use constant to define the zone
