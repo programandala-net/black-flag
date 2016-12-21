@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.1.4+201612210104
+  \ Version 0.1.5+201612210226
 
   \ ============================================================
   \ Requirements {{{1
@@ -540,59 +540,48 @@ variable possibleWest           \ flag
   \
   \ XXX TODO use a modified  version of "+"?
 
-: panel  ( -- )
-  wipePanel  0 charset  white ink
+: possibleAttacking?  ( -- f )
+  shipPos @ seaMap @
+  dup >r 13 <  r@ shark = or  r> treasureIsland = or 0=  ;
+
+: commonPanelCommands  ( -- )
   0 panel-y at-xy s" Información" 0 >option$ type cr
                   s" Tripulación" 0 >option$ type cr
                   s" Puntuación"  0 >option$ type
+  possibleAttacking? dup >r possibleAttacking !
+  16 panel-y at-xy s" Atacar" 0 r> ?>option$ type  ;
 
-  16 panel-y at-xy
-  aboard @ if
+: possibleDisembarking?  ( -- f )
+  shipPos @ visited @ 0=
+  shipPos @ seaMap @ treasureIsland =  or  ;
 
-    \ XXX TODO -- `possibleDisembarking` only if no enemy ship
-    \ is present
+: shipPanelCommands  ( -- )
+  possibleDisembarking? dup >r possibleDisembarking !
+  16 panel-y 1+ at-xy s" Desembarcar" 0 r> ?>option$ type  ;
+  \ XXX TODO -- factor both conditions
+  \ XXX TODO -- `possibleDisembarking` only if no enemy ship
+  \ is present
 
-    shipPos @ visited @ 0=
-    shipPos @ seaMap @ treasureIsland =  or
-      \ XXX TODO -- factor both conditions
+: possibleTrading?  ( -- f )
+  iPos @ islandMap @ nativeVillage =  ;
 
-    possibleDisembarking !
+' true alias possibleEmbarking?  ( -- f )
+  \ XXX TODO -- only if iPos is coast
+  \ XXX TODO -- better yet, only if iPos is the
+  \ disembarking position
 
-    s" Desembarcar" 0 possibleDisembarking @ ?>option$ type
+: islandPanelCommands  ( -- )
+  possibleEmbarking? dup >r possibleEmbarking !
+  16 panel-y 1+ at-xy s" emBarcar" 2 r> ?>option$ type
+  possibleTrading? dup >r possibleTrading !
+  16 panel-y 2+ at-xy s" Comerciar" 0 r> ?>option$ type  ;
 
-  else
-
-    possibleEmbarking on
-      \ XXX TODO -- only if iPos is coast
-      \ XXX TODO -- better yet, only if iPos is the
-      \ disembarking position
-
-    s" emBarcar" 2 possibleEmbarking @ ?>option$ type
-
-  then
-
+: panel  ( -- )
+  0 charset  white ink  wipePanel commonPanelCommands
+  aboard @ if    shipPanelCommands
+           else  islandPanelCommands  then  directionsMenu  ;
   \ XXX TODO check condition -- what about the enemy ship?
   \ XXX TODO several commands: attack ship/island/shark?
-  shipPos @ seaMap @ 13 < 0=
-  shipPos @ seaMap @ shark = or
-  shipPos @ seaMap @ treasureIsland = or
-  possibleAttacking !
-    \ XXX TODO -- improve
-
-  16 panel-y 1+ at-xy
-  s" Atacar" 0 possibleAttacking @ ?>option$ type
-
-  iPos @ islandMap @ nativeVillage = possibleTrading !
-
-  16 panel-y 2+ at-xy
-  s" Comerciar" 0 possibleTrading @ ?>option$ type
-
-  directionsMenu  ;
-
-: impossible  ( -- )
-  s" Lo siento, capitán, no puede hacer eso." message
-  2 seconds  ;
-  \ XXX not used yet
 
   \ ============================================================
   \ Landscape graphics {{{1
@@ -1822,6 +1811,11 @@ variable price  variable offer
   \ XXX TMP --
 : goto   ( "name" -- )  parse-name 2drop  ; immediate
   \ XXX TMP --
+
+: impossible  ( -- )
+  s" Lo siento, capitán, no puede hacer eso." message
+  2 seconds  ;
+  \ XXX not used yet
 
 : attack  ( -- )
 
