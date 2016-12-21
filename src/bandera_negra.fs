@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.1.3+201612202134
+  \ Version 0.1.4+201612210104
 
   \ ============================================================
   \ Requirements {{{1
@@ -657,21 +657,23 @@ variable cloud1x
 : palm1  ( x y -- )
   green ink  blue paper  2dup    at-xy ." OPQR"
                          2dup 1+ at-xy ." S TU"  yellow ink
-  1+ under+  \ increment x
+  1 under+  \ increment x
   1+ 2dup at-xy ." N"
   1+ 2dup at-xy ." M"
   1+      at-xy ." L"  ;
   \ Print palm model 1 at characters coordinates _x y_.
+  \ XXX TODO -- factor the code common to `palm2`
 
 : palm2  ( x y -- )
   green ink  yellow paper  2dup    at-xy ." OPQR"
                            2dup 1+ at-xy ." S TU"  black ink
-  1+ under+  \ increment x
+  1 under+  \ increment x
   1+ 2dup at-xy ." N"
   1+ 2dup at-xy ." M"
   1+ 2dup at-xy ." L"
   1+      at-xy ." V"  ;
   \ Print palm model 2 at characters coordinates _x y_.
+  \ XXX TODO -- factor the code common to `palm1`
 
   \ --------------------------------------------
   \ Islands {{{2
@@ -838,9 +840,9 @@ variable cloud1x
   \ XXX TODO -- adapt the UDG notation
 
 : seaPicture  ( n -- )
-  dup case
+  case
    2 of  drawBigIsland5  19 4 palm1                       endof
-   3 of  drawBigIsland4                                   endof
+   3 of  drawBigIsland4
          14 4 palm1  19 4 palm1  24 4 palm1  drawShark    endof
    4 of  drawLittleIsland2  14 4 palm1                    endof
    5 of  drawLittleIsland1  24 4 palm1                    endof
@@ -862,10 +864,10 @@ variable cloud1x
          drawBoat  drawShark                              endof
   20 of  drawBigIsland5  19 4 palm1  drawBoat             endof
   shark of  drawShark                                     endof
-    \ XXX TODO needed?
-  endcase
-  drawReefs treasureIsland = if  drawTreasureIsland  then  ;
+  treasureIsland of  drawTreasureIsland                   endof
+  endcase  drawReefs  ;
   \ XXX TODO -- `12 of` is not in the original
+  \ XXX TODO -- use constants
   \ XXX TODO -- simpler, use an execution table
 
 : seaScenery  ( -- )
@@ -2102,9 +2104,10 @@ variable invflag
 
 : showDamages  ( -- )
   101 0 do
-    cr i . damageIndex . damage$ type
-    key drop
+    cr i . damageIndex . damage$ type  key drop
   loop  ;
+
+: ini  ( -- )  initOnce init  ;
 
 end-app
 
