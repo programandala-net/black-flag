@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.1.5+201612210226
+  \ Version 0.2.0+201612220100
 
   \ ============================================================
   \ Requirements {{{1
@@ -25,6 +25,7 @@ need sconstants  need /sconstants  need case  need >=  need s+
 need or-of  need inkey  need <=  need j  need tab  need uppers1
 need pause  need under+  need type-center  need set-pixel
 need rdraw  need u>str  need randomize0
+need set-udg  need rom-font  need set-font
 
 need black  need blue  need red  need green
 need cyan  need yellow  need white  need color!
@@ -373,21 +374,24 @@ sconstants hand$  ( n -- ca len )
   \ Damage description
 
   \ ============================================================
-  \ UDGs and charsets {{{1
+  \ UDGs and fonts {{{1
 
-  \ XXX TODO keep all the charsets and UDGs in RAM
+768 constant /font
+  \ Bytes for font (characters 32..127, 8 bytes each).
 
-: charset  ( n -- )  drop  ;
-  \ XXX TODO --
+create fonts  ( -- a )  rom-font , 0 , 0 ,
+  \ Fonts table.
 
-: c0  ( -- )  0 charset  ;
-  \ XXX TMP for debugging after an error
+: >font  ( n -- a )  cells fonts +  ;
+  \ Convert font number _n_ to its address _a_ in the fonts
+  \ table.
 
-: initUDG  ( -- )
-  \ load "udg128" code udg chr$ 128 \ Spanish chars 128-143
-  \ load "udg144" code udg chr$ 144 \ Graphics 144-168
-  ;
-  \ XXX TODO --
+: font  ( n -- )  >font @ set-font  ;
+  \ Set font number _n_.
+
+here set-udg 168 128 - 8 * allot
+
+need block-characters
 
   \ ============================================================
   \ Windows {{{1
@@ -404,7 +408,7 @@ sconstants hand$  ( n -- ca len )
 
 : graphicWindow  ( -- )
   graphicWinLeft graphicWinRight graphicWinTop graphicWinBottom
-  window  1 charset  ;
+  window  ;
   \ Zone where graphics are shown.
 
 : introWindow  ( -- )  2 29 introWinTop 21 window  ;
@@ -454,7 +458,7 @@ sconstants hand$  ( n -- ca len )
   \ Text output {{{1
 
 : tell  ( ca len -- )
-  0 charset
+  0 font
   begin  dup columns >  while
     \ for char=cpl to 1 step -1 \ XXX OLD
     0 columns do
@@ -469,10 +473,10 @@ sconstants hand$  ( n -- ca len )
 : nativeSays  ( ca len -- )  nativeWindow cls1 tell  ;
 
 : message  ( ca len -- )
-  0 charset  wipeMessage messageWindow tell graphicWindow  ;
+  0 font  wipeMessage messageWindow tell graphicWindow  ;
 
 : tellZone  ( ca len n x y -- )
-  0 charset
+  0 font
   begin  2over <=  while
     2over nip 0 swap ( 0 n ) do
       4 pick i + c@ bl = if
@@ -577,7 +581,7 @@ variable possibleWest           \ flag
   16 panel-y 2+ at-xy s" Comerciar" 0 r> ?>option$ type  ;
 
 : panel  ( -- )
-  0 charset  white ink  wipePanel commonPanelCommands
+  0 font  white ink  wipePanel commonPanelCommands
   aboard @ if    shipPanelCommands
            else  islandPanelCommands  then  directionsMenu  ;
   \ XXX TODO check condition -- what about the enemy ship?
@@ -590,13 +594,13 @@ variable cloud0x
 variable cloud1x
 
 : sunAndClouds  ( f -- )
-  2 charset  bright  yellow ink  cyan paper
+  2 font  bright  yellow ink  cyan paper
   26 0 at-xy ." AB"  1 26 at-xy ." CD"  white ink
   1 9 random-range dup cloud0x !
   dup 0 at-xy ." EFGH" 1 at-xy ." IJKL"
   13 21 random-range dup cloud1x !
   dup 0 at-xy ." MNO"  1 at-xy ." PQR"
-  1 charset  0 bright  ;
+  1 font  0 bright  ;
   \ XXX TODO -- why the parameter, if this word is used only
   \ once?
 
@@ -617,7 +621,7 @@ variable cloud1x
   \ Set the cursor at random coordinates for a sea wave.
 
 : seaWaves  ( -- )
-  1 charset cyan ink  blue paper
+  1 font cyan ink  blue paper
   15 0 do  atSeaWaveCoords ." kl"  atSeaWaveCoords ." mn"
   loop  ;
 
@@ -729,7 +733,7 @@ variable cloud1x
   0 2 at-xy ." Z123 HI A Z123 HI A Z123 HI Z123"  ;
 
 : drawTreasureIsland  ( -- )
-  1 charset  green ink  blue paper
+  1 font  green ink  blue paper
   16  7 at-xy ." A A   HI"
   13  8 at-xy ." F\::\::\::B\::\::\::B\::\::B\::\::\::C"
   12  9 at-xy ." G\::\::\::\::\::\::\::"
@@ -753,7 +757,7 @@ variable cloud1x
   else
     s" Has encontrado la perdida isla de "
     islandName$ s+ s" ..."
-  then  s+ message  1 charset  ;
+  then  s+ message  1 font  ;
   \ XXX TODO -- factor
 
 : wipeIsland  ( -- )
@@ -900,7 +904,7 @@ variable dead
 : runAground  ( -- )
 
   wipeMessage  \ XXX TODO remove?
-  1 charset
+  1 font
   wipeSea drawFarIslands bottomReef leftReef rightReef
 
   white ink
@@ -930,7 +934,7 @@ variable dead
   \ ============================================================
   \ Reports {{{1
 
-: reportStart  ( -- )  saveScreen cls noWindow 0 charset  ;
+: reportStart  ( -- )  saveScreen cls noWindow 0 font  ;
   \ Common task at the start of all reports.
 
 : reportEnd  ( -- )  1000 pause restoreScreen  ;
@@ -1081,8 +1085,8 @@ variable done
 
 : fire  ( y -- )
   to fireY  -1 ammo +!
-  0 charset white ink  red paper 22 21 at-xy ammo ?
-  1 charset
+  0 font white ink  red paper 22 21 at-xy ammo ?
+  1 font
   yellow ink  blue paper
   dup 1- 9 swap at-xy ." +" dup 1+ 9 swap at-xy ." -"
   moveEnemyShip
@@ -1115,7 +1119,7 @@ variable done
   \ or the money and part of the crew is captured
 
 : battleScenery  ( -- )
-  noWindow  blue paper cls  0 charset
+  noWindow  blue paper cls  0 font
   white ink  red paper  10 21 at-xy ." Munición = " ammo ?
 
   black ink yellow paper
@@ -1125,10 +1129,10 @@ variable done
   0 2 at-xy ." 1" 0 9 at-xy ." 2" 0 16 at-xy ." 3"
 
   18 3 do
-    black ink  2 charset  4 i 1- at-xy '1' emit
+    black ink  2 font  4 i 1- at-xy '1' emit
                           4 i    at-xy '2' emit
                           4 1 1+ at-xy '3' emit
-    red ink    1 charset  6 i    at-xy ." cde"
+    red ink    1 font  6 i    at-xy ." cde"
                           6 i 1+ at-xy ." fg"
                           1 i 1+ at-xy ." hi"
   7 +loop
@@ -1199,7 +1203,7 @@ variable done
   0 14 rdraw 15 0 rdraw  ;
 
 : sailorAndCaptain  ( -- )
-  1 charset  cyan ink  black paper
+  1 font  cyan ink  black paper
   0 17 at-xy ."  xy" 28 at-x ." pq" cr
              ."  vs" 28 at-x ." rs" cr
              ."  wu" 28 at-x ." tu"
@@ -1215,7 +1219,7 @@ variable done
 : trees  ( -- )
   wipeIsland  black ink  yellow paper
   0 7 at-xy ."  1       2       3       4"
-  1 charset  27 2 do  i 3 palm2  8 +loop  ;
+  1 font  27 2 do  i 3 palm2  8 +loop  ;
 
 : treasureFound  ( -- )
   [ 0 attrLine ] literal [ 3 columns * ] literal
@@ -1232,12 +1236,12 @@ variable done
   ." rs          vs                  tu      "
   ." \T\U    wu"
   28 11 palm2  0 11 palm2
-  2 charset  blue ink  yellow paper
+  2 font  blue ink  yellow paper
   13 17 at-xy ." l\::m"
     \ XXX TODO -- factor the treasure
 
   s" ¡Capitán, somos ricos!" message
-  4 seconds  1 charset  ;
+  4 seconds  1 font  ;
   \ XXX TODO use this proc instead of happyEnd?
 
 variable option
@@ -1249,7 +1253,7 @@ variable option
   cls
   sunnySky
   wipeIsland
-  2 charset
+  2 font
   green ink  yellow paper
   0 3 at-xy ."  5     6       45     6       5"
   black ink
@@ -1260,7 +1264,7 @@ variable option
     i     6 at-xy ." :\::\::\::\::\::\::\#127"
     \ XXX TODO -- adapt the graphics notation
   8 +loop
-  0 charset  white ink  red paper
+  0 font  white ink  red paper
   0 7 at-xy ."    1       2       3       4    "
 
   white ink  black paper
@@ -1281,7 +1285,7 @@ variable option
   s" ¿Qué árbol, capitán?" sailorSays
   23 15 at-xy ." ? "
   9 getDigit option !
-  0 charset
+  0 font
   black paper  23 15 at-xy option ?  beep .2,30
     \ XXX TODO -- factor out
   trees
@@ -1294,7 +1298,7 @@ variable option
   8 16 at-xy ." I=1  D=2 "
   23 15 at-xy ." ? "
   9 getDigit option !
-  0 charset
+  0 font
   23 15 at-xy option ?
   beep .2,30
   2 seconds
@@ -1307,10 +1311,10 @@ variable option
     12 i 1+ at-xy i 3 + dup . ."   " village$ type
   loop
   12 7 at-xy ." 0  " villages village$ type
-  2 charset
+  2 font
   green ink  27 5 at-xy ." S\::T" 27 6 at-xy ." VUW"
 
-  0 charset
+  0 font
   black paper
   7 14 at-xy ."  Poblado  " 7 13 at-xy ." ¿Cuál"
   8 16 at-xy ."  capitán." 23 15 at-xy ." ? "
@@ -1350,7 +1354,7 @@ variable option
     7 13 at-xy ." ¡Nos hemos"
     7 14 at-xy ."  equivocado "
     7 16 at-xy ." capitán!"
-  then  2 seconds  1 charset  ;
+  then  2 seconds  1 font  ;
   \ XXX TODO -- use tellZone for the last message or...
   \ XXX TODO -- ...at least, do not repeat the coordinates
 
@@ -1375,12 +1379,12 @@ variable option
   white ink  blue paper
   0 6 at-xy ." mn" 0 10 at-xy ." kl" 0 13 at-xy ." k"
   0 4 at-xy ." m" 1 8 at-xy ." l"
-  2 charset
+  2 font
   yellow ink  blue paper
   iPos @ 6 + islandMap @ coast <> if  2  3 at-xy 'A' emit  then
   iPos @ 6 + islandMap @ coast =  if  2  4 at-xy 'A' emit  then
   iPos @ 6 - islandMap @ coast =  if  2 13 at-xy 'C' emit  then
-  1 charset  ;
+  1 font  ;
 
 : drawRightWaves  ( -- )
   white ink  blue paper
@@ -1388,17 +1392,17 @@ variable option
   white ink  blue paper
   30 6 at-xy ." mn" 30 10 at-xy ." kl" 31 13 at-xy ." k"
   30 4 at-xy ." m" 31 8 at-xy ." l"
-  2 charset
+  2 font
   yellow ink  blue paper
   iPos @ 6 + islandMap @ coast =
   if    29  4 at-xy 'B' emit  then
   iPos @ 6 - islandMap @ coast =
   if    29 13 at-xy 'D'
   else  29  3 at-xy 'B'
-  then  emit  1 charset  ;
+  then  emit  1 font  ;
 
 : drawVillage  ( -- )
-  2 charset  green ink  yellow paper
+  2 font  green ink  yellow paper
   6  5 at-xy ."  S\::T    ST   S\::T"
   6  6 at-xy ."  VUW    78   VUW   4"
   4  8 at-xy ." S\::T   S\::T    S\::T S\::T  S\::T "
@@ -1415,7 +1419,7 @@ variable option
   24  9 at-xy ." ZX"
   10  6 at-xy ." XYZ"
   17  6 at-xy ." YX"
-  26  6 at-xy ." Z"  1 charset  ;
+  26  6 at-xy ." Z"  1 font  ;
 
 : drawNative  ( -- )
   black ink  yellow paper  8 10 at-xy ."  _ `"
@@ -1426,19 +1430,19 @@ variable option
   black ink  yellow paper  14 12 at-xy ." hi"  ;
 
 : drawSupplies  ( -- )
-  2 charset
+  2 font
   black ink  yellow paper 14 12 at-xy ." 90  9099 0009"
-  1 charset  ;
+  1 font  ;
   \ XXX TODO draw graphics depending on the actual ammount
 
 : drawSnake  ( -- )
-  2 charset  black ink  yellow paper  14 12 at-xy ." xy"
-  1 charset  ;
+  2 font  black ink  yellow paper  14 12 at-xy ." xy"
+  1 font  ;
 
 : drawDubloons  ( n -- )
-  2 charset  black ink  yellow paper
+  2 font  black ink  yellow paper
   12 dup at-xy s" vw vw vw vw vw vw vw vw " drop swap 3 * type
-  1 charset  ;
+  1 font  ;
 
 : islandScenery  ( -- )
   graphicWindow wipeIslandScenery sunnySky
@@ -1574,7 +1578,7 @@ create islandEvents>  ( -- a )
 
   endcase
 
-  1 charset
+  1 font
   100 pause \ XXX OLD
 
   ;
@@ -1583,7 +1587,7 @@ create islandEvents>  ( -- a )
   \ Disembark {{{1
 
 : disembarkingScene  ( -- )
-  1 charset  green ink  blue paper
+  1 font  green ink  blue paper
   31  8 at-xy ." :"
   37  9 at-xy ." HI :\::"
   25 10 at-xy ." F\::\::\::\::\::\::"
@@ -1609,7 +1613,7 @@ create islandEvents>  ( -- a )
   cloud1x @ 2 at-xy     3 ruler type  3 pause  ;
 
 : rain  ( -- )
-  1 charset  71 1 do
+  1 font  71 1 do
     ';' rainDrops  ']' rainDrops  '[' rainDrops
     3 random 0= if  redrawShip  then
   loop  ;
@@ -1779,7 +1783,7 @@ variable price  variable offer
   \ He accepts one dubloon less
 
 : initTrade  ( -- )
-  1 charset  black ink  yellow paper
+  1 font  black ink  yellow paper
   16 3 do  0 i at-xy blankLine$ type  loop
     \ XXX TODO improve with `fill`
   4 4 palm2  drawNative nativeSpeechBalloon
@@ -1859,12 +1863,12 @@ variable price  variable offer
 
   endcase
 
-  2 charset  black ink  yellow paper yellow
+  2 font  black ink  yellow paper yellow
   14 10 do  8 i at-xy ." t   "  loop
   black ink  yellow paper  8  9 at-xy ." u"
   white ink  black  paper  9 10 at-xy ." nop"
                            9 11 at-xy ." qrs"
-  1 charset
+  1 font
 
   label L6897
 
@@ -1902,7 +1906,7 @@ variable price  variable offer
   \ ============================================================
   \ Setup {{{1
 
-: initOnce  ( -- )  initScreen  initUDG  ;
+: initOnce  ( -- )  initScreen  ;
 
 : initSeaReefs  ( -- )
             17 1 do  reef i seaMap !      loop     \ north
@@ -1985,7 +1989,7 @@ variable price  variable offer
   ;
 
 : sadEnd  ( -- )
-  0 charset
+  0 font
   white ink  red paper
   0 3 at-xy s" FIN DEL JUEGO" columns type-center
   5 26 2 21 window
@@ -2011,7 +2015,7 @@ variable price  variable offer
 
 : theEnd  ( -- )
   black ink yellow paper cls1
-  1 charset  16 1 do  27 i palm2  1 i palm2  7 +loop
+  1 font  16 1 do  27 i palm2  1 i palm2  7 +loop
   success? if  happyEnd  else  sadEnd  then
   s" Pulsa una tecla para ver tus puntos" message
   0 pause beep .2,30 scoreReport  ;
@@ -2026,8 +2030,8 @@ variable price  variable offer
   \ Draw a row of six skulls.
 
 : skullBorder  ( -- )
-  2 charset white ink  black paper  1 bright
-            home skulls 0 23 at-xy skulls  1 charset  ;
+  2 font white ink  black paper  1 bright
+            home skulls 0 23 at-xy skulls  1 font  ;
   \ Draw top and bottom border of skulls.
 
 : intro  ( -- )
@@ -2089,12 +2093,12 @@ variable invflag
 
 : showUDG  ( -- )  256 128 do  i emit  loop  ;
 
-: showCharset  ( n -- )
-  0 charset cr ." charset " dup . charset showASCII  ;
+: showFont  ( n -- )
+  0 font cr ." font " dup . font showASCII  ;
 
-: showCharsets  ( -- )
-  cls  3 0 do  i showCharset  loop
-       0 charset cr ." UDG" showUdg  ;
+: showFonts  ( -- )
+  cls  3 0 do  i showFont  loop
+       0 font cr ." UDG" showUdg  ;
 
 : showDamages  ( -- )
   101 0 do
@@ -2103,6 +2107,11 @@ variable invflag
 
 : ini  ( -- )  initOnce init  ;
 
-end-app
+: 0f  ( -- )  0 font  ;
+  \ XXX TMP for debugging after an error
+
+here dup 1 >font ! /font + 2 >font !
+  \ Update the fonts table with the current data pointer.
+  \ Two graphics font are being compiled here.
 
   \ vim: filetype:soloforth foldmethod=marker

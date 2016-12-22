@@ -9,6 +9,7 @@
 - Convert `beep`.
 - Convert graphic characters notation in strings.
 - Convert `goto` and `label`.
+- Fix `crewReport`.
 
 == Old notes (in Spanish) from the abandoned Master BASIC version
   

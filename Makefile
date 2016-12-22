@@ -5,6 +5,8 @@
 # This file is part of Bandera Negra
 # http://programandala.net/
 
+# Last modified 201612212010
+
 ################################################################
 # Requirements
 
@@ -20,6 +22,8 @@
 # History
 
 # 2016-12-19: Start.
+#
+# 2016-12-21: Build fonts and UDG sources from the original TAP files.
 
 ################################################################
 # Notes
@@ -52,7 +56,24 @@ clean:
 secondary_source_files=$(sort $(wildcard src/00*.fsb))
 library_source_files=$(sort $(wildcard src/lib/*.fsb))
 
-tmp/bandera_negra.fba: src/bandera_negra.fs
+tmp/bandera_negra_font_1.fs: graph/jolly_roger_font_1.tap
+	make/udg_tap_to_forth_c-comma.fs $< > $@
+
+tmp/bandera_negra_font_2.fs: graph/jolly_roger_font_2.tap
+	make/udg_tap_to_forth_c-comma.fs $< > $@
+
+tmp/bandera_negra_udg.fs: graph/jolly_roger_udg.tap
+	make/udg_tap_to_forth.fs $< > $@
+
+tmp/bandera_negra.complete.fs: \
+	src/bandera_negra.fs \
+	tmp/bandera_negra_font_1.fs \
+	tmp/bandera_negra_font_2.fs \
+	tmp/bandera_negra_udg.fs \
+	src/bandera_negra_end-app.fs
+	cat $^ > $@
+
+tmp/bandera_negra.fba: tmp/bandera_negra.complete.fs
 	./make/fs2fba.sh $<
 	mv $(basename $<).fba $@
 
