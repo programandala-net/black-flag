@@ -11,7 +11,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.2.0+201612220100
+  \ Version 0.3.0+201612232006
 
   \ ============================================================
   \ Requirements {{{1
@@ -25,7 +25,10 @@ need sconstants  need /sconstants  need case  need >=  need s+
 need or-of  need inkey  need <=  need j  need tab  need uppers1
 need pause  need under+  need type-center  need set-pixel
 need rdraw  need u>str  need randomize0
-need set-udg  need rom-font  need set-font
+need set-udg  need rom-font  need set-font  need s\"  need .\"
+
+need set-esc-order  need esc-standard-chars-wordlist
+need esc-block-chars-wordlist  need esc-udg-chars-wordlist
 
 need black  need blue  need red  need green
 need cyan  need yellow  need white  need color!
@@ -302,7 +305,7 @@ sconstants hand$  ( n -- ca len )
   \ _c_.
 
 : dubloons$  ( n -- ca len )
-  s" dobl " rot 1 > if  s" ones"  else  s" On"  then  s+  ;
+  s" dobl " rot 1 > if  s" ones"  else  s" ón"  then  s+  ;
   \ Return string "doubloon" or "doubloons", depending on _n_.
 
 : number$  ( n -- ca len )
@@ -389,18 +392,37 @@ create fonts  ( -- a )  rom-font , 0 , 0 ,
 : font  ( n -- )  >font @ set-font  ;
   \ Set font number _n_.
 
-here set-udg 168 128 - 8 * allot
+here set-udg 165 128 - 8 * allot
+  \ Reserve data space for the block chars (128..143) and the
+  \ UDG (144.164).
 
-need block-characters
+need block-chars
+  \ Compile the block chars at the UDG data space.
+
+esc-standard-chars-wordlist
+esc-block-chars-wordlist
+esc-udg-chars-wordlist 3 set-esc-order
+  \ Set the escaped strings search order in order to escape not
+  \ only the standard chars, but also the block chars and the
+  \ UDG chars.
 
   \ ============================================================
   \ Windows {{{1
 
-: cls1  ( -- )  ;
-  \ XXX TODO --
+variable winLeftX
+variable winRightX
+variable winTopY
+variable winBottomY
 
-: window  ( leftX rightX topY bottomY -- )  2drop 2drop  ;
-  \ XXX TODO --
+: clearWin  ( -- )
+  WinRightX @ WinLeftX @ - 1+  \ window width
+  winBottomY @ 1+ winTopY @ ?do
+    dup winLeftX @ i at-xy spaces
+  loop  drop  ;
+  \ XXX TODO -- faster
+
+: window  ( leftX rightX topY bottomY -- )
+  winBottomY !  winTopY !  winRightX !  winLeftX !  ;
 
 : noWindow  ( -- )  0 31 0 23 window  ;
 
@@ -408,7 +430,7 @@ need block-characters
 
 : graphicWindow  ( -- )
   graphicWinLeft graphicWinRight graphicWinTop graphicWinBottom
-  window  ;
+  window  1 font  ;
   \ Zone where graphics are shown.
 
 : introWindow  ( -- )  2 29 introWinTop 21 window  ;
@@ -435,7 +457,7 @@ need block-characters
   black paper 0 lowWinTop at-xy lowWinChars spaces  ;
 
 : wipeMessage  ( -- )
-  messageWindow  white ink  black paper  cls1  ;
+  messageWindow  white ink  black paper  clearWin  ;
 
 : saveScreen  ( -- )
   \ copy screen 1 to 2  \ XXX OLD
@@ -470,7 +492,7 @@ need block-characters
 
 : tellCR  ( ca len -- )  tell cr  ;
 
-: nativeSays  ( ca len -- )  nativeWindow cls1 tell  ;
+: nativeSays  ( ca len -- )  nativeWindow clearWin tell  ;
 
 : message  ( ca len -- )
   0 font  wipeMessage messageWindow tell graphicWindow  ;
@@ -674,59 +696,59 @@ variable cloud1x
 : drawBigIsland5  ( -- )
   green ink  blue paper
   18  7 at-xy ." HI A"
-  17  8 at-xy ." G\::\::\::\::BC"
-  16  9 at-xy ." F\::\::\::\::\::\::\::D"
-  14 10 at-xy ." JK\::\::\::\::\::\::\::\::E"
-  13 11 at-xy ." F\::\::\::\::\::\::\::\::\::\::\::C"  ;
+  17  8 at-xy .\" G\::\::\::\::BC"
+  16  9 at-xy .\" F\::\::\::\::\::\::\::D"
+  14 10 at-xy .\" JK\::\::\::\::\::\::\::\::E"
+  13 11 at-xy .\" F\::\::\::\::\::\::\::\::\::\::\::C"  ;
 
 : drawBigIsland4  ( -- )
   green ink  blue paper
   16  7 at-xy ." WXYA"
-  14  8 at-xy ." :\::\::\::\::\::\::C F\::\::D"
-  13  9 at-xy ." :\::\::\::\::\::\::\::\::B\::\::\::E"
-  12 10 at-xy ." F\::\::\::\::\::\::\::\::\::\::\::\::\::\::C"
+  14  8 at-xy .\" :\::\::\::\::\::\::C F\::\::D"
+  13  9 at-xy .\" :\::\::\::\::\::\::\::\::B\::\::\::E"
+  12 10 at-xy .\" F\::\::\::\::\::\::\::\::\::\::\::\::\::\::C"
   ;
 
 : drawLittleIsland2  ( -- )
-  green ink  blue paper  14  8 at-xy ." :\::\::C"
+  green ink  blue paper  14  8 at-xy .\" :\::\::C"
                          16  7 at-xy ." A"
-                         13  9 at-xy ." :\::\::\::\::D"
-                         12 10 at-xy ." F\::\::\::\::\::E"  ;
+                         13  9 at-xy .\" :\::\::\::\::D"
+                         12 10 at-xy .\" F\::\::\::\::\::E"  ;
 
 : drawLittleIsland1  ( -- )
-  green ink  blue paper  23  8 at-xy ." JK\::C"
-                         22  9 at-xy ." :\::\::\::\::D"
-                         21 10 at-xy ." F\::\::\::\::\::E"  ;
+  green ink  blue paper  23  8 at-xy .\" JK\::C"
+                         22  9 at-xy .\" :\::\::\::\::D"
+                         21 10 at-xy .\" F\::\::\::\::\::E"  ;
 
 : drawBigIsland3  ( -- )
   green ink  blue paper
   21  7 at-xy ." Z123"
-  19  8 at-xy ." :\::\::\::\::\::C"
-  18  9 at-xy ." :\::\::\::\::\::\::\::D"
-  15 10 at-xy ." F\::B\::\::\::\::\::\::\::\::E"
-  13 11 at-xy ." JK\::\::\::\::\::\::\::\::\::\::\::\::C"  ;
+  19  8 at-xy .\" :\::\::\::\::\::C"
+  18  9 at-xy .\" :\::\::\::\::\::\::\::D"
+  15 10 at-xy .\" F\::B\::\::\::\::\::\::\::\::E"
+  13 11 at-xy .\" JK\::\::\::\::\::\::\::\::\::\::\::\::C"  ;
 
 : drawBigIsland2  ( -- )
   green ink  blue paper
   17  7 at-xy ." Z123"
-  14  8 at-xy ." F\::B\::\::\::\::\::C"
-  13  9 at-xy ." G\::\::\::\::\::\::\::\::\::D"
-  12 10 at-xy ." F\::\::\::\::\::\::\::\::\::\::E;"  ;
+  14  8 at-xy .\" F\::B\::\::\::\::\::C"
+  13  9 at-xy .\" G\::\::\::\::\::\::\::\::\::D"
+  12 10 at-xy .\" F\::\::\::\::\::\::\::\::\::\::E;"  ;
 
 : drawBigIsland1  ( -- )
   green ink  blue paper
   20  7 at-xy ." HI A"
-  19  8 at-xy ." G\::\::B\::\::\::C"
-  18  9 at-xy ." F\::\::\::\::\::\::\::\::D"
-  16 10 at-xy ." JK\::\::\::\::\::\::\::\::\::E"  ;
+  19  8 at-xy .\" G\::\::B\::\::\::C"
+  18  9 at-xy .\" F\::\::\::\::\::\::\::\::D"
+  16 10 at-xy .\" JK\::\::\::\::\::\::\::\::\::E"  ;
 
 : drawTwoLittleIslands  ( -- )
   green ink  blue paper
   17  6 at-xy ." WXY  A"
-  16  7 at-xy ." A   A   F\::C"
-  15  8 at-xy ." :\::\#127 :\::\#127 G\::\::\::D"
-  14  9 at-xy ." G\::\::\::D   F\::\::\::\::E"
-  13 10 at-xy ." F\::\::\::\::E"  ;
+  16  7 at-xy .\" A   A   F\::C"
+  15  8 at-xy .\" :\::\x7F :\::\x7F G\::\::\::D"
+  14  9 at-xy .\" G\::\::\::D   F\::\::\::\::E"
+  13 10 at-xy .\" F\::\::\::\::E"  ;
 
 : drawFarIslands  ( -- )
   green ink  cyan paper
@@ -735,23 +757,23 @@ variable cloud1x
 : drawTreasureIsland  ( -- )
   1 font  green ink  blue paper
   16  7 at-xy ." A A   HI"
-  13  8 at-xy ." F\::\::\::B\::\::\::B\::\::B\::\::\::C"
-  12  9 at-xy ." G\::\::\::\::\::\::\::"
-              ." \::\::\::\::\::\::\::\::\::D"
-  10 10 at-xy ." JK\::\::\::\::\::\::\::\::\::"
-              ." \::\::\::\::\::\::\::\::E"
-   9 11 at-xy ." :\::\::\::\::\::\::\::\::\::\::"
-              ." \::\::\::\::\::\::\::\::\::\::C"
-   8 12 at-xy ." F\::\::\::\::\::\::\::\::\::\::"
-              ." \::\::\::\::\::\::\::\::\::\::\::\::D"
+  13  8 at-xy .\" F\::\::\::B\::\::\::B\::\::B\::\::\::C"
+  12  9 at-xy .\" G\::\::\::\::\::\::\::"
+              .\" \::\::\::\::\::\::\::\::\::D"
+  10 10 at-xy .\" JK\::\::\::\::\::\::\::\::\::"
+              .\" \::\::\::\::\::\::\::\::E"
+   9 11 at-xy .\" :\::\::\::\::\::\::\::\::\::\::"
+              .\" \::\::\::\::\::\::\::\::\::\::C"
+   8 12 at-xy .\" F\::\::\::\::\::\::\::\::\::\::"
+              .\" \::\::\::\::\::\::\::\::\::\::\::\::D"
   blue ink  green paper
    8 13 at-xy ."  HI Z123  HI A  A A  A "
-  20 14 at-xy ." B\::\::\::\::B"
+  20 14 at-xy .\" B\::\::\::\::B"
   green ink  blue paper
   31 13 at-xy ." E"
   19 4 palm1  24 4 palm1  14 4 palm1
   black ink  green paper
-  22 9 at-xy ." \T\U"  \ the treasure
+  22 9 at-xy .\" \T\U"  \ the treasure
   shipPos @ visited @ if
     s" Llegas nuevamente a la isla de " islandName$ s+ s" ."
   else
@@ -771,7 +793,7 @@ variable cloud1x
 : bottomReef  ( -- )
   black ink  blue paper
   2 14 at-xy ."  A  HI   HI       HI  HI  A"
-  0 15 at-xy ." WXY  :\::\::\#127     Z123     :\::\::\#127"  ;
+  0 15 at-xy .\" WXY  :\::\::\x7F     Z123     :\::\::\x7F"  ;
   \ XXX TODO -- adapt the graphic chars notation
   \
   \ XXX FIXME still "Off the screen" error!
@@ -801,15 +823,15 @@ variable cloud1x
 
 : drawShipUp  ( -- )
   white ink  blue paper
-  shipX @ shipY @ 2dup    at-xy ." \A\B\C"
-                  2dup 1+ at-xy ." \D\E\F"
-                       2+ at-xy ." \G\H\I"  ;
+  shipX @ shipY @ 2dup    at-xy .\" \A\B\C"
+                  2dup 1+ at-xy .\" \D\E\F"
+                       2+ at-xy .\" \G\H\I"  ;
 
 : drawShipDown  ( -- )
   white ink  blue paper
-  shipX @ shipY @ 2dup    at-xy ." \J\K\L"
-                  2dup 1+ at-xy ." \M\N\O"
-                       2+ at-xy ." \P\Q\R"  ;
+  shipX @ shipY @ 2dup    at-xy .\" \J\K\L"
+                  2dup 1+ at-xy .\" \M\N\O"
+                       2+ at-xy .\" \P\Q\R"  ;
 
 : redrawShip  ( -- )
   shipPicture @ if    drawShipDown shipPicture off
@@ -908,15 +930,15 @@ variable dead
   wipeSea drawFarIslands bottomReef leftReef rightReef
 
   white ink
-  14  8 at-xy ." \A\B\C"
-  14  9 at-xy ." \D\E\F"
-  14 10 at-xy ." \G\H\I"
+  14  8 at-xy .\" \A\B\C"
+  14  9 at-xy .\" \D\E\F"
+  14 10 at-xy .\" \G\H\I"
   black ink  blue paper
   17 10 at-xy ." WXY     A"
   19  6 at-xy ." A   Z123"
    6 11 at-xy ." A   HI"
    5  4 at-xy ." Z123    HI"
-   7  8 at-xy ." H\..I  A"
+   7  8 at-xy .\" H\..I  A"
 
   10 29 damaged
   \ XXX TODO improved message: "Por suerte, ..."
@@ -1234,10 +1256,10 @@ variable done
   black ink  yellow paper  8 13 at-xy
   ." pq          xy                  "
   ." rs          vs                  tu      "
-  ." \T\U    wu"
+  .\" \T\U    wu"
   28 11 palm2  0 11 palm2
   2 font  blue ink  yellow paper
-  13 17 at-xy ." l\::m"
+  13 17 at-xy .\" l\::m"
     \ XXX TODO -- factor the treasure
 
   s" ¡Capitán, somos ricos!" message
@@ -1258,10 +1280,10 @@ variable option
   0 3 at-xy ."  5     6       45     6       5"
   black ink
   25 0 do
-    i 3 + 3 at-xy ." :\#127"
-    i 2+  4 at-xy ." :\::\::\#127"
-    i 1+  5 at-xy ." :\::\::\::\::\#127"
-    i     6 at-xy ." :\::\::\::\::\::\::\#127"
+    i 3 + 3 at-xy .\" :\x7F"
+    i 2+  4 at-xy .\" :\::\::\x7F"
+    i 1+  5 at-xy .\" :\::\::\::\::\x7F"
+    i     6 at-xy .\" :\::\::\::\::\::\::\x7F"
     \ XXX TODO -- adapt the graphics notation
   8 +loop
   0 font  white ink  red paper
@@ -1310,9 +1332,9 @@ variable option
     1  i 1+ at-xy i 2-  dup . ."   " village$ type
     12 i 1+ at-xy i 3 + dup . ."   " village$ type
   loop
-  12 7 at-xy ." 0  " villages village$ type
+  12 7 at-xy ." 0  " villages 1- village$ type
   2 font
-  green ink  27 5 at-xy ." S\::T" 27 6 at-xy ." VUW"
+  green ink  27 5 at-xy .\" S\::T" 27 6 at-xy ." VUW"
 
   0 font
   black paper
@@ -1403,11 +1425,11 @@ variable option
 
 : drawVillage  ( -- )
   2 font  green ink  yellow paper
-  6  5 at-xy ."  S\::T    ST   S\::T"
-  6  6 at-xy ."  VUW    78   VUW   4"
-  4  8 at-xy ." S\::T   S\::T    S\::T S\::T  S\::T "
+  6  5 at-xy .\"  S\::T    ST   S\::T"
+  6  6 at-xy .\"  VUW    78   VUW   4"
+  4  8 at-xy .\" S\::T   S\::T    S\::T S\::T  S\::T "
   4  9 at-xy ." VUW   VUW  4 VUW VUW  VUW"
-  4 11 at-xy ." S\::T    S\::T ST  S\::T S\::T"
+  4 11 at-xy .\" S\::T    S\::T ST  S\::T S\::T"
   4 12 at-xy ." VUW  4 VUW 78  VUW VUW"
   black ink  yellow paper
    7 12 at-xy ." X"
@@ -1589,9 +1611,9 @@ create islandEvents>  ( -- a )
 : disembarkingScene  ( -- )
   1 font  green ink  blue paper
   31  8 at-xy ." :"
-  37  9 at-xy ." HI :\::"
-  25 10 at-xy ." F\::\::\::\::\::\::"
-  23 11 at-xy ." JK\::\::\::\::\::\::\::"
+  37  9 at-xy .\" HI :\::"
+  25 10 at-xy .\" F\::\::\::\::\::\::"
+  23 11 at-xy .\" JK\::\::\::\::\::\::\::"
   yellow ink blue paper
   21 0 do  i 11 at-xy ."  <>" 10 pause  loop  ;
 
@@ -2014,7 +2036,7 @@ variable price  variable offer
   \ XXX TODO --
 
 : theEnd  ( -- )
-  black ink yellow paper cls1
+  black ink yellow paper clearWin
   1 font  16 1 do  27 i palm2  1 i palm2  7 +loop
   success? if  happyEnd  else  sadEnd  then
   s" Pulsa una tecla para ver tus puntos" message
@@ -2025,14 +2047,14 @@ variable price  variable offer
   \ Intro {{{1
 
 : skulls  ( -- )
-  ."   nop  nop  nop  nop  nop  nop  " cr
+  ."   nop  nop  nop  nop  nop  nop  "
   ."   qrs  qrs  qrs  qrs  qrs  qrs  "  ;
   \ Draw a row of six skulls.
 
 : skullBorder  ( -- )
   2 font white ink  black paper  1 bright
-            home skulls 0 23 at-xy skulls  1 font  ;
-  \ Draw top and bottom border of skulls.
+            home skulls 0 22 at-xy skulls  1 font  ;
+  \ Draw top and bottom borders of skulls.
 
 : intro  ( -- )
   cls skullBorder introWindow
@@ -2075,7 +2097,7 @@ variable price  variable offer
   initOnce  begin  intro init game theEnd  again  ;
 
   \ ============================================================
-  \ Meta {{{1
+  \ Debugging tools {{{1
 
 variable invflag
   \ XXX TMP --
@@ -2110,7 +2132,10 @@ variable invflag
 : 0f  ( -- )  0 font  ;
   \ XXX TMP for debugging after an error
 
-here dup 1 >font ! /font + 2 >font !
+  \ ============================================================
+  \ Graphichs {{{1
+
+here dup 256 - 1 >font ! /font + 256 - 2 >font !
   \ Update the fonts table with the current data pointer.
   \ Two graphics font are being compiled here.
 

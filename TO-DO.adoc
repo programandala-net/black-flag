@@ -1,13 +1,13 @@
 = To-Do list of Bandera Negra
 :author: Marcos Cruz (programandala.net)
-:revdate: 2016-12-20
+:revdate: 2016-12-23
 
 == New notes about the conversion to Forth
 
+- Check why `.\"` fails during compilation.
 - Review variables and constants.
 - Convert parameteres of `set-pixel` and `rdraw`.
 - Convert `beep`.
-- Convert graphic characters notation in strings.
 - Convert `goto` and `label`.
 - Fix `crewReport`.
 
