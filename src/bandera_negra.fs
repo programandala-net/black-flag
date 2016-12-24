@@ -12,7 +12,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.6.0+201612241931
+  \ Version 0.6.1+201612241940
 
   \ ============================================================
   \ Requirements {{{1
@@ -407,8 +407,6 @@ esc-udg-chars-wordlist 3 set-esc-order
 
   \ ============================================================
   \ Windows {{{1
-
-window noWindow 0 0 32 24 set-window
 
 window graphicWindow
 graphicWinLeft graphicWinTop graphicWinWidth graphicWinHeight
@@ -910,7 +908,7 @@ variable dead
   \ Reports {{{1
 
 : reportStart  ( -- )
-  saveScreen cls noWindow textFont set-font  ;
+  saveScreen cls textFont set-font  ;
   \ Common task at the start of all reports.
 
 : reportEnd  ( -- )  1000 pause restoreScreen  ;
@@ -946,9 +944,9 @@ variable dead
   men 0 do
     white ink
     nameX i 5 + at-xy i name$ type
-    i stamina @ staminaAttr @ color!
+    i stamina @ staminaAttr c@ color!
     dataX i 5 + at-xy
-    i stamina @ stamina$ 2@ 2dup uppers1 type
+    i stamina @ stamina$ 2dup uppers1 type
   loop  reportEnd  ;
 
 : updateScore  ( -- )
@@ -1095,7 +1093,7 @@ variable done
   \ or the money and part of the crew is captured
 
 : battleScenery  ( -- )
-  noWindow  blue paper cls  textFont set-font
+  blue paper cls  textFont set-font
   white ink  red paper  10 21 at-xy ." Munición = " ammo ?
 
   black ink yellow paper
@@ -1980,10 +1978,7 @@ variable price  variable offer
     s" El barco está muy dañado y es imposible repararlo."
     wtype
   then
-  cash @ 0 <= if
-    s" No te queda dinero." wtype  then
-  noWindow  ;
-  \ XXX TODO uset TellZone
+  cash @ 0 <= if  s" No te queda dinero." wtype  then  ;
 
 : happyEnd  ( -- )
   s" Lo lograste, capitán." message  ;
