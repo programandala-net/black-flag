@@ -12,7 +12,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.7.0+201612242023
+  \ Version 0.8.0+201612242153
 
   \ ============================================================
   \ Requirements {{{1
@@ -422,7 +422,7 @@ window messageWindow
 messageWinLeft messageWinTop messageWinWidth messageWinHeight
 set-window
 
-window nativeWindow 16 26 6 9 set-window
+window nativeWindow 16 6 11 4 set-window
 
 window sailorWindow  12 6 12 6 set-window
 
@@ -1652,36 +1652,34 @@ create islandEvents>  ( -- a )
   \ ============================================================
   \ Clues {{{1
 
-: nativeTellsClue1  ( -- )
-  s" Tomar camino " path @ number$ s+ s" ." s+ nativeSays  ;
+: pathClue$  ( -- ca len )
+  s" Tomar camino " path @ number$ s+ s" ." s+  ;
 
-: nativeTellsClue2  ( -- )
-  s" Parar en árbol " tree @ number$ s+ s" ." s+ nativeSays  ;
+: treeClue$  ( -- ca len )
+  s" Parar en árbol " tree @ number$ s+ s" ." s+  ;
 
-: nativeTellsClue3  ( -- )
-  s" Ir a " turn @ hand$ s+ s"  en árbol." s+ nativeSays  ;
+: turnClue$  ( -- ca len )
+  s" Ir a " turn @ hand$ s+ s"  en árbol." s+  ;
 
-: nativeTellsClue4  ( -- )
-  s" Atravesar poblado " village @ village$ s+ s" ." s+
-  nativeSays  ;
+: villageClue$  ( -- ca len )
+  s" Atravesar poblado " village @ village$ s+ s" ." s+  ;
 
-: nativeTellsClue5  ( -- )
-  s" Ir " direction @ cardinal$ s+ s"  desde poblado." s+
-  nativeSays  ;
+: directionClue$  ( -- ca len )
+  s" Ir " direction @ cardinal$ s+ s"  desde poblado." s+  ;
 
-: nativeTellsClue6  ( -- )
+: stepsClue$  ( -- ca len )
   s" Dar " pace @ number$ s+ s"  paso" s+
-  s" s" pace @ 1 > and s+
-  s" desde poblado." s+ nativeSays  ;
+  s" s " pace @ 1 > and s+ s" desde poblado." s+  ;
 
-create nativeTellsClues  ( -- a )
-] nativeTellsClue1 nativeTellsClue2 nativeTellsClue3
-  nativeTellsClue4 nativeTellsClue5 nativeTellsClue6 [
-  \ XXX TODO -- simplify, return the string
+create clues  ( -- a )
+] pathClue$    treeClue$      turnClue$
+  villageClue$ directionClue$ stepsClue$ [
+
+: clue$  ( -- ca len )  6 random cells clues + perform  ;
 
 : nativeTellsClue  ( -- )
   s" Bien... Pista ser..." nativeSays
-  2 seconds  0 5 random-range cells nativeTellsClues + perform
+  2 seconds  clue$ nativeSays
   2 seconds  s" ¡Buen viaje a isla de tesoro!" nativeSays  ;
 
   \ ============================================================
