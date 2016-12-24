@@ -3,7 +3,8 @@
   \ Bandera negra
   \
   \ A simulation game
-  \ Written in Forth for the ZX Spectrum 128
+  \ for the ZX Spectrum 128
+  \ written in Forth with Solo Forth
 
   \ This game is a translated and improved remake of
   \   "Jolly Roger"
@@ -11,7 +12,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.4.0+201612232153
+  \ Version 0.5.0+201612240303
 
   \ ============================================================
   \ Requirements {{{1
@@ -26,6 +27,8 @@ need or-of  need inkey  need <=  need j  need tab  need uppers1
 need pause  need under+  need type-center  need set-pixel
 need rdraw  need u>str  need randomize0  need value
 need set-udg  need rom-font  need set-font  need s\"  need .\"
+
+need move>far  need move<far
 
 need set-esc-order  need esc-standard-chars-wordlist
 need esc-block-chars-wordlist  need esc-udg-chars-wordlist
@@ -115,7 +118,7 @@ messageWinBottom messageWinTop - 1+ constant messageWinHeight
   \ Variables {{{1
 
 variable quitGame         \ flag
-variable screenRestored   \ flag
+variable screenRestored   \ flag  \ XXX TODO -- what for?
 
   \ --------------------------------------------
   \ Plot {{{2
@@ -413,13 +416,8 @@ esc-udg-chars-wordlist 3 set-esc-order
   \ ============================================================
   \ Windows {{{1
 
-  \ 0
-  \   cfield: ~leftX
-  \   cfield: ~rightX
-  \   cfield: ~winTopY
-  \   cfield: ~winBottomY
-  \ constant /window
-  \ XXX TODO --
+  \ XXX UNDER DEVELOPMENT -- an alternative is being developed
+  \ in the new `window` module of Solo Forth
 
 variable winLeftX
 variable winRightX
@@ -478,22 +476,20 @@ variable winBottomY
 : wipeMessage  ( -- )
   messageWindow  white ink  black paper  clearWin  ;
 
+16384 constant screen
+ 6912 constant /screen
+
+farlimit @ /screen - dup constant screenBackup
+                         farlimit !
+
 : saveScreen  ( -- )
-  \ copy screen 1 to 2  \ XXX OLD
-  ;
-  \ XXX TODO --
+  screen screenBackup [ /screen 2/ ] literal move>far  ;
+  \ XXX TODO -- faster, page the bank
 
 : restoreScreen  ( -- )
-  \ copy screen 2 to 1  \ XXX OLD
+  screenBackup screen [ /screen 2/ ] literal move<far
   screenRestored on  ;
-  \ XXX TODO --
-
-: screen  ( n -- )  drop  ;
-  \ XXX TODO --
-
-: useScreen2  ( -- )  saveScreen 2 screen  ;
-
-: useScreen1  ( -- )  restoreScreen 1 screen  ;
+  \ XXX TODO -- faster, page the bank
 
   \ ============================================================
   \ Text output {{{1
@@ -508,6 +504,8 @@ variable winBottomY
       then
     -1 +loop
   repeat  type  ;
+  \ XXX UNDER DEVELOPMENT -- an alternative `wtype` is being
+  \ developed as part of the new `window` module of Solo Forth
 
 : tellCR  ( ca len -- )  tell cr  ;
 
@@ -529,6 +527,7 @@ variable winBottomY
     -1 +loop
   repeat  at-xy drop type  ;
   \ Print _ca len_ at _x y_ on a window of _n_ chars width.
+  \ XXX FIXME --
   \ XXX OLD
   \ XXX TODO use `window` instead, with a temporary window
 
@@ -1393,17 +1392,17 @@ variable option
   option pace = if  1 foundClues +!  then  \ XXX TODO --
 
   black paper
+  7 16  7 14  7 13
   success? if
-    7 13 at-xy ." ¡Hemos encontrado"
-    7 14 at-xy ." el oro,"
-    7 16 at-xy ." capitán!"  treasureFound
+    at-xy ." ¡Hemos encontrado"
+    at-xy ." el oro,"
+    at-xy ." capitán!"  treasureFound
   else
-    7 13 at-xy ." ¡Nos hemos"
-    7 14 at-xy ."  equivocado "
-    7 16 at-xy ." capitán!"
+    at-xy ." ¡Nos hemos"
+    at-xy ." equivocado"
+    at-xy ." capitán!"
   then  2 seconds  graphFont1 set-font  ;
-  \ XXX TODO -- use tellZone for the last message or...
-  \ XXX TODO -- ...at least, do not repeat the coordinates
+  \ XXX TODO -- use a window for the last message
 
   \ ============================================================
   \ Island graphics {{{1
@@ -1439,8 +1438,7 @@ variable option
   white ink  blue paper
   30 6 at-xy ." mn" 30 10 at-xy ." kl" 31 13 at-xy ." k"
   30 4 at-xy ." m" 31 8 at-xy ." l"
-  graphFont2 set-font
-  yellow ink  blue paper
+  yellow ink  blue paper  graphFont2 set-font
   iPos @ 6 + islandMap @ coast =
   if    29  4 at-xy 'B' emit  then
   iPos @ 6 - islandMap @ coast =
@@ -2102,11 +2100,8 @@ variable price  variable offer
   \ Main {{{1
 
 : scenery  ( -- )
-  useScreen2
   aboard @ if  seaScenery  else  islandScenery  then
-  panel useScreen1  ;
-  \ XXX FIXME useScreen2 and usesCreen2 cause the sea
-  \ background is missing
+  panel ;
 
 : command  ( -- )
   aboard @ if  shipCommand  else  islandCommand  then  ;
