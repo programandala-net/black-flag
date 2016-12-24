@@ -12,7 +12,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.6.1+201612241940
+  \ Version 0.7.0+201612242023
 
   \ ============================================================
   \ Requirements {{{1
@@ -26,10 +26,12 @@ need sconstants  need /sconstants  need case  need >=  need s+
 need or-of  need inkey  need <=  need j  need tab  need uppers1
 need pause  need under+  need type-center  need set-pixel
 need rdraw  need u>str  need randomize0  need value
-need set-udg  need rom-font  need set-font  need s\"  need .\"
+need set-udg  need rom-font  need set-font  need get-font
+need s\"  need .\"
 
 need move>far  need move<far
 need window  need set-window  need wcls  need wtype
+need frames@
 
 need set-esc-order  need esc-standard-chars-wordlist
 need esc-block-chars-wordlist  need esc-udg-chars-wordlist
@@ -37,6 +39,8 @@ need esc-block-chars-wordlist  need esc-udg-chars-wordlist
 need black  need blue  need red  need green
 need cyan  need yellow  need white  need color!
 need papery  need brighty
+
+need key-left  need key-right  need key-down  need key-up
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
@@ -422,6 +426,8 @@ window nativeWindow 16 26 6 9 set-window
 
 window sailorWindow  12 6 12 6 set-window
 
+window theEndWindow  5 2 22 20 set-window
+
   \ ============================================================
   \ Screen {{{1
 
@@ -435,8 +441,8 @@ window sailorWindow  12 6 12 6 set-window
 : wipeMessage  ( -- )
   messageWindow  white ink  black paper  wcls  ;
 
-16384 constant screen
- 6912 constant /screen
+16384 constant screen  6912 constant /screen
+  \ Address and size of the screen.
 
 farlimit @ /screen - dup constant screenBackup
                          farlimit !
@@ -914,24 +920,18 @@ variable dead
 : reportEnd  ( -- )  1000 pause restoreScreen  ;
   \ Common task at the end of all reports.
 
-: .##  ( u -- )  s>d <# # # #> type  ;
-  \ Print _u_ with two digits.
-
-: .####  ( u -- )  s>d <# # # # # #> type  ;
-  \ Print _u_ with four digits.
-
 : mainReport  ( -- )
   reportStart
   0 1 at-xy s" Informe de situación" columns type-center
   0 4 at-xy
-  ." Días:"         tab day       @ .##           cr cr
+  ." Días:"         tab day       @ 2 .r           cr cr
   ." Barco:"        tab damage$ 2dup uppers1 type cr cr
-  ." Hombres:"      tab alive     @ .##           cr
-  ." Moral:"        tab morale    @ .##           cr cr
-  ." Provisiones:"  tab supplies  @ .##           cr
-  ." Doblones:"     tab cash      @ .##           cr cr
-  ." Hundimientos:" tab sunkShips @ .##           cr
-  ." Munición:"     tab ammo      @ .##           cr cr
+  ." Hombres:"      tab alive     @ 2 .r           cr
+  ." Moral:"        tab morale    @ 2 .r           cr cr
+  ." Provisiones:"  tab supplies  @ 2 .r           cr
+  ." Doblones:"     tab cash      @ 2 .r           cr cr
+  ." Hundimientos:" tab sunkShips @ 2 .r           cr
+  ." Munición:"     tab ammo      @ 2 .r           cr cr
   reportEnd  ;
 
  1 constant nameX
@@ -961,13 +961,13 @@ variable dead
   reportStart
   0 1 at-xy s" Informe de puntuación" columns type-center
   0 4 at-xy
-  ." Días"         tab day        @ .#### ."  x  200" cr
-  ." Hundimientos" tab sunkShips  @ .#### ."  x 1000" cr
-  ." Negocios"     tab trades     @ .#### ."  x  200" cr
-  ." Pistas"       tab foundClues @ .#### ."  x 1000" cr
-  ." Tesoro"       tab 4000         .####             cr
+  ." Días"         tab day        @ 4 .r ."  x  200" cr
+  ." Hundimientos" tab sunkShips  @ 4 .r ."  x 1000" cr
+  ." Negocios"     tab trades     @ 4 .r ."  x  200" cr
+  ." Pistas"       tab foundClues @ 4 .r ."  x 1000" cr
+  ." Tesoro"       tab 4000         4 .r             cr
   updateScore
-  ." Total"        tab ."       " score @ .####  reportEnd  ;
+  ." Total"        tab ."       " score @ 4 .r  reportEnd  ;
 
   \ ============================================================
   \ Ship battle {{{1
@@ -1611,32 +1611,29 @@ create islandEvents>  ( -- a )
 
 : shipCommand  ( -- )
   begin
-    81 1 do
-      inkey upper case
-      'N' 11 or-of  \ north
-        possibleNorth @ if  15 seaMove exit  then  endof
-      'S' 10 or-of  \ south
-        possibleSouth @ if  -15 seaMove exit  then  endof
-      'E' 9 or-of  \ east
-        possibleEast @ if  1 seaMove exit  then  endof
-      'O' 8  or-of  \ west
-        possibleWest @ if  -1 seaMove -1 exit  then  endof
-      'I' of  mainReport exit  endof
-      'A' of
-        possibleAttacking @ if  attackShip exit then  endof
-      'T' of  crewReport exit  endof
-      'P' of  scoreReport exit  endof
-      'D' of
-        possibleDisembarking @ of  disembark exit  then  endof
-      'F' of  quitGame on  exit  endof
-      endcase
-      i 40 mod 0= if  redrawShip  then
-        \ XXX TODO -- use system frames instead?
-    loop
+    inkey upper case
+    'N' key-up or-of  \ north
+      possibleNorth @ if  15 seaMove exit  then  endof
+    'S' key-down or-of  \ south
+      possibleSouth @ if  -15 seaMove exit  then  endof
+    'E' key-right or-of  \ east
+      possibleEast @ if  1 seaMove exit  then  endof
+    'O' key-left or-of  \ west
+      possibleWest @ if  -1 seaMove exit  then  endof
+    'I' of  mainReport exit  endof
+    'A' of
+      possibleAttacking @ if  attackShip exit then  endof
+    'T' of  crewReport exit  endof
+    'P' of  scoreReport exit  endof
+    'D' of
+      possibleDisembarking @ if  disembark exit  then  endof
+    'F' of  quitGame on  exit  endof
+    endcase
+    frames@ drop 1024 mod 0= if  redrawShip  then
     80 random 0= if  storm  then
       \ XXX TODO increase the probability every day?
   again  ;
-  \ XXX TODO simpler, with searchable string of keys and ON
+  \ XXX TODO -- simpler
 
   \ ============================================================
   \ Misc commands on the island {{{1
@@ -1644,11 +1641,13 @@ create islandEvents>  ( -- a )
 : embark  ( -- )
   shipPos @ visited on  1 day +!  aboard on  ;
 
-: islandMove  ( offset -- )
-  dup iPos @ + islandMap @ coast <>
-  if    iPos +!  enterIslandLocation
-  else  drop
-  then  ;
+: toLand?  ( n -- f )  iPos @ + islandMap @ coast <>  ;
+  \ Does the island movement offset _n_ leads to land?
+
+: islandMove  ( n -- )
+  dup toLand? if    iPos +!  enterIslandLocation
+              else  drop  then  ;
+  \ Move on the island map with offset _n_, if possible.
 
   \ ============================================================
   \ Clues {{{1
@@ -1678,6 +1677,7 @@ create islandEvents>  ( -- a )
 create nativeTellsClues  ( -- a )
 ] nativeTellsClue1 nativeTellsClue2 nativeTellsClue3
   nativeTellsClue4 nativeTellsClue5 nativeTellsClue6 [
+  \ XXX TODO -- simplify, return the string
 
 : nativeTellsClue  ( -- )
   s" Bien... Pista ser..." nativeSays
@@ -1855,14 +1855,14 @@ variable price  variable offer
 
 : islandCommand  ( -- )
   begin  inkey upper  case
-    'N' 11 or-of  \ "n" or up -- north
-      possibleNorth @ if  islandMove 6      exit  then  endof
-    'S' 10 or-of  \ "s" or down -- south
-      possibleSouth @ if  islandMove -6     exit  then  endof
-    'E' 9 or-of  \ "e" or right -- east
-      possibleEast @ if  islandMove 1       exit  then  endof
-    'O' 8 or-of  \ "o" or left -- west
-      possibleWest @ if  islandMove -1      exit  then  endof
+    'N' key-up or-of  \ north
+      possibleNorth @ if  6 islandMove      exit  then  endof
+    'S' key-down or-of  \ south
+      possibleSouth @ if  -6 islandMove     exit  then  endof
+    'E' key-right or-of  \ east
+      possibleEast @ if  1 islandMove       exit  then  endof
+    'O' key-left or-of  \ west
+      possibleWest @ if  -1 islandMove      exit  then  endof
     'C' of  possibleTrading @ if  trade     exit  then  endof
     'B' of  possibleEmbarking @ if  embark  exit  then  endof
     'I' of  mainReport                      exit        endof
@@ -1870,7 +1870,6 @@ variable price  variable offer
     'T' of  crewReport                      exit        endof
     'P' of  scoreReport                     exit        endof
     'F' of  quitGame on                     exit        endof
-    \ XXX TODO -- use constant for control chars
   endcase  again  ;
   \ XXX TODO simpler, with searchable string of keys and ON
 
@@ -1962,23 +1961,22 @@ variable price  variable offer
   ;
 
 : sadEnd  ( -- )
-  textFont set-font
-  white ink  red paper
+  textFont set-font  white ink  red paper
   0 3 at-xy s" FIN DEL JUEGO" columns type-center
-  5 26 2 21 window
+  theEndWindow
   supplies @ 0 <= if
-    s" Las provisiones se han agotado." wtype  then
+    s" - Las provisiones se han agotado." wtype wcr  then
   morale @ 0 <= if
-    s" La tripulación se ha amotinado." wtype  then
+    s" - La tripulación se ha amotinado." wtype wcr  then
   ammo @ 0 <= if
-    s" La munición se ha terminado." wtype  then
+    s" - La munición se ha terminado." wtype wcr  then
   alive @ 0= if
-    s" Toda tu tripulación ha muerto." wtype  then
+    s" - Toda tu tripulación ha muerto." wtype wcr  then
   damage @ 100 = if
-    s" El barco está muy dañado y es imposible repararlo."
-    wtype
+    s" - El barco está muy dañado y es imposible repararlo."
+    wtype wcr
   then
-  cash @ 0 <= if  s" No te queda dinero." wtype  then  ;
+  cash @ 0 <= if  s" - No te queda dinero." wtype  then  ;
 
 : happyEnd  ( -- )
   s" Lo lograste, capitán." message  ;
@@ -2006,26 +2004,25 @@ variable price  variable offer
   \ Draw top and bottom borders of skulls.
 
 : intro  ( -- )
-  cls skullBorder introWindow
-  s" Viejas leyendas hablan del tesoro" wtype
-  s" que esconde la perdida isla de" wtype
-  islandName$ s" ." s+ wtype wcr
-  s" Los nativos del archipiélago recuerdan" wtype
-  s" las antiguas pistas que conducen al tesoro." wtype
-  s" Deberás comerciar con ellos para que te las digan." wtype
-  wcr
-  s" Visita todas las islas hasta encontrar la isla de" wtype
-  islandName$ wtype
-  s" y sigue las pistas hasta el tesoro..." wtype
-  0 row 1+ s" Pulsa una tecla" columns type-center
-  6000 pause  ;
+  cls skullBorder introWindow get-font textFont set-font
+  s" Viejas leyendas hablan del tesoro "
+  s" que esconde la perdida isla de " s+
+  islandName$ s+ s" ." s+ wtype wcr wcr
+  s" Los nativos del archipiélago recuerdan "
+  s" las antiguas pistas que conducen al tesoro. " s+
+  s" Deberás comerciar con ellos para que te las digan." s+
+  wtype wcr wcr
+  s" Visita todas las islas hasta encontrar la isla de "
+  islandName$ s+
+  s"  y sigue las pistas hasta el tesoro..." s+ wtype wcr wcr
+  0 row 2+ at-xy s" Pulsa una tecla" columns type-center
+  6000 pause set-font  ;
 
   \ ============================================================
   \ Main {{{1
 
 : scenery  ( -- )
-  aboard @ if  seaScenery  else  islandScenery  then
-  panel ;
+  aboard @ if  seaScenery  else  islandScenery  then  panel  ;
 
 : command  ( -- )
   aboard @ if  shipCommand  else  islandCommand  then  ;
@@ -2040,7 +2037,7 @@ variable price  variable offer
   \ XXX FIXME sometimes scenery is called here without reason
   \ XXX The logic is wrong.
 
-: main  ( -- )
+: run  ( -- )
   initOnce  begin  intro init game theEnd  again  ;
 
   \ ============================================================
@@ -2053,7 +2050,7 @@ variable invflag
   cls
   seaMapRows 2* 0 do
     seaMapCols 0 do
-      invflag @ inverse  j seaMapRows * i + 1+ seaMap @ .##
+      invflag @ inverse  j seaMapRows * i + 1+ seaMap @ 2 .r
       invflag @ 0= invflag !
     loop  cr
   2 +loop  0 inverse  ;
