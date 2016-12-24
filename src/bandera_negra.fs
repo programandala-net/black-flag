@@ -12,7 +12,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.8.0+201612242153
+  \ Version 0.9.0+201612242201
 
   \ ============================================================
   \ Requirements {{{1
@@ -2053,14 +2053,20 @@ variable invflag
     loop  cr
   2 +loop  0 inverse  ;
 
-: showASCII  ( -- )  128 32 do  i emit  loop  ;
+: .chars  ( c1 c0 -- )  do  i emit  loop  ;
 
-: showUDG  ( -- )  256 128 do  i emit  loop  ;
+: .ascii  ( -- )  cr 128  32 .chars  ;
 
-: showUDGAU  ( -- )  165 144 do  i emit  loop  ;
+: .udg    ( -- )  cr 256 128 .chars  ;
 
-: showFont  ( -- )
-  textFont set-font cr ." font: " dup .  set-font showASCII  ;
+: .udgau  ( -- )  cr 165 144 .chars  ;
+
+: .font  ( a -- )
+  textFont set-font cr ." font: " dup .  set-font .ascii
+  textFont set-font  ;
+
+: .graphs  ( -- )
+  cls graphFont1 .font graphFont2 .font .udg  ;
 
 : showDamages  ( -- )
   101 0 do
