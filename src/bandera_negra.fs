@@ -12,7 +12,7 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.5.0+201612240303
+  \ Version 0.6.0+201612241931
 
   \ ============================================================
   \ Requirements {{{1
@@ -29,6 +29,7 @@ need rdraw  need u>str  need randomize0  need value
 need set-udg  need rom-font  need set-font  need s\"  need .\"
 
 need move>far  need move<far
+need window  need set-window  need wcls  need wtype
 
 need set-esc-order  need esc-standard-chars-wordlist
 need esc-block-chars-wordlist  need esc-udg-chars-wordlist
@@ -91,28 +92,19 @@ seaMapCols seaMapRows * constant /seaMap
 
   \ --------------------------------------------
   \ Windows parameters
-                                  3 constant introWinTop
                                   0 constant graphicWinTop
-                                 15 constant graphicWinBottom
                                   0 constant graphicWinLeft
-                                 31 constant graphicWinRight
-graphicWinRight graphicWinLeft - 1+ constant graphicWinWidth
-graphicWinBottom graphicWinTop - 1+ constant graphicWinHeight
- graphicWinWidth graphicWinHeight * constant graphicWinChars
+                                 32 constant graphicWinWidth
+                                 16 constant graphicWinHeight
                                  21 constant lowWinTop
-                                 23 constant lowWinBottom
                                   0 constant lowWinLeft
-                                 31 constant lowWinRight
-        lowWinRight lowWinLeft - 1+ constant lowWinWidth
-        lowWinBottom lowWinTop - 1+ constant lowWinHeight
+                                 32 constant lowWinWidth
+                                  3 constant lowWinHeight
          lowWinWidth lowWinHeight * constant lowWinChars
                                  17 constant messageWinTop
-                                 19 constant messageWinBottom
                                   1 constant messageWinLeft
-                                 30 constant messageWinRight
-messageWinRight messageWinLeft - 1+ constant messageWinWidth
-messageWinBottom messageWinTop - 1+ constant messageWinHeight
- messageWinWidth messageWinHeight * constant messageWinChars
+                                 30 constant messageWinWidth
+                                  3 constant messageWinHeight
 
   \ ============================================================
   \ Variables {{{1
@@ -416,52 +408,21 @@ esc-udg-chars-wordlist 3 set-esc-order
   \ ============================================================
   \ Windows {{{1
 
-  \ XXX UNDER DEVELOPMENT -- an alternative is being developed
-  \ in the new `window` module of Solo Forth
+window noWindow 0 0 32 24 set-window
 
-variable winLeftX
-variable winRightX
-variable winTopY
-variable winBottomY
+window graphicWindow
+graphicWinLeft graphicWinTop graphicWinWidth graphicWinHeight
+set-window
 
-: winWidth  ( -- n )  WinRightX @ WinLeftX @ - 1+  ;
-  \ Return the width in characters of the current window.
+window introWindow  2 3 28 19 set-window
 
-: clearWin  ( -- )
-  winWidth
-  winBottomY @ 1+ winTopY @ ?do
-    dup winLeftX @ i at-xy spaces
-  loop  drop  ;
-  \ Clear the current window.
+window messageWindow
+messageWinLeft messageWinTop messageWinWidth messageWinHeight
+set-window
 
-: window  ( leftX rightX topY bottomY -- )
-  winBottomY !  winTopY !  winRightX !  winLeftX !  ;
-  \ Set the current window.
+window nativeWindow 16 26 6 9 set-window
 
-: noWindow  ( -- )  0 31 0 23 window  ;
-
-: wholeWindow  ( -- )  0 31 0 20 window  ;
-
-: graphicWindow  ( -- )
-  graphicWinLeft graphicWinRight graphicWinTop graphicWinBottom
-  window  ;
-  \ Set the current window to the zone used for graphics.
-
-: introWindow  ( -- )  2 29 introWinTop 21 window  ;
-  \ Set the current window to the zone used for the intro.
-
-: messageWindow  ( -- )
-  messageWinLeft messageWinRight messageWinTop messageWinBottom
-  window  ;
-  \ Set the current window to the zone used for messages.
-
-: nativeWindow  ( -- )  16 26 6 9 window  ;
-  \ Set the current window to the zone used for native's
-  \ speech.
-
-: wat-xy  ( x y -- )  winLeftX @ under+ winTopY @ + at-xy  ;
-  \ Set the cursor coordinates at position _x y_ of the current
-  \ window.
+window sailorWindow  12 6 12 6 set-window
 
   \ ============================================================
   \ Screen {{{1
@@ -474,7 +435,7 @@ variable winBottomY
   black paper 0 lowWinTop at-xy lowWinChars spaces  ;
 
 : wipeMessage  ( -- )
-  messageWindow  white ink  black paper  clearWin  ;
+  messageWindow  white ink  black paper  wcls  ;
 
 16384 constant screen
  6912 constant /screen
@@ -483,53 +444,22 @@ farlimit @ /screen - dup constant screenBackup
                          farlimit !
 
 : saveScreen  ( -- )
-  screen screenBackup [ /screen 2/ ] literal move>far  ;
+  screen screenBackup [ /screen 2 / ] literal move>far  ;
   \ XXX TODO -- faster, page the bank
 
 : restoreScreen  ( -- )
-  screenBackup screen [ /screen 2/ ] literal move<far
+  screenBackup screen [ /screen 2 / ] literal move<far
   screenRestored on  ;
   \ XXX TODO -- faster, page the bank
 
   \ ============================================================
   \ Text output {{{1
 
-: tell  ( ca len -- )
-  textFont set-font
-  begin  dup winWidth >  while
-    \ for char=cpl to 1 step -1 \ XXX OLD
-    0 winWidth do
-      over i + c@ bl = if
-        over i 1- type  i 1+ /string  unloop leave
-      then
-    -1 +loop
-  repeat  type  ;
-  \ XXX UNDER DEVELOPMENT -- an alternative `wtype` is being
-  \ developed as part of the new `window` module of Solo Forth
-
-: tellCR  ( ca len -- )  tell cr  ;
-
-: nativeSays  ( ca len -- )  nativeWindow clearWin tell  ;
+: nativeSays  ( ca len -- )  nativeWindow wcls wtype  ;
 
 : message  ( ca len -- )
   textFont set-font
-  wipeMessage messageWindow tell graphicWindow ;
-
-: tellZone  ( ca len n x y -- )
-  textFont set-font
-  begin  2over <=  while
-    2over nip 0 swap ( 0 n ) do
-      4 pick i + c@ bl = if
-        2dup at-xy
-        2>r >r  2dup drop i 1- type  i 1+ /string  r> 2r>
-        1+  unloop leave
-      then
-    -1 +loop
-  repeat  at-xy drop type  ;
-  \ Print _ca len_ at _x y_ on a window of _n_ chars width.
-  \ XXX FIXME --
-  \ XXX OLD
-  \ XXX TODO use `window` instead, with a temporary window
+  wipeMessage messageWindow wtype graphicWindow ;
 
   \ ============================================================
   \ Sound  {{{1
@@ -656,7 +586,9 @@ variable cloud1x
   \ Make the sky stormy.
 
 : seaWaveCoords  ( -- x y )
-  1 28 random-range 4 graphicWinBottom random-range  ;
+  1 28 random-range
+  4 [ graphicWinTop graphicWinHeight + 1- ] literal
+  random-range  ;
   \ Return random coordinates _x y_ for a sea wave.
 
 : atSeaWaveCoords  ( -- )  seaWaveCoords  at-xy  ;
@@ -876,7 +808,7 @@ variable cloud1x
   \ XXX TODO -- adapt the UDG notation
 
 : seaPicture  ( n -- )
-  case
+  graphFont1 set-font  case
    2 of  drawBigIsland5  19 4 palm1                       endof
    3 of  drawBigIsland4
          14 4 palm1  19 4 palm1  24 4 palm1  drawShark    endof
@@ -1255,12 +1187,7 @@ variable done
              ."  wu" 28 at-x ." tu"
   sailorSpeechBalloon captainSpeechBalloon  ;
 
-: wipeSailorSpeech  ( -- )
-  19 12 do  6 i at-xy ."            "  loop  ;
-
-: sailorSays  ( ca len -- )
-  wipeSailorSpeech  12 12 6 tellZone  ;
-  \ XXX TODO use window instead
+: sailorSays  ( ca len -- )  sailorWindow wcls wtype  ;
 
 : trees  ( -- )
   wipeIsland  black ink  yellow paper
@@ -2042,18 +1969,19 @@ variable price  variable offer
   0 3 at-xy s" FIN DEL JUEGO" columns type-center
   5 26 2 21 window
   supplies @ 0 <= if
-    s" Las provisiones se han agotado." tell  then
+    s" Las provisiones se han agotado." wtype  then
   morale @ 0 <= if
-    s" La tripulación se ha amotinado." tell  then
+    s" La tripulación se ha amotinado." wtype  then
   ammo @ 0 <= if
-    s" La munición se ha terminado." tell  then
+    s" La munición se ha terminado." wtype  then
   alive @ 0= if
-    s" Toda tu tripulación ha muerto." tell  then
+    s" Toda tu tripulación ha muerto." wtype  then
   damage @ 100 = if
-    s" El barco está muy dañado y es imposible repararlo." tell
+    s" El barco está muy dañado y es imposible repararlo."
+    wtype
   then
   cash @ 0 <= if
-    s" No te queda dinero." tell  then
+    s" No te queda dinero." wtype  then
   noWindow  ;
   \ XXX TODO uset TellZone
 
@@ -2062,7 +1990,7 @@ variable price  variable offer
   \ XXX TODO --
 
 : theEnd  ( -- )
-  black ink yellow paper clearWin
+  black ink yellow paper wcls
   graphFont1 set-font  16 1 do  27 i palm2  1 i palm2  7 +loop
   success? if  happyEnd  else  sadEnd  then
   s" Pulsa una tecla para ver tus puntos" message
@@ -2084,15 +2012,16 @@ variable price  variable offer
 
 : intro  ( -- )
   cls skullBorder introWindow
-  s" Viejas leyendas hablan del tesoro" tell
-  s" que esconde la perdida isla de" tell
-  islandName$ s" ." s+ tellCR
-  s" Los nativos del archipiélago recuerdan" tell
-  s" las antiguas pistas que conducen al tesoro." tell
-  s" Deberás comerciar con ellos para que te las digan." tellCR
-  s" Visita todas las islas hasta encontrar la isla de" tell
-  islandName$ tell
-  s" y sigue las pistas hasta el tesoro..." tell
+  s" Viejas leyendas hablan del tesoro" wtype
+  s" que esconde la perdida isla de" wtype
+  islandName$ s" ." s+ wtype wcr
+  s" Los nativos del archipiélago recuerdan" wtype
+  s" las antiguas pistas que conducen al tesoro." wtype
+  s" Deberás comerciar con ellos para que te las digan." wtype
+  wcr
+  s" Visita todas las islas hasta encontrar la isla de" wtype
+  islandName$ wtype
+  s" y sigue las pistas hasta el tesoro..." wtype
   0 row 1+ s" Pulsa una tecla" columns type-center
   6000 pause  ;
 
@@ -2122,7 +2051,6 @@ variable price  variable offer
   \ ============================================================
   \ Debugging tools {{{1
 
-  2 border key drop 1 border  \ XXX INFORMER
 variable invflag
   \ XXX TMP --
 
