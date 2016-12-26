@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.10.1+201612261959"  ;
+: version  ( -- ca len )  s" 0.11.0+201612262025"  ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -434,7 +434,7 @@ sconstants hand$  ( n -- ca len )
 : success?  ( -- f )  foundClues @ maxClues =  ;
   \ Success?
 
-: gameOver?  ( -- f )  failure? success? quitGame or or  ;
+: gameOver?  ( -- f )  failure? success? quitGame @ or or  ;
   \ Game over?
 
 : condition$  ( n -- ca len )  stamina @ stamina$ 2@  ;
@@ -475,6 +475,7 @@ esc-udg-chars-wordlist 3 set-esc-order
 window graphicWindow
 graphicWinLeft graphicWinTop graphicWinWidth graphicWinHeight
 set-window
+  \ XXX TODO -- remove, useless
 
 window introWindow  2 3 28 19 set-window
 
@@ -977,7 +978,9 @@ variable dead
   saveScreen cls textFont set-font  ;
   \ Common task at the start of all reports.
 
-: reportEnd  ( -- )  1000 pause restoreScreen  ;
+: reportEnd  ( -- )
+  0 row 2+ at-xy s" Pulsa una tecla" columns type-center
+  key drop  restoreScreen  ;
   \ Common task at the end of all reports.
 
 : mainReport  ( -- )
@@ -1198,7 +1201,7 @@ variable done
   \ ============================================================
   cr .( Island map)  \ {{{1
 
-: eraseIslandMap  ( -- )  0 islandMap /islandMap cells erase  ;
+: emptyIslandMap  ( -- )  0 islandMap /islandMap cells erase  ;
 
 : createIslandCoast  ( -- )
   coast  0 islandMap !  coast  1 islandMap !
@@ -1212,7 +1215,7 @@ variable done
   coast 28 islandMap !  coast 29 islandMap !  ;
 
 : newIslandMap  ( -- )
-  eraseIslandMap  createIslandCoast
+  emptyIslandMap  createIslandCoast
   23 7 do
     i islandMap @ coast <>
     if  2 5 random-range i islandMap !  then
@@ -1394,6 +1397,7 @@ variable option
 
 : wipeIslandScenery  ( -- )
   [ yellow dup papery + ] literal colorSea  ;
+  \ XXX TODO -- print spaces instead
 
 : drawHorizonWaves  ( -- )
   white ink  blue paper
