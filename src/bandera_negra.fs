@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.11.1+201612262132"  ;
+: version  ( -- ca len )  s" 0.12.0+201612262350" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -502,12 +502,16 @@ window theEndWindow  5 2 22 20 set-window
 farlimit @ /screen - dup constant screenBackup
                          farlimit !
 
+far-banks 3 + c@ cconstant screenBackupBank
+
 : saveScreen  ( -- )
-  screen screenBackup [ /screen 2 / ] literal move>far  ;
+  screenBackupBank bank
+  screen screenBackup /screen cmove  default-bank  ;
   \ XXX TODO -- faster, page the bank
 
 : restoreScreen  ( -- )
-  screenBackup screen [ /screen 2 / ] literal move<far
+  screenBackupBank bank
+  screenBackup screen /screen cmove  default-bank
   screenRestored on  ;
   \ XXX TODO -- faster, page the bank
 
@@ -971,11 +975,16 @@ variable dead
   \ ============================================================
   cr .( Reports)  \ {{{1
 
+white black papery + constant report-color#
+
+: set-report-color  ( -- )  report-color# color!  ;
+
 : reportStart  ( -- )
-  saveScreen cls textFont set-font  ;
+  saveScreen cls textFont set-font  set-report-color  ;
   \ Common task at the start of all reports.
 
 : reportEnd  ( -- )
+  set-report-color
   0 row 2+ at-xy s" Pulsa una tecla" columns type-center
   discard-key key drop  restoreScreen  ;
   \ Common task at the end of all reports.
@@ -985,13 +994,13 @@ variable dead
   0 1 at-xy s" Informe de situación" columns type-center
   0 4 at-xy
   ." Días:"         tab day       @ 2 .r           cr cr
-  ." Barco:"        tab damage$ 2dup uppers1 type cr cr
-  ." Hombres:"      tab alive     @ 2 .r           cr
+  ." Hombres:"      tab alive     @ 2 .r           cr cr
   ." Moral:"        tab morale    @ 2 .r           cr cr
-  ." Provisiones:"  tab supplies  @ 2 .r           cr
+  ." Provisiones:"  tab supplies  @ 2 .r           cr cr
   ." Doblones:"     tab cash      @ 2 .r           cr cr
-  ." Hundimientos:" tab sunkShips @ 2 .r           cr
+  ." Hundimientos:" tab sunkShips @ 2 .r           cr cr
   ." Munición:"     tab ammo      @ 2 .r           cr cr
+  ." Barco:"        tab damage$ 2dup uppers1 type
   reportEnd  ;
 
  1 constant nameX
@@ -1003,9 +1012,9 @@ variable dead
   nameX 4 at-xy ." Nombre"  dataX 4 at-xy ." Condición"
   men 0 do
     white ink
-    nameX i 5 + at-xy i name$ type
+    nameX i 6 + at-xy i name$ type
     i stamina @ staminaAttr c@ color!
-    dataX i 5 + at-xy
+    dataX i 6 + at-xy
     i stamina @ stamina$ 2dup uppers1 type
   loop  reportEnd  ;
 
@@ -1028,6 +1037,7 @@ variable dead
   ." Tesoro"       tab 4000         4 .r             cr
   updateScore
   ." Total"        tab ."       " score @ 4 .r  reportEnd  ;
+  \ XXX TODO -- add subtotals
 
   \ ============================================================
   cr .( Ship battle)  \ {{{1
