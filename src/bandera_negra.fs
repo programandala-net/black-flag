@@ -12,47 +12,99 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.9.0+201612242201
+  \ Version 0.10.0+201612260124
 
   \ ============================================================
-  \ Requirements {{{1
+  cr .( Requirements)  \ {{{1
 
 only forth definitions
 
-need chars>string  need columns  need inverse
-need random-range  need at-x  need row  need ruler  need pick
-need 2avariable  need avariable  need cavariable
-need sconstants  need /sconstants  need case  need >=  need s+
-need or-of  need inkey  need <=  need j  need tab  need uppers1
-need pause  need under+  need type-center  need set-pixel
-need rdraw  need u>str  need randomize0  need value
-need set-udg  need rom-font  need set-font  need get-font
-need s\"  need .\"
+  \ --------------------------------------------
+  \ Debugging tools
+
+need ~~
+
+  \ --------------------------------------------
+  \ Definers
+
+need alias
+need 2avariable  need avariable    need cavariable
+need sconstants  need /sconstants  need value
+
+  \ --------------------------------------------
+  \ Control structures
+
+need case  need or-of  need j  need 0exit
+
+  \ --------------------------------------------
+  \ Stack manipulation
+
+need pick
+
+  \ --------------------------------------------
+  \ Math
+
+need >=  need <=  need under+
+need random-range  need randomize0
+
+  \ --------------------------------------------
+  \ Memory
 
 need move>far  need move<far
-need window  need set-window  need wcls  need wtype
-need frames@
 
+  \ --------------------------------------------
+  \ Time
+
+need frames@  need pause
+
+  \ --------------------------------------------
+  \ Strings
+
+need u>str
+need uppers1  need s+  need chars>string  need ruler
+
+need s\"  need .\"
 need set-esc-order  need esc-standard-chars-wordlist
 need esc-block-chars-wordlist  need esc-udg-chars-wordlist
+
+  \ --------------------------------------------
+  \ Printing and graphics
+
+need window  need set-window  need wcls  need wtype
+
+need tab  need type-center  need at-x  need row
+need columns  need inverse
+need set-udg  need rom-font  need set-font  need get-font
 
 need black  need blue  need red  need green
 need cyan  need yellow  need white  need color!
 need papery  need brighty
 
+need rdraw176 ' rdraw176 alias rdraw
+need plot176  ' plot176 alias plot
+  \ XXX TMP --
+
+  \ --------------------------------------------
+  \ Keyboard
+
 need key-left  need key-right  need key-down  need key-up
+
+need get-inkey ' get-inkey alias inkey
+  \ XXX TMP --
+
+  \ --------------------------------------------
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
   \ ============================================================
-  \ Debugging tools {{{1
+  cr .( Debugging tools [1])  \ {{{1
 
 :  ~~h  ( -- )
   2 border key drop 1 border  ;
   \ Break point.
 
   \ ============================================================
-  \ Constants {{{1
+  cr .( Constants)  \ {{{1
 
 15 constant seaMapCols
  9 constant seaMapRows
@@ -100,7 +152,6 @@ seaMapCols seaMapRows * constant /seaMap
                                   0 constant graphicWinLeft
                                  32 constant graphicWinWidth
                                  16 constant graphicWinHeight
-                                 21 constant lowWinTop
                                   0 constant lowWinLeft
                                  32 constant lowWinWidth
                                   3 constant lowWinHeight
@@ -111,13 +162,13 @@ seaMapCols seaMapRows * constant /seaMap
                                   3 constant messageWinHeight
 
   \ ============================================================
-  \ Variables {{{1
+  cr .( Variables)  \ {{{1
 
 variable quitGame         \ flag
 variable screenRestored   \ flag  \ XXX TODO -- what for?
 
   \ --------------------------------------------
-  \ Plot {{{2
+  cr .( Plot)  \ {{{2
 
 variable iPos             \ player position on the island
 variable aboard           \ flag
@@ -133,7 +184,7 @@ variable supplies         \ counter
 variable trades           \ counter
 
   \ --------------------------------------------
-  \ Ships {{{2
+  cr .( Ships)  \ {{{2
 
 variable shipPicture      \ flag
 variable shipX
@@ -145,7 +196,7 @@ variable enemyShipX
 variable enemyShipY
 
   \ --------------------------------------------
-  \ Clues {{{2
+  cr .( Clues)  \ {{{2
 
 variable foundClues       \ counter
 
@@ -157,17 +208,17 @@ variable direction
 variable pace
 
   \ ============================================================
-  \ Arrays {{{1
+  cr .( Arrays)  \ {{{1
 
   \ --------------------------------------------
-  \ Maps {{{2
+  cr .( Maps)  \ {{{2
 
 /seaMap     avariable seaMap
 /islandMap  avariable islandMap
 /seaMap     avariable visited    \ flags for islands
 
   \ --------------------------------------------
-  \ Crew {{{2
+  cr .( Crew)  \ {{{2
 
 men avariable stamina
 
@@ -244,7 +295,7 @@ yellow black papery +         3 staminaAttr c!
  green black papery +         4 staminaAttr c!
 
   \ --------------------------------------------
-  \ Ship damage descriptions {{{2
+  cr .( Ship damage descriptions)  \ {{{2
 
 0
   here ," hundiéndose"            \ worst: sinking
@@ -262,7 +313,7 @@ yellow black papery +         3 staminaAttr c!
             constant damageLevels
 
   \ --------------------------------------------
-  \ Village names {{{2
+  cr .( Village names)  \ {{{2
 
   \ The names of the villages are Esperanto compound words with
   \ funny sounds and meanings.
@@ -283,7 +334,7 @@ yellow black papery +         3 staminaAttr c!
   \ XXX TODO -- invert the order of the strings?
 
   \ --------------------------------------------
-  \ Cardinal points {{{2
+  cr .( Cardinal points)  \ {{{2
 
 0
   here ," oeste"
@@ -293,7 +344,7 @@ yellow black papery +         3 staminaAttr c!
 sconstants cardinal$  ( n -- ca len )
 
   \ --------------------------------------------
-  \ Hands {{{2
+  cr .( Hands)  \ {{{2
 
 0
   here ," derecha"    \ right
@@ -301,7 +352,7 @@ sconstants cardinal$  ( n -- ca len )
 sconstants hand$  ( n -- ca len )
 
   \ ============================================================
-  \ Functions {{{1
+  cr .( Functions)  \ {{{1
 
 22528 constant attributes
   \ Address of the screen attributes (768 bytes)
@@ -386,7 +437,7 @@ sconstants hand$  ( n -- ca len )
   \ Damage description
 
   \ ============================================================
-  \ UDGs and fonts {{{1
+  cr .( UDGs and fonts)  \ {{{1
 
 768 constant /font
   \ Bytes for font (characters 32..127, 8 bytes each).
@@ -410,7 +461,7 @@ esc-udg-chars-wordlist 3 set-esc-order
   \ UDG chars.
 
   \ ============================================================
-  \ Windows {{{1
+  cr .( Windows)  \ {{{1
 
 window graphicWindow
 graphicWinLeft graphicWinTop graphicWinWidth graphicWinHeight
@@ -429,17 +480,11 @@ window sailorWindow  12 6 12 6 set-window
 window theEndWindow  5 2 22 20 set-window
 
   \ ============================================================
-  \ Screen {{{1
+  cr .( Screen)  \ {{{1
 
 : initScreen  ( -- )
   white ink blue dup paper border cls
   graphicWindow graphFont1 set-font  ;
-
-: wipePanel  ( -- )
-  black paper 0 lowWinTop at-xy lowWinChars spaces  ;
-
-: wipeMessage  ( -- )
-  messageWindow  white ink  black paper  wcls  ;
 
 16384 constant screen  6912 constant /screen
   \ Address and size of the screen.
@@ -457,23 +502,25 @@ farlimit @ /screen - dup constant screenBackup
   \ XXX TODO -- faster, page the bank
 
   \ ============================================================
-  \ Text output {{{1
+  cr .( Text output)  \ {{{1
 
 : nativeSays  ( ca len -- )  nativeWindow wcls wtype  ;
 
+: wipeMessage  ( -- )
+  messageWindow  white ink  black paper  wcls  ;
+
 : message  ( ca len -- )
-  textFont set-font
-  wipeMessage messageWindow wtype graphicWindow ;
+  textFont set-font wipeMessage wtype graphicWindow ;
 
   \ ============================================================
-  \ Sound  {{{1
+  cr .( Sound )  \ {{{1
 
 : beep  ( "name" -- )  parse-name 2drop  ; immediate
   \ XXX TMP --
   \ XXX TODO --
 
   \ ============================================================
-  \ User input {{{1
+  cr .( User input)  \ {{{1
 
 : seconds  ( n -- )  50 * pause  ;
 
@@ -486,14 +533,14 @@ farlimit @ /screen - dup constant screenBackup
   \ as _n2_.
 
   \ ============================================================
-  \ Command panel {{{1
+  cr .( Command panel)  \ {{{1
 
 21 constant panel-y
 
-variable possibleDisembarking   \ flag
-variable possibleEmbarking      \ flag
-variable possibleAttacking      \ flag
-variable possibleTrading        \ flag
+variable feasibleDisembark      \ flag
+variable feasibleEmbark         \ flag
+variable feasibleAttack         \ flag
+variable feasibleTrade          \ flag
 
 variable possibleNorth          \ flag
 variable possibleSouth          \ flag
@@ -520,7 +567,7 @@ variable possibleWest           \ flag
   \
   \ XXX TODO use a modified  version of "+"?
 
-: possibleAttacking?  ( -- f )
+: feasibleAttack?  ( -- f )
   shipPos @ seaMap @
   dup >r 13 <  r@ shark = or  r> treasureIsland = or 0=  ;
 
@@ -528,33 +575,37 @@ variable possibleWest           \ flag
   0 panel-y at-xy s" Información" 0 >option$ type cr
                   s" Tripulación" 0 >option$ type cr
                   s" Puntuación"  0 >option$ type
-  possibleAttacking? dup >r possibleAttacking !
+  feasibleAttack? dup >r feasibleAttack !
   16 panel-y at-xy s" Atacar" 0 r> ?>option$ type  ;
 
-: possibleDisembarking?  ( -- f )
+: feasibleDisembark?  ( -- f )
   shipPos @ visited @ 0=
   shipPos @ seaMap @ treasureIsland =  or  ;
 
 : shipPanelCommands  ( -- )
-  possibleDisembarking? dup >r possibleDisembarking !
+  feasibleDisembark? dup >r feasibleDisembark !
   16 panel-y 1+ at-xy s" Desembarcar" 0 r> ?>option$ type  ;
   \ XXX TODO -- factor both conditions
-  \ XXX TODO -- `possibleDisembarking` only if no enemy ship
+  \ XXX TODO -- `feasibleDisembark` only if no enemy ship
   \ is present
 
-: possibleTrading?  ( -- f )
+: feasibleTrade?  ( -- f )
   iPos @ islandMap @ nativeVillage =  ;
 
-' true alias possibleEmbarking?  ( -- f )
+' true alias feasibleEmbark?  ( -- f )
   \ XXX TODO -- only if iPos is coast
   \ XXX TODO -- better yet, only if iPos is the
   \ disembarking position
 
 : islandPanelCommands  ( -- )
-  possibleEmbarking? dup >r possibleEmbarking !
+  feasibleEmbark? dup >r feasibleEmbark !
   16 panel-y 1+ at-xy s" emBarcar" 2 r> ?>option$ type
-  possibleTrading? dup >r possibleTrading !
+  feasibleTrade? dup >r feasibleTrade !
   16 panel-y 2+ at-xy s" Comerciar" 0 r> ?>option$ type  ;
+
+: wipePanel  ( -- )
+  black paper 0 21 at-xy lowWinChars spaces  ;
+  \ XXX TODO -- use window
 
 : panel  ( -- )
   textFont set-font  white ink  wipePanel commonPanelCommands
@@ -564,14 +615,15 @@ variable possibleWest           \ flag
   \ XXX TODO several commands: attack ship/island/shark?
 
   \ ============================================================
-  \ Landscape graphics {{{1
+  cr .( Landscape graphics)  \ {{{1
 
 variable cloud0x
 variable cloud1x
 
 : sunAndClouds  ( f -- )
-  graphFont2 set-font  bright  yellow ink  cyan paper
-  26 0 at-xy ." AB"  1 26 at-xy ." CD"  white ink
+  bright  yellow ink  cyan paper
+  graphFont2 set-font
+  26 0 at-xy ." AB"  26 1 at-xy ." CD"  white ink
   1 9 random-range dup cloud0x !
   dup 0 at-xy ." EFGH" 1 at-xy ." IJKL"
   13 21 random-range dup cloud1x !
@@ -621,10 +673,10 @@ variable cloud1x
   \ `wipePanel` before the calling
 
   \ ============================================================
-  \ Sea graphics {{{1
+  cr .( Sea graphics)  \ {{{1
 
   \ --------------------------------------------
-  \ Palms {{{2
+  cr .( Palms)  \ {{{2
 
 : palm1  ( x y -- )
   green ink  blue paper  2dup    at-xy ." OPQR"
@@ -648,7 +700,7 @@ variable cloud1x
   \ XXX TODO -- factor the code common to `palm1`
 
   \ --------------------------------------------
-  \ Islands {{{2
+  cr .( Islands)  \ {{{2
 
 : drawBigIsland5  ( -- )
   green ink  blue paper
@@ -745,7 +797,7 @@ variable cloud1x
   [ yellow dup papery + ] literal fill  ;
 
   \ --------------------------------------------
-  \ Reefs {{{2
+  cr .( Reefs)  \ {{{2
 
 : bottomReef  ( -- )
   black ink  blue paper
@@ -776,7 +828,7 @@ variable cloud1x
   shipPos @ 1+   reef? if  rightReef       then  ;
 
   \ --------------------------------------------
-  \ Ships {{{2
+  cr .( Ships)  \ {{{2
 
 : drawShipUp  ( -- )
   white ink  blue paper
@@ -847,7 +899,7 @@ variable cloud1x
   seaAndSky redrawShip  shipPos @ seaMap @ seaPicture  ;
 
   \ ============================================================
-  \ Crew stamina {{{1
+  cr .( Crew stamina)  \ {{{1
 
 variable injured
 
@@ -874,7 +926,7 @@ variable dead
   \ XXX TODO -- return the output on the stack
 
   \ ============================================================
-  \ Run aground {{{1
+  cr .( Run aground)  \ {{{1
 
 : damaged  ( min max -- )
   random-range damage +!  damage @ 100 min damage !  ;
@@ -911,7 +963,7 @@ variable dead
   -4 -1 random-range morale +!  3 seconds  ;
 
   \ ============================================================
-  \ Reports {{{1
+  cr .( Reports)  \ {{{1
 
 : reportStart  ( -- )
   saveScreen cls textFont set-font  ;
@@ -970,7 +1022,7 @@ variable dead
   ." Total"        tab ."       " score @ 4 .r  reportEnd  ;
 
   \ ============================================================
-  \ Ship battle {{{1
+  cr .( Ship battle)  \ {{{1
 
 variable done
   \ XXX TODO -- rename
@@ -1136,7 +1188,7 @@ variable done
   \ XXX TODO -- improve the expression with `between`
 
   \ ============================================================
-  \ Island map {{{1
+  cr .( Island map)  \ {{{1
 
 : eraseIslandMap  ( -- )  0 islandMap /islandMap cells erase  ;
 
@@ -1164,16 +1216,16 @@ variable done
   8 11 random-range iPos !  ;
 
   \ ============================================================
-  \ On the treasure island {{{1
+  cr .( On the treasure island)  \ {{{1
 
 : sailorSpeechBalloon  ( -- )
-  25 44 set-pixel
+  25 44 plot
   20 10 rdraw 0 30 rdraw 2 2 rdraw 100 0 rdraw
   2 -2 rdraw 0 -60 rdraw -2 -2 rdraw -100 0 rdraw
   -2 2 rdraw 0 19 rdraw -20 0 rdraw  ;
 
 : captainSpeechBalloon  ( -- )
-  220 44 set-pixel
+  220 44 plot
   -15 5 rdraw 0 20 rdraw -2 2 rdraw -30 0 rdraw
   -2 -2 rdraw 0 -40 rdraw 2 -2 rdraw 30 0 rdraw 2 2 rdraw
   0 14 rdraw 15 0 rdraw  ;
@@ -1330,7 +1382,7 @@ variable option
   \ XXX TODO -- use a window for the last message
 
   \ ============================================================
-  \ Island graphics {{{1
+  cr .( Island graphics)  \ {{{1
 
 : wipeIslandScenery  ( -- )
   [ yellow dup papery + ] literal colorSea  ;
@@ -1441,7 +1493,7 @@ variable option
   endcase  ;
 
   \ ============================================================
-  \ Events on an island {{{1
+  cr .( Events on an island)  \ {{{1
 
 : event1  ( -- )
   manDead
@@ -1489,7 +1541,7 @@ create islandEvents>  ( -- a )
   0 10 random-range cells islandEvents> + perform  ;
 
   \ ============================================================
-  \ Enter island location {{{1
+  cr .( Enter island location)  \ {{{1
 
 : enterIslandLocation  ( -- )
 
@@ -1555,7 +1607,7 @@ create islandEvents>  ( -- a )
   ;
 
   \ ============================================================
-  \ Disembark {{{1
+  cr .( Disembark)  \ {{{1
 
 : disembarkingScene  ( -- )
   graphFont1 set-font  green ink  blue paper
@@ -1576,7 +1628,7 @@ create islandEvents>  ( -- a )
   wipeMessage seaAndSky disembarkingScene enterIsland  ;
 
   \ ============================================================
-  \ Storm {{{1
+  cr .( Storm)  \ {{{1
 
 : rainDrops  ( c -- )
   white ink  cyan paper
@@ -1589,54 +1641,85 @@ create islandEvents>  ( -- a )
     3 random 0= if  redrawShip  then
   loop  ;
 
+: -rain  ( -- )
+  cloud0x @ 2 at-xy ."     " cloud1x @ 2 at-xy ."    "  ;
+
 : storm  ( -- )
-  wipePanel stormySky  10 49 damaged
+  wipePanel stormySky
   s" Se desata una tormenta"
   s"  que causa destrozos en el barco." s+ message
-  rain  white ink  cyan paper
-  cloud0x 2 at-xy ."     " cloud1x 2 at-xy ."    "
-  s" Tras la tormenta, el barco está "
-  damage$ s+ s" ." s+ message  panel  ;
+  rain  10 49 damaged  -rain
+  s" Tras la tormenta, el barco está " damage$ s+ s" ." s+
+  message  panel  ;
   \ XXX TODO bright sky!
+  \ XXX TODO -- sound
   \ XXX TODO make the enemy ship to move, if present
   \ (use the same graphic of the player ship)
 
   \ ============================================================
-  \ Ship command {{{1
+  cr .( Ship command)  \ {{{1
 
-: seaMove  ( offset -- )
-  dup shipPos + seaMap @ reef = if    drop runAground
-                                else  shipPos +!
-                                then  drop  ;
+: toReef?  ( n -- f )  shipPos + seaMap @ reef =  ;
+  \ Does the sea movement offset _n_ leads to a reef?
+
+: seaMove  ( n -- )
+  dup toReef? if    drop runAground
+              else  shipPos +!  then  ;
+  \ Move on the sea map, using offset _n_ from the current
+  \ position.
+
+: ?seaMoveNorth?  ( -- f )
+  possibleNorth @ dup 0exit  6 seaMove  ;
+
+: ?seaMoveSouth?  ( -- f )
+  possibleSouth @ dup 0exit  -6 seaMove  ;
+
+: ?seaMoveEast?  ( -- f )
+  possibleEast @ dup 0exit  1 seaMove  ;
+
+: ?seaMoveWest?  ( -- f )
+  possibleWest @ dup 0exit  -1 seaMove  ;
+
+: shipCommand?  ( c -- f )
+  dup 0exit  case  ( c )
+  'N' key-up                or-of  ?seaMoveNorth?     endof
+  'S' key-down              or-of  ?seaMoveSouth?     endof
+  'E' key-right             or-of  ?seaMoveWest?      endof
+  'O' key-left              or-of  ?seaMoveWest?      endof
+  'I'                          of  mainReport   true  endof
+  'A' feasibleAttack @ and     of  attackShip   true  endof
+  'T'                          of  crewReport   true  endof
+  'P'                          of  scoreReport  true  endof
+  'D' feasibleDisembark @ and  of  disembark    true  endof
+  'F'                          of  quitGame on  true  endof
+  false swap  ( false c )  endcase  ( false )  ;
+  \ If character _c_ is a valid ship command, execute it and
+  \ return true; else return false.
+  \
+  \ Note: the trigger `dup 0exit` is used at the start because
+  \ the default value of _c_ is zero, which would clash with
+  \ 'A' and 'D' clauses if their "and-ed" control flags are
+  \ off. `dup exit` is smaller than a `0 of false endof`
+  \ clause.
+  \
+  \ XXX TODO -- use execution table instead? better yet:
+  \ `thiscase` structure.
+
+: redrawShip?  ( -- f )  frames@ drop 1024 mod 0=  ;
+
+: ?redrawShip  ( -- )  redrawShip? if  redrawShip  then  ;
+
+: storm?  ( -- f )  1024 random 0=  ;
+  \ XXX TODO increase the probability of storm every day?
+
+: ?storm  ( -- )  storm? if  storm  then  ;
 
 : shipCommand  ( -- )
-  begin
-    inkey upper case
-    'N' key-up or-of  \ north
-      possibleNorth @ if  15 seaMove exit  then  endof
-    'S' key-down or-of  \ south
-      possibleSouth @ if  -15 seaMove exit  then  endof
-    'E' key-right or-of  \ east
-      possibleEast @ if  1 seaMove exit  then  endof
-    'O' key-left or-of  \ west
-      possibleWest @ if  -1 seaMove exit  then  endof
-    'I' of  mainReport exit  endof
-    'A' of
-      possibleAttacking @ if  attackShip exit then  endof
-    'T' of  crewReport exit  endof
-    'P' of  scoreReport exit  endof
-    'D' of
-      possibleDisembarking @ if  disembark exit  then  endof
-    'F' of  quitGame on  exit  endof
-    endcase
-    frames@ drop 1024 mod 0= if  redrawShip  then
-    80 random 0= if  storm  then
-      \ XXX TODO increase the probability every day?
-  again  ;
-  \ XXX TODO -- simpler
+  begin  ?redrawShip ?storm  inkey upper shipCommand? until  ;
+  \ XXX FIXME -- crash!
 
   \ ============================================================
-  \ Misc commands on the island {{{1
+  cr .( Misc commands on the island)  \ {{{1
 
 : embark  ( -- )
   shipPos @ visited on  1 day +!  aboard on  ;
@@ -1647,10 +1730,11 @@ create islandEvents>  ( -- a )
 : islandMove  ( n -- )
   dup toLand? if    iPos +!  enterIslandLocation
               else  drop  then  ;
-  \ Move on the island map with offset _n_, if possible.
+  \ Move on the sea map, using offset _n_ from the current
+  \ position, if possible.
 
   \ ============================================================
-  \ Clues {{{1
+  cr .( Clues)  \ {{{1
 
 : pathClue$  ( -- ca len )
   s" Tomar camino " path @ number$ s+ s" ." s+  ;
@@ -1683,11 +1767,11 @@ create clues  ( -- a )
   2 seconds  s" ¡Buen viaje a isla de tesoro!" nativeSays  ;
 
   \ ============================================================
-  \ Trading {{{1
+  cr .( Trading)  \ {{{1
 
 : nativeSpeechBalloon  ( -- )
   black ink
-  100 100 set-pixel  20 10 rdraw  0 30 rdraw  2 2 rdraw
+  100 100 plot  20 10 rdraw  0 30 rdraw  2 2 rdraw
   100 0 rdraw  2 -2 rdraw  0 -60 rdraw  -2 -2 rdraw
   -100 0 rdraw -2 2 rdraw  0 20 rdraw  -20 0 rdraw  ;
 
@@ -1778,7 +1862,7 @@ variable price  variable offer
   nativeSays  oneCoinLess  ;
 
   \ ============================================================
-  \ Attack {{{1
+  cr .( Attack)  \ {{{1
 
 : label  ( "name" -- )  parse-name 2drop  ; immediate
   \ XXX TMP --
@@ -1849,30 +1933,48 @@ variable price  variable offer
   3 seconds  ;
 
   \ ============================================================
-  \ Command dispatcher on the island {{{1
+  cr .( Command dispatcher on the island)  \ {{{1
+
+: ?islandMoveNorth?  ( -- f )
+  possibleNorth @ dup 0exit  15 islandMove  ;
+
+: ?islandMoveSouth?  ( -- f )
+  possibleSouth @ dup 0exit  -15 islandMove  ;
+
+: ?islandMoveEast?  ( -- f )
+  possibleEast @ dup 0exit  1 islandMove  ;
+
+: ?islandMoveWest?  ( -- f )
+  possibleWest @ dup 0exit  -1 islandMove  ;
+
+: ?trade?  ( -- f )  feasibleTrade @ dup 0exit  trade  ;
+
+: ?embark?  ( -- f )  feasibleEmbark @ dup 0exit  embark  ;
+
+: ?attack?  ( -- f )  feasibleAttack @ dup 0exit  attack  ;
+
+: islandCommand?  ( c -- f )
+  case  ( c )
+    'N' key-up    or-of  ?islandMoveNorth?  endof
+    'S' key-down  or-of  ?islandMoveSouth?  endof
+    'E' key-right or-of  ?islandMoveEast?   endof
+    'O' key-left  or-of  ?islandMoveWest?   endof
+    'C'              of  ?trade?            endof
+    'B'              of  ?embark?           endof
+    'I'              of  mainReport   true  endof
+    'M'              of  ?attack?           endof
+    'T'              of  crewReport   true  endof
+    'P'              of  scoreReport  true  endof
+    'F'              of  quitGame on  true  endof
+  false swap  ( false c )  endcase  ( false )  ;
+  \ If character _c_ is a valid command on the island, execute
+  \ it and return true; else return false.
 
 : islandCommand  ( -- )
-  begin  inkey upper  case
-    'N' key-up or-of  \ north
-      possibleNorth @ if  6 islandMove      exit  then  endof
-    'S' key-down or-of  \ south
-      possibleSouth @ if  -6 islandMove     exit  then  endof
-    'E' key-right or-of  \ east
-      possibleEast @ if  1 islandMove       exit  then  endof
-    'O' key-left or-of  \ west
-      possibleWest @ if  -1 islandMove      exit  then  endof
-    'C' of  possibleTrading @ if  trade     exit  then  endof
-    'B' of  possibleEmbarking @ if  embark  exit  then  endof
-    'I' of  mainReport                      exit        endof
-    'M' of  possibleAttacking @ if  attack  exit  then  endof
-    'T' of  crewReport                      exit        endof
-    'P' of  scoreReport                     exit        endof
-    'F' of  quitGame on                     exit        endof
-  endcase  again  ;
-  \ XXX TODO simpler, with searchable string of keys and ON
+  begin  inkey upper islandCommand?  until  ;
 
   \ ============================================================
-  \ Setup {{{1
+  cr .( Setup)  \ {{{1
 
 : initOnce  ( -- )  initScreen  ;
 
@@ -1946,7 +2048,7 @@ variable price  variable offer
   initSeaMap initShip initCrew initPlot  ;
 
   \ ============================================================
-  \ Game over {{{1
+  cr .( Game over)  \ {{{1
 
 : reallyQuit  ( -- )
   \ Confirm the quit
@@ -1989,7 +2091,7 @@ variable price  variable offer
   \ XXX TODO new graphic, based on the cause of the end
 
   \ ============================================================
-  \ Intro {{{1
+  cr .( Intro)  \ {{{1
 
 : skulls  ( -- )
   ."   nop  nop  nop  nop  nop  nop  "
@@ -2017,7 +2119,7 @@ variable price  variable offer
   6000 pause set-font  ;
 
   \ ============================================================
-  \ Main {{{1
+  cr .( Main)  \ {{{1
 
 : scenery  ( -- )
   aboard @ if  seaScenery  else  islandScenery  then  panel  ;
@@ -2039,7 +2141,7 @@ variable price  variable offer
   initOnce  begin  intro init game theEnd  again  ;
 
   \ ============================================================
-  \ Debugging tools {{{1
+  cr .( Debugging tools [2])  \ {{{1
 
 variable invflag
   \ XXX TMP --
@@ -2079,9 +2181,10 @@ variable invflag
   \ XXX TMP for debugging after an error
 
   \ ============================================================
-  \ Graphichs {{{1
+  cr .( Graphics)  \ {{{1
 
-here dup 256 - to graphFont1  /font + 256 - to graphFont2
+here 256 - dup /font + to graphFont2
+                       to graphFont1
   \ Update the font pointers with addresses relative to the
   \ current data pointer, were the two graphic fonts are being
   \ compiled.
