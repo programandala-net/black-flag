@@ -3,15 +3,14 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ XXX UNDER DEVELOPMENT -- Fork of `z80-asm`, with modified
-  \ syntax.
-
-  \ Last modified: 201612251338
+  \ Last modified: 201612252158
 
   \ -----------------------------------------------------------
   \ Description
 
-  \ A alternative Z80 assembler, called `z80-asm,`.
+  \ An alternative Z80 assembler, called `z80-asm,`.
+  \ This assembler will replace the previous one, called
+  \ `z80-asm`.
 
   \ -----------------------------------------------------------
   \ Authors
@@ -88,7 +87,9 @@
   \ Fix `jp>jr` to manage also unconditional jumps. Factor
   \ `?call` with `?jp`.  Fix `relse`, `rwhile` and `runtil`.
   \
-  \ 2016-12-25: Fix `jp>jr`.
+  \ 2016-12-25: Fix `jp>jr`. Rename `im1`, `im2` to `im1,`
+  \ `im2,`. Make `inverse-cond` and `jp>jr` compatible with
+  \ `z80-asm`, in case `z80-asm` was loaded first.
 
   \ -----------------------------------------------------------
   \ XXX TODO
@@ -133,27 +134,27 @@ DD constant ix-op  FD constant iy-op
   \ Defining words for z80 instructions
 
 : m1  ( 8b "name" -- )
-  create c, does>  ( -- ) ( pfa ) c@ c,  ;
+  create c, does>  ( -- )  ( pfa ) c@ c,  ;
   \ 1-byte opcode without parameters.
 
 : m2  ( 8b "name" -- )
-  create c, does>  ( r -- ) ( r pfa ) c@ + c,  ;
+  create c, does>  ( r -- )  ( r pfa ) c@ + c,  ;
   \ 1-byte opcode with register encoded in bits 0-3.
 
 : m3  ( 8b "name" -- )
-  create c, does>  ( r -- ) ( r pfa ) c@ swap 8* + c,  ;
+  create c, does>  ( r -- )  ( r pfa ) c@ swap 8* + c,  ;
   \ 1-byte opcode with register encoded in bits 3-5.
 
 : m4  ( 8b "name" -- )
-  create c, does>  ( 8b -- ) ( 8b pfa ) c@ c, c,  ;
+  create c, does>  ( 8b -- )  ( 8b pfa ) c@ c, c,  ;
   \ 1-byte opcode with 1-byte parameter.
 
 : m5  ( 8b "name" -- )
-  create c, does>  ( 16b -- ) ( 16b pfa ) c@ c, ,  ;
+  create c, does>  ( 16b -- )  ( 16b pfa ) c@ c, ,  ;
   \ 1-byte opcode with 2-byte parameter.
 
 : m6  ( 8b "name" -- )
-  create c, does>  ( r -- ) ( r pfa ) CB c, c@ + c,  ;
+  create c, does>  ( r -- )  ( r pfa ) CB c, c@ + c,  ;
   \ Rotation of registers.
 
 : m7  ( 8b "name" -- )
@@ -165,7 +166,7 @@ DD constant ix-op  FD constant iy-op
 
   \ Defining words for z80 instructions
 
-: m8  ( 16b "name" -- ) create , does>  ( -- ) ( pfa ) @ ,  ;
+: m8  ( 16b "name" -- )  create , does>  ( -- )  ( pfa ) @ ,  ;
   \ 2-byte opcodes.
 
 : (jr,)  ( a op -- )  c, here 1+ - dup ?rel c,  ;
@@ -202,16 +203,15 @@ rlca, 08 m1 exaf, 09 m3 addp, 0A m3 ftap, 0B m3 decp, 0F m1
 rrca, 10 m9 djnz, 17 m1 rla, 18 m9 jr,  1F m1 rra, 22 m5 sthl,
 27 m1 daa, 2A m5 fthl, 2F m1 cpl, 32 m5 sta, 37 m1 scf, 3A m5
 fta, 3F m1 ccf, 76 m1 halt, 80 m2 add, 88 m2 adc, 90 m2 sub, 98
-m2 sbc, B8 m2 cp, C1 m3 pop, C5 m3 push, C6 m4 add#,
-C7 m2 rst, C9 m1 ret, CE m4 adc#, D3 m4 out, 41 m3
-outbc, D6 m4 sub#, D9 m1 exx, DB m4 in, 40 m3 inbc, 0DE m4
-sbc#, E3 m1 exsp, E6 m4 and#, E9 m1 jphl, EB m1 exde, EE m4
-xor#, F3 m1 di,  F6 m4 or#, F9 m1 ldsp, FB m1 ei, FE m4 cp#, 00
-m6 rlc, 08 m6 rrc, 10 m6 rl, 18 m6 rr, 20 m6 sla, 28 m6 sra, 38
-m6 srl,  40 m7 bit, 80 m7 res, C0 m7 set, B0ED m8 ldir, B8ED m8
-lddr, 44ED m8 neg, 57ED m8 ldai, 47ED m8 ldia, 56ED m8 im1 5EED
-m8 im2 B1ED m8 cpir, 6FED m8 rld, A0 m2 and, B0 m2 or,  A8 m2
-xor, -->
+m2 sbc, B8 m2 cp, C1 m3 pop, C5 m3 push, C6 m4 add#, C7 m2 rst,
+C9 m1 ret, CE m4 adc#, D3 m4 out, 41 m3 outbc, D6 m4 sub#, D9
+m1 exx, DB m4 in, 40 m3 inbc, 0DE m4 sbc#, E3 m1 exsp, E6 m4
+and#, E9 m1 jphl, EB m1 exde, EE m4 xor#, F3 m1 di,  F6 m4 or#,
+F9 m1 ldsp, FB m1 ei, FE m4 cp#, 00 m6 rlc, 08 m6 rrc, 10 m6
+rl, 18 m6 rr, 20 m6 sla, 28 m6 sra, 38 m6 srl,  40 m7 bit, 80
+m7 res, C0 m7 set, B0ED m8 ldir, B8ED m8 lddr, 44ED m8 neg,
+57ED m8 ldai, 47ED m8 ldia, 56ED m8 im1, 5EED m8 im2, B1ED m8
+cpir, 6FED m8 rld, A0 m2 and, B0 m2 or,  A8 m2 xor, -->
 
 ( z80-asm, )
 
@@ -272,14 +272,19 @@ AE ma xorx, B6 ma orx,  BE ma cpx,  34 ma incx, 35 ma decx,
 C2 constant nz? CA constant z?  D2 constant nc? DA constant c?
 E2 constant po? EA constant pe? F2 constant p?  FA constant m?
 
-: jp>jr  ( op1 -- op2 )
+: jp>jr  ( op1 -- op2 )  [ also forth ]
   dup C3 =  if  drop 18 exit  then
-  dup c? > #-273 ?throw  A2 -  ;
+  dup c? > #-273 ?throw  A2 -  ; previous
   \ Convert an absolute-jump opcode to its relative-jump
   \ equivalent.  Throw error #-273 if the jump condition is
   \ invalid.
   \
   \ Note: Opcodes: $C3 is `jp`; $18 is `jr`.
+  \
+  \ XXX TMP -- The change of the search order is needed until
+  \ `z80-asm` is not used anymore. `z80-asm` is still needed by
+  \ many words. In case `z80-asm` is loaded before `z80-asm,`,
+  \ `if` and `then` are words of `z80-asm`.
 
 : ?ret,  ( op -- )  2- c,  ;
   \ Conditional ret
@@ -314,11 +319,17 @@ E2 constant po? EA constant pe? F2 constant p?  FA constant m?
 
   \ Control structures with relative jumps
 
-: inverse-cond  ( op1 -- op2 )  8 xor  ;
+: inverse-cond  ( op1 -- op2 )
+  8 [ also forth ] xor [ previous ]  ;
   \ Convert a condition flag (actually, an absolute jump
   \ opcode) to its opposite.
   \
   \ Examples: `c?` to `nc?`; `nz?` to `z?`, etc.
+  \
+  \ XXX TMP -- The change of the search order is needed until
+  \ `z80-asm` is not used anymore. `z80-asm` is still needed by
+  \ many words. In case `z80-asm` is loaded before `z80-asm,`,
+  \ `xor` is not Forth's `xor`, but that of `z80-asm`.
 
 : rahead  ( -- orig  )  18 , >rmark  ;
   \ Create a relative branch forward.
