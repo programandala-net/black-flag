@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.11.0+201612262025"  ;
+: version  ( -- ca len )  s" 0.11.1+201612262132"  ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -813,10 +813,6 @@ variable cloud1x
   black ink  blue paper
   2 14 at-xy ."  A  HI   HI       HI  HI  A"
   0 15 at-xy .\" WXY  :\::\::\x7F     Z123     :\::\::\x7F"  ;
-  \ XXX TODO -- adapt the graphic chars notation
-  \
-  \ XXX FIXME still "Off the screen" error!
-  \ The reason is the window is changed
 
 : leftReef  ( -- )
   black ink  blue paper
@@ -869,8 +865,8 @@ variable cloud1x
   yellow ink  blue paper  11 7 at-xy ." <>"  ;
 
 : drawShark  ( -- )
-  white ink  blue paper  18 13 at-xy ." \S"  ;
-  \ XXX TODO -- adapt the UDG notation
+  white ink  blue paper  18 13 at-xy .\" \S"  ;
+  \ XXX TODO -- check if `emit-udg` is faster
 
 : seaPicture  ( n -- )
   graphFont1 set-font  case
@@ -970,6 +966,7 @@ variable dead
   \ XXX TODO choose more men, and inform about them
   manInjured manDead
   -4 -1 random-range morale +!  3 seconds  ;
+  \ XXX TODO -- factor
 
   \ ============================================================
   cr .( Reports)  \ {{{1
@@ -980,7 +977,7 @@ variable dead
 
 : reportEnd  ( -- )
   0 row 2+ at-xy s" Pulsa una tecla" columns type-center
-  key drop  restoreScreen  ;
+  discard-key key drop  restoreScreen  ;
   \ Common task at the end of all reports.
 
 : mainReport  ( -- )
@@ -1051,6 +1048,7 @@ variable done
     -2 morale +!
     3 4 random-range 1 ?do  manInjured  loop
   then  5 seconds  wipeMessage  ;
+  \ XXX TODO -- factor
 
 : attackOwnBoat  ( -- )
   ammo @ if  doAttackOwnBoat exit  then
@@ -1061,6 +1059,7 @@ variable done
   3 pause
   wipeMessage \ XXX TODO -- needed?
   ;
+  \ XXX TODO -- factor
 
 : sunk  ( -- )
   white ink  blue paper
@@ -1088,6 +1087,7 @@ variable done
   endcase  shipPos @ seaMap !  ;
   \ Sunk the enemy ship
   \ XXX TODO -- use a calculation instead the last `case`
+  \ XXX TODO -- factor
 
 : drawWave  ( -- )
   cyan ink 11 30 random-range 1 20 random-range at-xy ." kl"  ;
@@ -1729,7 +1729,6 @@ create islandEvents>  ( -- a )
 
 : shipCommand  ( -- )
   begin  ?redrawShip ?storm  inkey upper shipCommand? until  ;
-  \ XXX FIXME -- crash!
 
   \ ============================================================
   cr .( Misc commands on the island)  \ {{{1
@@ -2151,8 +2150,6 @@ variable price  variable offer
                      else  scenery
                      then  command
   gameOver? until  ;
-  \ XXX FIXME sometimes scenery is called here without reason
-  \ XXX The logic is wrong.
 
 : run  ( -- )
   initOnce  begin  intro init game theEnd  again  ;
