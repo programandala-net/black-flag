@@ -12,53 +12,60 @@
 
   \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
 
-  \ Version 0.10.0+201612260124
+  \ ============================================================
+
+only forth definitions
+wordlist dup constant game-wordlist  dup >order  set-current
+
+: version  ( -- ca len )  s" 0.10.0+201612261836"  ;
+
+cr cr .( Bandera Negra) cr version type cr
 
   \ ============================================================
   cr .( Requirements)  \ {{{1
 
-only forth definitions
+forth-wordlist set-current
 
   \ --------------------------------------------
-  \ Debugging tools
+  cr .( -Debugging tools)  \ {{{2
 
 need ~~
 
   \ --------------------------------------------
-  \ Definers
+  cr .( Definers)  \ {{{2
 
 need alias
 need 2avariable  need avariable    need cavariable
 need sconstants  need /sconstants  need value
 
   \ --------------------------------------------
-  \ Control structures
+  cr .( Control structures)  \ {{{2
 
 need case  need or-of  need j  need 0exit
 
   \ --------------------------------------------
-  \ Stack manipulation
+  cr .( Stack manipulation)  \ {{{2
 
 need pick
 
   \ --------------------------------------------
-  \ Math
+  cr .( Math)  \ {{{2
 
 need >=  need <=  need under+
 need random-range  need randomize0
 
   \ --------------------------------------------
-  \ Memory
+  cr .( Memory)  \ {{{2
 
 need move>far  need move<far
 
   \ --------------------------------------------
-  \ Time
+  cr .( Time)  \ {{{2
 
 need frames@  need pause
 
   \ --------------------------------------------
-  \ Strings
+  cr .( Strings)  \ {{{2
 
 need u>str
 need uppers1  need s+  need chars>string  need ruler
@@ -68,7 +75,7 @@ need set-esc-order  need esc-standard-chars-wordlist
 need esc-block-chars-wordlist  need esc-udg-chars-wordlist
 
   \ --------------------------------------------
-  \ Printing and graphics
+  cr .( Printing and graphics)  \ {{{2
 
 need window  need set-window  need wcls  need wtype
 
@@ -85,7 +92,7 @@ need plot176  ' plot176 alias plot
   \ XXX TMP --
 
   \ --------------------------------------------
-  \ Keyboard
+  cr .( Keyboard)  \ {{{2
 
 need key-left  need key-right  need key-down  need key-up
 
@@ -94,7 +101,7 @@ need get-inkey ' get-inkey alias inkey
 
   \ --------------------------------------------
 
-wordlist dup constant game-wordlist  dup >order  set-current
+game-wordlist  set-current
 
   \ ============================================================
   cr .( Debugging tools [1])  \ {{{1
@@ -168,7 +175,7 @@ variable quitGame         \ flag
 variable screenRestored   \ flag  \ XXX TODO -- what for?
 
   \ --------------------------------------------
-  cr .( Plot)  \ {{{2
+  cr .( -Plot)  \ {{{2
 
 variable iPos             \ player position on the island
 variable aboard           \ flag
@@ -184,7 +191,7 @@ variable supplies         \ counter
 variable trades           \ counter
 
   \ --------------------------------------------
-  cr .( Ships)  \ {{{2
+  cr .( -Ships)  \ {{{2
 
 variable shipPicture      \ flag
 variable shipX
@@ -196,7 +203,7 @@ variable enemyShipX
 variable enemyShipY
 
   \ --------------------------------------------
-  cr .( Clues)  \ {{{2
+  cr .( -Clues)  \ {{{2
 
 variable foundClues       \ counter
 
@@ -211,14 +218,14 @@ variable pace
   cr .( Arrays)  \ {{{1
 
   \ --------------------------------------------
-  cr .( Maps)  \ {{{2
+  cr .( -Maps)  \ {{{2
 
 /seaMap     avariable seaMap
 /islandMap  avariable islandMap
 /seaMap     avariable visited    \ flags for islands
 
   \ --------------------------------------------
-  cr .( Crew)  \ {{{2
+  cr .( -Crew)  \ {{{2
 
 men avariable stamina
 
@@ -295,7 +302,7 @@ yellow black papery +         3 staminaAttr c!
  green black papery +         4 staminaAttr c!
 
   \ --------------------------------------------
-  cr .( Ship damage descriptions)  \ {{{2
+  cr .( -Ship damage descriptions)  \ {{{2
 
 0
   here ," hundiéndose"            \ worst: sinking
@@ -313,7 +320,7 @@ yellow black papery +         3 staminaAttr c!
             constant damageLevels
 
   \ --------------------------------------------
-  cr .( Village names)  \ {{{2
+  cr .( -Village names)  \ {{{2
 
   \ The names of the villages are Esperanto compound words with
   \ funny sounds and meanings.
@@ -334,7 +341,7 @@ yellow black papery +         3 staminaAttr c!
   \ XXX TODO -- invert the order of the strings?
 
   \ --------------------------------------------
-  cr .( Cardinal points)  \ {{{2
+  cr .( -Cardinal points)  \ {{{2
 
 0
   here ," oeste"
@@ -344,7 +351,7 @@ yellow black papery +         3 staminaAttr c!
 sconstants cardinal$  ( n -- ca len )
 
   \ --------------------------------------------
-  cr .( Hands)  \ {{{2
+  cr .( -Hands)  \ {{{2
 
 0
   here ," derecha"    \ right
@@ -676,7 +683,7 @@ variable cloud1x
   cr .( Sea graphics)  \ {{{1
 
   \ --------------------------------------------
-  cr .( Palms)  \ {{{2
+  cr .( -Palms)  \ {{{2
 
 : palm1  ( x y -- )
   green ink  blue paper  2dup    at-xy ." OPQR"
@@ -700,7 +707,7 @@ variable cloud1x
   \ XXX TODO -- factor the code common to `palm1`
 
   \ --------------------------------------------
-  cr .( Islands)  \ {{{2
+  cr .( -Islands)  \ {{{2
 
 : drawBigIsland5  ( -- )
   green ink  blue paper
@@ -797,7 +804,7 @@ variable cloud1x
   [ yellow dup papery + ] literal fill  ;
 
   \ --------------------------------------------
-  cr .( Reefs)  \ {{{2
+  cr .( -Reefs)  \ {{{2
 
 : bottomReef  ( -- )
   black ink  blue paper
@@ -828,7 +835,7 @@ variable cloud1x
   shipPos @ 1+   reef? if  rightReef       then  ;
 
   \ --------------------------------------------
-  cr .( Ships)  \ {{{2
+  cr .( -Ships)  \ {{{2
 
 : drawShipUp  ( -- )
   white ink  blue paper
@@ -2011,6 +2018,8 @@ variable price  variable offer
   0 1 random-range turn !
   0 3 random-range direction !
   1 9 random-range pace !  ;  \ XXX TODO -- check range 0..?
+  \ XXX TODO -- use `random` for 0..x
+  \ XXX TODO -- convert all ranges to 0..x
 
 : initPlot  ( -- )
   initClues  aboard on  1 iPos !
