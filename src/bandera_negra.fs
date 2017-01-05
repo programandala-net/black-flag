@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.12.0+201612262350" ;
+: version  ( -- ca len )  s" 0.13.0-201701052142" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -29,7 +29,19 @@ forth-wordlist set-current
   \ --------------------------------------------
   cr .(   -Debugging tools)  \ {{{2
 
-need ~~  need abort"
+  \ need ~~  need abort"
+  \ XXX -- this works
+
+  \ need ~~  need see  need dump  need abort"
+  \ XXX FIXME -- crash!
+
+  \ need ~~  need dump  need abort"
+  \ XXX -- this works, and `see` can be loaded afterwards
+
+  \ need ~~  need see  need abort"
+  \ XXX FIXME -- crash!
+
+need ~~  need dump  need abort"
 
   \ --------------------------------------------
   cr .(   -Definers)  \ {{{2
@@ -78,6 +90,7 @@ need esc-block-chars-wordlist  need esc-udg-chars-wordlist
   cr .(   -Printing and graphics)  \ {{{2
 
 need window  need set-window  need wcls  need wtype
+need whome
 
 need tab  need type-center  need at-x  need row
 need columns  need inverse
@@ -195,7 +208,7 @@ variable trades           \ counter
   \ --------------------------------------------
   cr .(   -Ships)  \ {{{2
 
-variable shipPicture      \ flag
+variable shipUp      \ flag
 variable shipX
 variable shipY
 variable shipPos
@@ -412,9 +425,9 @@ sconstants hand$  ( n -- ca len )
   \ active, _f_ is true and _n_ is the position of its
   \ highlighted letter (0..len1-1).
 
-: coins$  ( x -- ca len )
+: coins$  ( n -- ca len )
   dup >r number$ s"  " s+ r> dubloons$ s+  ;
-  \ Return the text "x doubloons", with letters.
+  \ Return the text "n doubloons", with letters.
 
 : damageIndex  ( -- n )  damage @ damageLevels * 101 / 1+  ;
   \ XXX TODO -- use `*/`
@@ -852,8 +865,8 @@ variable cloud1x
 
 : redrawShip  ( -- )
   white ink blue paper  shipX @ shipY @
-  shipPicture @ if    drawShipDown shipPicture off
-                else  drawShipUp   shipPicture on  then  ;
+  shipUp @ if    drawShipDown  shipUp off
+           else  drawShipUp    shipUp on   then  ;
 
 : drawEnemyShip  ( -- )
   yellow ink  blue paper  11 4 2dup    at-xy ."  ab"
@@ -980,7 +993,7 @@ white black papery + constant report-color#
 : set-report-color  ( -- )  report-color# color!  ;
 
 : reportStart  ( -- )
-  saveScreen cls textFont set-font  set-report-color  ;
+  saveScreen set-report-color cls textFont set-font  ;
   \ Common task at the start of all reports.
 
 : reportEnd  ( -- )
@@ -1072,16 +1085,16 @@ variable done
   \ XXX TODO -- factor
 
 : sunk  ( -- )
-  white ink  blue paper
-  enemyShipX @ enemyShipY @    at-xy ."    "
-  enemyShipX @ enemyShipY @ 1+ at-xy ."  ab"
-  enemyShipX @ enemyShipY @ 2+ at-xy ."  90"
-  enemyShipX @ enemyShipY @    at-xy ."    "
-  enemyShipX @ enemyShipY @ 1+ at-xy ."    "
-  enemyShipX @ enemyShipY @ 2+ at-xy ."  ab"
-  enemyShipX @ enemyShipY @    at-xy ."    "
-  enemyShipX @ enemyShipY @ 1+ at-xy ."    "
-  enemyShipX @ enemyShipY @ 2+ at-xy ."    "
+  white ink  blue paper  enemyShipX @ enemyShipY @
+  2dup    at-xy ."    "
+  2dup 1+ at-xy ."  ab"
+  2dup 2+ at-xy ."  90"
+  2dup    at-xy ."    "
+  2dup 1+ at-xy ."    "
+  2dup 2+ at-xy ."  ab"
+  2dup    at-xy ."    "
+  2dup 1+ at-xy ."    "
+       2+ at-xy ."    "
   2 seconds
   shipPos @ seaMap @ 13 >=
   shipPos @ seaMap @ 16 <= and
@@ -1673,6 +1686,9 @@ create islandEvents>  ( -- a )
   rain  10 49 damaged  -rain
   s" Tras la tormenta, el barco está " damage$ s+ s" ." s+
   message  panel  ;
+  \ XXX FIXME -- sometimes `damage$` is empty: check the range
+  \ of the damage percentage.
+  \
   \ XXX TODO bright sky!
   \ XXX TODO -- sound
   \ XXX TODO make the enemy ship to move, if present
@@ -1798,17 +1814,20 @@ create clues  ( -- a )
   -100 0 rdraw -2 2 rdraw  0 20 rdraw  -20 0 rdraw  ;
 
 variable price  variable offer
+  \ XXX TODO -- remove `offer`, use the stack instead
 
 : makeOffer  ( -- )
   cash @ maxOffer min >r
   s" Tienes " cash @ coins$ s+
-  s" . ¿Qué oferta le haces? (1-" s+
-  r@ u>str s+ ." )" s+ message
+  s" . ¿Qué oferta le haces? (1-" s+ r@ u>str s+ ." )" s+
+  message
   r> getDigit offer !
   beep .2,10
   s" Le ofreces " offer @ coins$ s+ s" ." s+ message  ;
   \ Ask the player for an offer.
   \ XXX TODO -- check the note about the allowed range
+  \ XXX TODO -- remove `offer`, use the stack instead
+  \ XXX TODO -- rename to `yourOffer`
 
 : rejectedOffer  ( -- )
   2 seconds  s" ¡Tú insultar! ¡Fuera de isla mía!" nativeSays
@@ -1834,27 +1853,9 @@ variable price  variable offer
 
 : oneCoinLess  ( -- )
   makeOffer offer @ price @ 1- >=
-  if   acceptedOffer
-  else offer @ price @ 1- < if  rejectedOffer  then
-  then
-  \ XXX TODO -- simplify
-
-  \ label lowerPrice
-  \ \ He lowers the price by several dubloons
-  \ -3 -2 random-range price +!
-  \ s" Bueno, tú darme... " price @ coins$ s+
-  \ s"  y no hablar más." s+ nativeSays
-  \ makeOffer
-  \ offer @ price @ >= if    acceptedOffer
-  \                    else  rejectedOffer
-  \                    then  exit
-  lowerPrice
-
-  \ label newPrice
-  \ 3 8 random-range dup price ! coins$ 2dup uppers1
-  \ s"  ser nuevo precio, blanco." s+ nativeSays
-  \ goto oneCoinLess
-  ;
+  if    acceptedOffer
+  else  offer @ price @ 1- < if  rejectedOffer  then
+  then  lowerPrice  ;
   \ He accepts one dubloon less
 
 : initTrade  ( -- )
@@ -2025,7 +2026,7 @@ variable price  variable offer
 
 : initShip  ( -- )
   32 42 random-range shipPos !  9 shipY !  4 shipX !
-  shipPicture off  ;
+  shipUp off  ;
 
 : initClues  ( -- )
   1 3 random-range path !  \ XXX TODO -- check range 0..?
@@ -2125,12 +2126,13 @@ variable price  variable offer
 
 : skullBorder  ( -- )
   graphFont2 set-font white ink  black paper  1 bright
-  home skulls 0 22 at-xy skulls  graphFont1 set-font  ;
+  home skulls 0 22 at-xy skulls  graphFont1 set-font
+  0 bright  ;
   \ Draw top and bottom borders of skulls.
 
 : intro  ( -- )
   ink black paper cls
-  skullBorder introWindow get-font textFont set-font
+  skullBorder introWindow whome get-font textFont set-font
   s" Viejas leyendas hablan del tesoro "
   s" que esconde la perdida isla de " s+
   islandName$ s+ s" ." s+ wtype wcr wcr

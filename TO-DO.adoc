@@ -1,18 +1,17 @@
 = To-Do list of Bandera Negra
 :author: Marcos Cruz (programandala.net)
-:revdate: 2016-12-23
+:revdate: 2016-12-27
 
 == New notes about the conversion to Forth
 
-- Check why `.\"` fails during compilation.
 - Review variables and constants.
-- Convert parameteres of `set-pixel` and `rdraw`.
 - Convert `beep`.
 - Convert `goto` and `label`.
-- Fix `crewReport`.
+- Wait for the space key after the reports, to prevent the key to
+  activate a command after returning to the panel.
 
 == Old notes (in Spanish) from the abandoned Master BASIC version
-  
+
 Desligar los valores en seaMap and islandMap de los objetos que
 contienen (monedas, tiburón, barco enemigo, nativo...). Guardarlos en
 una matriz independiente. Esto hará más claros los algoritmos y
@@ -20,7 +19,7 @@ evitará el problema de que la pantalla se redibuja cuando desaparece
 un objeto (p.e., las monedas) tan solo porque ha cambiado el valor de
 esa celda del mapa.
 
-Condiciones para los comandos del panel: 
+Condiciones para los comandos del panel:
 
 - Comerciar: `islandMap(iPos)=nativeVillage`
 - Matar: `not(islandMap(iPos)=2 or islandMap(iPos)=4 or
@@ -29,16 +28,11 @@ Condiciones para los comandos del panel:
 Cambiar la medida del daño del barco (variable «damage») por su
 estado, analógamente a la tripulación, y mostrarlo en forma de texto.
 
-Tabla de mejores puntuaciones; guardada en disquete.
+Tabla de mejores puntuaciones.
 
 Hacer dos aspectos para el final: éxito y fracaso.
 
-Ampliar fn number$() y usarla en la negociación.
-
-Un programa herramienta que prepare y guarde las matrices en el
-disquete, para que el juego se ahorre la tarea, el código y el tiempo.
-(Quizá no merece la pena, porque hay variables que definir también y
-deberían duplicarse en ambos programas).
+Ampliar `fn number$()` y usarla en la negociación.
 
 Hacer que el número de doblones hallados varíe.
 
@@ -71,7 +65,7 @@ Fallo: el barco sale con fondo negro cuando encalla.
 Revisar los rangos de doblones al comerciar.
 
 Informar de si hay muertos cuando el bote es alcanzado por error.
-Calcular 'alive' antes y después de herir a los hombres.
+Calcular `alive` antes y después de herir a los hombres.
 
 Usar otro juego de caracteres.
 
@@ -80,7 +74,7 @@ tripulación.
 
 Cambiar el aspecto de las pantallas finales: negras y con calaveras.
 
-Hacer que el jugador pueda elegir nombre al capitán. 
+Hacer que el jugador pueda elegir nombre al capitán.
 
 Añadir Fin a la lista de comandos.
 
