@@ -1,7 +1,7 @@
   \ This file is part of
   \ Bandera Negra
 
-  \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
+  \ Copyright (C) 2011,2014,2015,2016,2017 Marcos Cruz (programandala.net)
 
 cr cr .( Bandera Negra)
    cr version type

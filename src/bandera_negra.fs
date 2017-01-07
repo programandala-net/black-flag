@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.13.1+201701071727" ;
+: version  ( -- ca len )  s" 0.13.2+201701071921" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -834,7 +834,7 @@ variable cloud1x
   29 7 at-xy ." WXY"  31 9 at-xy ." A"  ;
 
 : reef?  ( n -- f )  seaMap @ reef =  ;
-  \ Is there a reef at ship position _n_?
+  \ Is there a reef at sea map position _n_?
 
 : drawReefs  ( -- )
   shipPos @ seaMapCols + reef? if  drawFarIslands  then
@@ -1695,7 +1695,7 @@ create islandEvents>  ( -- a )
   \ ============================================================
   cr .( Ship command)  \ {{{1
 
-: toReef?  ( n -- f )  shipPos + seaMap @ reef =  ;
+: toReef?  ( n -- f )  shipPos + reef?  ;
   \ Does the sea movement offset _n_ leads to a reef?
 
 : seaMove  ( n -- )
@@ -2002,36 +2002,40 @@ variable price  variable offer
 
 : initSeaRowReefs  ( n1 n0 -- )  ?do  reef i seaMap !  loop  ;
 
-: initSeaNorthReefs  ( -- )  17 1 initSeaRowReefs  ;
+: initSeaNorthReefs  ( -- )  seaMapCols 0 initSeaRowReefs  ;
 
-: initSeaSouthReefs  ( -- )  /seaMap 120 initSeaRowReefs  ;
+: initSeaSouthReefs  ( -- )
+  [ seaMapRows 1- seaMapCols * dup seaMapCols + ]
+  literal literal initSeaRowReefs  ;
 
 : initSeaColReefs  ( n1 n0 -- )
   ?do  reef i seaMap !  seaMapCols +loop  ;
 
-: initSeaEastReefs  ( -- )  106 30 initSeaColReefs  ;
+: initSeaEastReefs  ( -- )
+  [ seaMapRows 2- seaMapCols * 1+ ] literal seaMapCols
+  initSeaColReefs  ;
 
-: initSeaWeastReefs  ( -- )  107 31 initSeaColReefs  ;
+: initSeaWestReefs  ( -- )
+  [ seaMapCols 2* 1-  /seaMap seaMapCols - ]
+  literal literal initSeaColReefs  ;
 
 : initSeaReefs  ( -- )
   initSeaNorthReefs initSeaSouthReefs
-  initSeaEastReefs initSeaWeastReefs  ;
+  initSeaEastReefs initSeaWestReefs  ;
 
-: initSeaIslands  ( -- )
-  120 17 do
-    i seaMap @ reef <> if
-      2 21 random-range i seaMap !  \ random type
-      \ XXX TODO -- 21 is shark; these are picture types
-    then
+: initSeaSceneries  ( -- )
+  /seaMap seaMapCols - seaMapCols 1+ do
+    i reef? 0= if  2 21 random-range i seaMap !  then
   loop
   treasureIsland 94 104 random-range seaMap !  ;
+  \ XXX TODO -- 21 is shark; these are picture types
 
 : emptySeaMap  ( -- )
   0 seaMap  /seaMap cells erase
   0 visited /seaMap cells erase  ;
 
 : initSeaMap  ( -- )
-  emptySeaMap initSeaReefs initSeaIslands  ;
+  emptySeaMap initSeaReefs initSeaSceneries  ;
 
 : initShip  ( -- )
   32 42 random-range shipPos !  9 shipY !  4 shipX !
@@ -2185,7 +2189,7 @@ variable invflag
   cls
   seaMapRows 0 do
     seaMapCols 0 do
-      invflag @ inverse  j seaMapRows * i + seaMap @ 2 .r
+      invflag @ inverse  j seaMapCols * i + seaMap @ 2 .r
       invflag @ 0= invflag !
     loop  cr
   loop  0 inverse  ;
