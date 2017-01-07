@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.13.2+201701071921" ;
+: version  ( -- ca len )  s" 0.13.3+201701072306" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -602,6 +602,7 @@ variable possibleWest           \ flag
   shipPos @ seaMap @ treasureIsland =  or  ;
 
 : shipPanelCommands  ( -- )
+  home shipPos ?  \ XXX INFORMER
   feasibleDisembark? dup >r feasibleDisembark !
   16 panel-y 1+ at-xy s" Desembarcar" 0 r> ?>option$ type  ;
   \ XXX TODO -- factor both conditions
@@ -617,6 +618,7 @@ variable possibleWest           \ flag
   \ disembarking position
 
 : islandPanelCommands  ( -- )
+  home iPos ?  \ XXX INFORMER
   feasibleEmbark? dup >r feasibleEmbark !
   16 panel-y 1+ at-xy s" emBarcar" 2 r> ?>option$ type
   feasibleTrade? dup >r feasibleTrade !
@@ -1695,7 +1697,7 @@ create islandEvents>  ( -- a )
   \ ============================================================
   cr .( Ship command)  \ {{{1
 
-: toReef?  ( n -- f )  shipPos + reef?  ;
+: toReef?  ( n -- f )  shipPos @ + reef?  ;
   \ Does the sea movement offset _n_ leads to a reef?
 
 : seaMove  ( n -- )
@@ -1705,10 +1707,10 @@ create islandEvents>  ( -- a )
   \ position.
 
 : ?seaMoveNorth?  ( -- f )
-  possibleNorth @ dup 0exit  6 seaMove  ;
+  possibleNorth @ dup 0exit  seaMapCols seaMove  ;
 
 : ?seaMoveSouth?  ( -- f )
-  possibleSouth @ dup 0exit  -6 seaMove  ;
+  possibleSouth @ dup 0exit  seaMapCols negate seaMove  ;
 
 : ?seaMoveEast?  ( -- f )
   possibleEast @ dup 0exit  1 seaMove  ;
@@ -1768,6 +1770,9 @@ create islandEvents>  ( -- a )
               else  drop  then  ;
   \ Move on the sea map, using offset _n_ from the current
   \ position, if possible.
+  \
+  \ XXX TODO -- make the movement impossible on the panel if it
+  \ leads to the sea, or show a warning
 
   \ ============================================================
   cr .( Clues)  \ {{{1
