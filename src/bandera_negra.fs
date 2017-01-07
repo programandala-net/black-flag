@@ -10,14 +10,14 @@
   \   "Jolly Roger"
   \   Copyright (C) 1984 Barry Jones / Video Vault ltd.
 
-  \ Copyright (C) 2011,2014,2015,2016 Marcos Cruz (programandala.net)
+  \ Copyright (C) 2011,2014,2015,2016,2017 Marcos Cruz (programandala.net)
 
   \ ============================================================
 
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.13.0-201701052142" ;
+: version  ( -- ca len )  s" 0.13.1+201701071727" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -29,19 +29,7 @@ forth-wordlist set-current
   \ --------------------------------------------
   cr .(   -Debugging tools)  \ {{{2
 
-  \ need ~~  need abort"
-  \ XXX -- this works
-
-  \ need ~~  need see  need dump  need abort"
-  \ XXX FIXME -- crash!
-
-  \ need ~~  need dump  need abort"
-  \ XXX -- this works, and `see` can be loaded afterwards
-
-  \ need ~~  need see  need abort"
-  \ XXX FIXME -- crash!
-
-need ~~  need dump  need abort"
+need ~~  need see  need dump  need abort"
 
   \ --------------------------------------------
   cr .(   -Definers)  \ {{{2
@@ -119,9 +107,10 @@ game-wordlist  set-current
   \ ============================================================
   cr .( Debugging tools [1])  \ {{{1
 
-:  ~~h  ( -- )
-  2 border key drop 1 border  ;
+:  ~~h  ( -- )  2 border key drop 1 border  ;
   \ Break point.
+
+'q' ~~quit-key !  ~~resume-key on  22 ~~y !  ~~? on
 
 : ?break  ( -- )  break-key? abort" Aborted!" ;
 
@@ -134,7 +123,10 @@ game-wordlist  set-current
 seaMapCols seaMapRows * constant /seaMap
   \ cells of the sea map
 
-30 constant /islandMap
+6 constant islandMapCols
+5 constant islandMapRows
+
+islandMapCols islandMapRows * constant /islandMap
   \ cells of the island map
 
 10 constant men
@@ -845,10 +837,10 @@ variable cloud1x
   \ Is there a reef at ship position _n_?
 
 : drawReefs  ( -- )
-  shipPos @ 15 + reef? if  drawFarIslands  then
-  shipPos @ 15 - reef? if  bottomReef      then
-  shipPos @ 1-   reef? if  leftReef        then
-  shipPos @ 1+   reef? if  rightReef       then  ;
+  shipPos @ seaMapCols + reef? if  drawFarIslands  then
+  shipPos @ seaMapCols - reef? if  bottomReef      then
+  shipPos @ 1-           reef? if  leftReef        then
+  shipPos @ 1+           reef? if  rightReef       then  ;
 
   \ --------------------------------------------
   cr .(   -Ships)  \ {{{2
@@ -1236,6 +1228,7 @@ variable done
   coast 24 islandMap !  coast 25 islandMap !
   coast 26 islandMap !  coast 27 islandMap !
   coast 28 islandMap !  coast 29 islandMap !  ;
+  \ XXX TODO -- use a byte table and loop
 
 : newIslandMap  ( -- )
   emptyIslandMap  createIslandCoast
@@ -1434,12 +1427,14 @@ variable option
 : drawLeftWaves  ( -- )
   white ink blue paper
   16 3 do  0 i at-xy ."  "  loop
-  white ink  blue paper
   0 6 at-xy ." mn" 0 10 at-xy ." kl" 0 13 at-xy ." k"
   0 4 at-xy ." m" 1 8 at-xy ." l"
-  graphFont2 set-font
+  \ graphFont2 set-font \ XXX TMP -- deactivated for debugging
   yellow ink  blue paper
-  iPos @ 6 + islandMap @ coast <> if  2  3 at-xy 'A' emit  then
+  iPos @ 6 +
+  \ XXX FIXME -- crash here:
+  ~~ islandMap  \ XXX FIXME -- why `islandMap` crashes?!
+  ~~ @ coast <> if  2  3 at-xy 'A' emit  then
   iPos @ 6 + islandMap @ coast =  if  2  4 at-xy 'A' emit  then
   iPos @ 6 - islandMap @ coast =  if  2 13 at-xy 'C' emit  then
   graphFont1 set-font  ;
@@ -1502,14 +1497,13 @@ variable option
   12 dup at-xy s" vw vw vw vw vw vw vw vw " drop swap 3 * type
   graphFont1 set-font  ;
 
-: islandScenery  ( -- )
-  graphicWindow graphFont1 set-font wipeIslandScenery sunnySky
-
+: islandWaves  ( -- )
   iPos @ 6 - islandMap @ coast = if  drawBottomWaves   then
   iPos @ 6 + islandMap @ coast = if  drawHorizonWaves  then
   iPos @ 1-  islandMap @ coast = if  drawLeftWaves     then
-  iPos @ 1+  islandMap @ coast = if  drawRightWaves    then
+  iPos @ 1+  islandMap @ coast = if  drawRightWaves    then  ;
 
+: islandLocation  ( -- )
   iPos @ islandMap @ case
     nativeVillage of  drawVillage  endof
     dubloonsFound of  4 8 palm2  14 5 palm2  endof
@@ -1526,6 +1520,10 @@ variable option
     endof
     nativeAmmo of  drawAmmo  drawNative  20 5 palm2  endof
   endcase  ;
+
+: islandScenery  ( -- )
+  graphicWindow graphFont1 set-font
+  wipeIslandScenery sunnySky islandWaves islandLocation  ;
 
   \ ============================================================
   cr .( Events on an island)  \ {{{1
@@ -1959,10 +1957,10 @@ variable price  variable offer
   cr .( Command dispatcher on the island)  \ {{{1
 
 : ?islandMoveNorth?  ( -- f )
-  possibleNorth @ dup 0exit  15 islandMove  ;
+  possibleNorth @ dup 0exit  islandMapCols islandMove  ;
 
 : ?islandMoveSouth?  ( -- f )
-  possibleSouth @ dup 0exit  -15 islandMove  ;
+  possibleSouth @ dup 0exit  islandMapCols negate islandMove  ;
 
 : ?islandMoveEast?  ( -- f )
   possibleEast @ dup 0exit  1 islandMove  ;
@@ -2002,11 +2000,22 @@ variable price  variable offer
 
 : initOnce  ( -- )  initScreen  ;
 
+: initSeaRowReefs  ( n1 n0 -- )  ?do  reef i seaMap !  loop  ;
+
+: initSeaNorthReefs  ( -- )  17 1 initSeaRowReefs  ;
+
+: initSeaSouthReefs  ( -- )  /seaMap 120 initSeaRowReefs  ;
+
+: initSeaColReefs  ( n1 n0 -- )
+  ?do  reef i seaMap !  seaMapCols +loop  ;
+
+: initSeaEastReefs  ( -- )  106 30 initSeaColReefs  ;
+
+: initSeaWeastReefs  ( -- )  107 31 initSeaColReefs  ;
+
 : initSeaReefs  ( -- )
-            17 1 do  reef i seaMap !      loop     \ north
-  /seaMap 1+ 120 do  reef i seaMap !      loop     \ south
-          106 30 do  reef i seaMap !  15 +loop     \ east
-          107 32 do  reef i seaMap !  15 +loop  ;  \ west
+  initSeaNorthReefs initSeaSouthReefs
+  initSeaEastReefs initSeaWeastReefs  ;
 
 : initSeaIslands  ( -- )
   120 17 do
@@ -2174,12 +2183,12 @@ variable invflag
 
 : showSea  ( -- )
   cls
-  seaMapRows 2* 0 do
+  seaMapRows 0 do
     seaMapCols 0 do
-      invflag @ inverse  j seaMapRows * i + 1+ seaMap @ 2 .r
+      invflag @ inverse  j seaMapRows * i + seaMap @ 2 .r
       invflag @ 0= invflag !
     loop  cr
-  2 +loop  0 inverse  ;
+  loop  0 inverse  ;
 
 : .chars  ( c1 c0 -- )  do  i emit  loop  ;
 
