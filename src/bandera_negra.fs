@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.13.3+201701072306" ;
+: version  ( -- ca len )  s" 0.13.4+201701072331" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -81,7 +81,7 @@ need window  need set-window  need wcls  need wtype
 need whome
 
 need tab  need type-center  need at-x  need row
-need columns  need inverse
+need columns  need inverse  need tabulate
 need set-udg  need rom-font  need set-font  need get-font
 
 need black  need blue  need red  need green
@@ -250,7 +250,6 @@ men avariable stamina
   here ," Javi Oneta"
   here ," Javier Nesnoche"
   here ," Jorge Neral"
-  here ," Jorge Ranio"
   here ," Lope Lotilla"
   here ," Manolo Pillo"
   here ," Marcos Tilla"
@@ -329,18 +328,19 @@ yellow black papery +         3 staminaAttr c!
   \ --------------------------------------------
   cr .(   -Village names)  \ {{{2
 
-  \ The names of the villages are Esperanto compound words with
-  \ funny sounds and meanings.
+  \ The names of the villages are Esperanto compound words
+  \ whose pronunciation topically resembles African languages,
+  \ and have funny meanings.
 
 0
   here ," Mislongo"   \ mis-long-o= "wrong lenght"
   here ," Ombreto"    \ ombr-et-o= "little shadow"
-  here ," Figokesto"  \ fig-o-kest-o
+  here ," Figokesto"  \ fig-o-kest-o= "fig basket"
   here ," Misedukota" \ mis-eduk-ot-a= "one to be miseducated"
   here ," Topikega"   \ topik-eg-a=
   here ," Fibaloto"   \ fi-balot-o
   here ," Pomotruko"  \ pom-o-truk-o
-  here ," Putotombo"  \ put-o-tomb-o
+  here ," Putotombo"  \ put-o-tomb-o= "well tomb"
   here ," Ursorelo"   \ urs-orel-o= "ear of bear"
   here ," Kukumemo"   \ kukum-em-o
 /sconstants village$  ( n -- ca len )
@@ -948,36 +948,37 @@ variable dead
   random-range damage +!  damage @ 100 min damage !  ;
   \ Increase the ship damage with random value in a range.
 
-: runAground  ( -- )
+: max-damage?  ( -- f )  damage @ 100 =  ;
 
-  wipeMessage  \ XXX TODO remove?
-  graphFont1 set-font
-  wipeSea drawFarIslands bottomReef leftReef rightReef
-
-  white ink
-  14  8 at-xy .\" \A\B\C"
-  14  9 at-xy .\" \D\E\F"
-  14 10 at-xy .\" \G\H\I"
+: drawRunAgroundReefs  ( -- )
   black ink  blue paper
   17 10 at-xy ." WXY     A"
   19  6 at-xy ." A   Z123"
    6 11 at-xy ." A   HI"
    5  4 at-xy ." Z123    HI"
-   7  8 at-xy .\" H\..I  A"
+   7  8 at-xy .\" H\..I  A"  ;
 
-  10 29 damaged
-  \ XXX TODO improved message: "Por suerte, ..."
+: runAgroundMessage  ( -- )
   s" ¡Has encallado! El barco está " damage$ s+ s" ." s+
-  message
-  \ XXX TODO print at the proper zone:
-  damage @ 100 =
-  if  cyan ink  black paper  7 20 at-xy ." TOTAL"  then
-  black ink  green paper
-  0 17 at-xy s" INFORME" columns type-center
-  \ XXX TODO choose more men, and inform about them
-  manInjured manDead
-  -4 -1 random-range morale +!  3 seconds  ;
-  \ XXX TODO -- factor
+  message  ;
+
+: runAgroundDamages  ( -- )
+  10 29 damaged  manInjured  manDead
+  -4 -1 random-range morale +!  ;
+
+: runAground  ( -- )
+  wipeMessage  \ XXX TODO remove?
+  graphFont1 set-font
+  wipeSea drawFarIslands bottomReef leftReef rightReef
+  white ink 14 8 drawShipUp drawRunAgroundReefs
+  runAgroundDamages runAgroundMessage
+  3 seconds  ;
+
+  \ XXX TODO improve message, depending on the damage, e.g.
+  \ "Por suerte, ..."
+  \
+  \ XXX TODO choose more men, depending on the damage, and
+  \ inform about them
 
   \ ============================================================
   cr .( Reports)  \ {{{1
@@ -999,15 +1000,15 @@ white black papery + constant report-color#
 : mainReport  ( -- )
   reportStart
   0 1 at-xy s" Informe de situación" columns type-center
-  0 4 at-xy
-  ." Días:"         tab day       @ 2 .r           cr cr
-  ." Hombres:"      tab alive     @ 2 .r           cr cr
-  ." Moral:"        tab morale    @ 2 .r           cr cr
-  ." Provisiones:"  tab supplies  @ 2 .r           cr cr
-  ." Doblones:"     tab cash      @ 2 .r           cr cr
-  ." Hundimientos:" tab sunkShips @ 2 .r           cr cr
-  ." Munición:"     tab ammo      @ 2 .r           cr cr
-  ." Barco:"        tab damage$ 2dup uppers1 type
+  0 4 at-xy  18 /tabulate !
+  ." Días:"             tabulate day       @ 2 .r cr cr
+  ." Hombres:"          tabulate alive     @ 2 .r cr cr
+  ." Moral:"            tabulate morale    @ 2 .r cr cr
+  ." Provisiones:"      tabulate supplies  @ 2 .r cr cr
+  ." Doblones:"         tabulate cash      @ 2 .r cr cr
+  ." Barcos hundidos:"  tabulate sunkShips @ 2 .r cr cr
+  ." Munición:"         tabulate ammo      @ 2 .r cr cr
+  ." Estado del buque:" tabulate damage$ 2dup uppers1 type
   reportEnd  ;
 
  1 constant nameX
@@ -1037,13 +1038,13 @@ white black papery + constant report-color#
   reportStart
   0 1 at-xy s" Informe de puntuación" columns type-center
   0 4 at-xy
-  ." Días"         tab day        @ 4 .r ."  x  200" cr
-  ." Hundimientos" tab sunkShips  @ 4 .r ."  x 1000" cr
-  ." Negocios"     tab trades     @ 4 .r ."  x  200" cr
-  ." Pistas"       tab foundClues @ 4 .r ."  x 1000" cr
-  ." Tesoro"       tab 4000         4 .r             cr
+  ." Días"            tab day        @ 4 .r ."  x  200" cr cr
+  ." Barcos hundidos" tab sunkShips  @ 4 .r ."  x 1000" cr cr
+  ." Negocios"        tab trades     @ 4 .r ."  x  200" cr cr
+  ." Pistas"          tab foundClues @ 4 .r ."  x 1000" cr cr
+  ." Tesoro"          tab 4000         4 .r             cr cr
   updateScore
-  ." Total"        tab ."       " score @ 4 .r  reportEnd  ;
+  ." Total"           tab ."       " score @ 4 .r  reportEnd  ;
   \ XXX TODO -- add subtotals
 
   \ ============================================================
@@ -2116,7 +2117,7 @@ variable price  variable offer
     s" - La munición se ha terminado." wtype wcr  then
   alive @ 0= if
     s" - Toda tu tripulación ha muerto." wtype wcr  then
-  damage @ 100 = if
+  max-damage? = if
     s" - El barco está muy dañado y es imposible repararlo."
     wtype wcr
   then
