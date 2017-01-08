@@ -5,7 +5,7 @@
 # This file is part of Bandera Negra
 # http://programandala.net/
 
-# Last modified 201612212010
+# Last modified 201701080041
 
 ################################################################
 # Requirements
@@ -24,6 +24,8 @@
 # 2016-12-19: Start.
 #
 # 2016-12-21: Build fonts and UDG sources from the original TAP files.
+#
+# 2017-01-08: Reorganize graph fonts and add ordinary fonts.
 
 ################################################################
 # Notes
@@ -56,19 +58,27 @@ clean:
 secondary_source_files=$(sort $(wildcard src/00*.fsb))
 library_source_files=$(sort $(wildcard src/lib/*.fsb))
 
-tmp/bandera_negra_font_1.fs: graph/jolly_roger_font_1.tap
+tmp/bandera_negra_graph_font_1.fs: graphs/jolly_roger_graph_font_1.tap
 	make/udg_tap_to_forth_c-comma.fs $< > $@
 
-tmp/bandera_negra_font_2.fs: graph/jolly_roger_font_2.tap
+tmp/bandera_negra_graph_font_2.fs: graphs/jolly_roger_graph_font_2.tap
 	make/udg_tap_to_forth_c-comma.fs $< > $@
 
-tmp/bandera_negra_udg.fs: graph/jolly_roger_udg.tap
+tmp/bandera_negra_udg.fs: graphs/jolly_roger_udg.tap
 	make/udg_tap_to_forth.fs $< > $@
+
+tmp/bandera_negra_sticks_font.fs: fonts/sticks_font.tap
+	make/udg_tap_to_forth_c-comma.fs $< > $@
+
+tmp/bandera_negra_twisty_font.fs: fonts/twisty_font.tap
+	make/udg_tap_to_forth_c-comma.fs $< > $@
 
 tmp/bandera_negra.complete.fs: \
 	src/bandera_negra.fs \
-	tmp/bandera_negra_font_1.fs \
-	tmp/bandera_negra_font_2.fs \
+	tmp/bandera_negra_graph_font_1.fs \
+	tmp/bandera_negra_graph_font_2.fs \
+	tmp/bandera_negra_sticks_font.fs \
+	tmp/bandera_negra_twisty_font.fs \
 	tmp/bandera_negra_udg.fs \
 	src/bandera_negra_end-app.fs
 	cat $^ > $@

@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.13.4+201701072331" ;
+: version  ( -- ca len )  s" 0.14.0+201701080155" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -243,7 +243,7 @@ men avariable stamina
   here ," Armando Bronca"
   here ," Borja Monserrano"
   here ," Clemente Cato"
-  here ," César Pullido"
+  here ," César Pullido"  \ XXX TODO -- check
   here ," Enrique Sitos"
   here ," Erasmo Coso"
   here ," Felipe Llejo"
@@ -276,7 +276,7 @@ men avariable stamina
   here ," Óscar Romato"
   here ," Óscar Terista"
 /sconstants stockName$  ( n -- ca len )
-constant stockNames
+            constant stockNames
 
 men 2avariable name  ( n -- a )
   \ A double-cell array to hold the address and length
@@ -421,13 +421,16 @@ sconstants hand$  ( n -- ca len )
   dup >r number$ s"  " s+ r> dubloons$ s+  ;
   \ Return the text "n doubloons", with letters.
 
-: damageIndex  ( -- n )  damage @ damageLevels * 101 / 1+  ;
-  \ XXX TODO -- use `*/`
+: damageIndex  ( -- n )  damage @ damageLevels max-damage */  ;
+  \ Return damage index _n_ (0..`damageLevels`) correspondent
+  \ to the current value of `damage` (0..`max-damage`).
+
+: max-damage-index?  ( -- f )  damageIndex damageLevels =  ;
 
 : failure?  ( -- f )
   alive @ 0=
   morale @ 1 < or
-  damageIndex damageLevels = or
+  max-damage-index? or
   supplies @ 1 < or
   cash @ 1 < or  ;
   \ Failed mission?
@@ -456,9 +459,12 @@ sconstants hand$  ( n -- ca len )
 768 constant /font
   \ Bytes for font (characters 32..127, 8 bytes each).
 
-rom-font value textFont
 rom-font value graphFont1
 rom-font value graphFont2
+rom-font value sticksFont
+rom-font value twistyFont
+
+' twistyFont alias textFont
 
 here set-udg 165 128 - 8 * allot
   \ Reserve data space for the block chars (128..143) and the
@@ -523,7 +529,9 @@ far-banks 3 + c@ cconstant screenBackupBank
   \ ============================================================
   cr .( Text output)  \ {{{1
 
-: nativeSays  ( ca len -- )  nativeWindow wcls wtype  ;
+: nativeSays  ( ca len -- )
+  get-font >r sticksFont set-font nativeWindow wcls wtype
+  r> set-font  ;
 
 : wipeMessage  ( -- )
   messageWindow  white ink  black paper  wcls  ;
@@ -944,11 +952,13 @@ variable dead
   \ ============================================================
   cr .( Run aground)  \ {{{1
 
+100 constant max-damage
+
 : damaged  ( min max -- )
-  random-range damage +!  damage @ 100 min damage !  ;
+  random-range damage +!  damage @ max-damage min damage !  ;
   \ Increase the ship damage with random value in a range.
 
-: max-damage?  ( -- f )  damage @ 100 =  ;
+: max-damage?  ( -- f )  damage @ max-damage =  ;
 
 : drawRunAgroundReefs  ( -- )
   black ink  blue paper
@@ -2222,16 +2232,27 @@ variable invflag
 
 : ini  ( -- )  initOnce init  ;
 
-: f  ( -- )  textFont set-font  ;
+: f  ( -- )  rom-font set-font  ;
   \ XXX TMP for debugging after an error
 
   \ ============================================================
   cr .( Graphics)  \ {{{1
 
-here 256 - dup /font + to graphFont2
-                       to graphFont1
+  \ Credit:
+  \
+  \ The graphic fonts and the UDG set are those of the original
+  \ "Jolly Roger", by Barry Jones, 1984.
+  \
+  \ The sticks and twisty fonts were designed by Paul Howard
+  \ for Alchemist PD, 1995, and packed into a viewer called
+  \ "Fontbox I".
+
+here 256 -         dup to graphFont1
+           /font + dup to graphFont2
+           /font + dup to sticksFont
+           /font +     to twistyFont
+
   \ Update the font pointers with addresses relative to the
-  \ current data pointer, were the two graphic fonts are being
-  \ compiled.
+  \ current data pointer, were the fonts are being compiled.
 
   \ vim: filetype:soloforth foldmethod=marker

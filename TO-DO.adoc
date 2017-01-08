@@ -1,6 +1,6 @@
 = To-Do list of Bandera Negra
 :author: Marcos Cruz (programandala.net)
-:revdate: 2017-01-07
+:revdate: 2017-01-08
 
 == New notes about the conversion to Forth
 
@@ -9,6 +9,19 @@
 - Convert `goto` and `label`.
 - Wait for the space key after the reports, to prevent the key to
   activate a command after returning to the panel.
+
+.2017-01-08:
+
+Convert `usedName`, `stamina` and maps to a character array, to save
+memory.
+
+.2017-01-08:
+
+Remove `graphicWindow`.
+
+.2017-01-08:
+
+Convert `possibleNorth` flag and family to calculations.
 
 .2017-01-07:
 
