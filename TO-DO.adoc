@@ -12,24 +12,25 @@
 
 .2017-01-08:
 
-Convert `usedName`, `stamina` and maps to a character array, to save
+Simplify the ship damage calculations: Use only one counter and one
+range.
+
+.2017-01-08:
+
+Convert `used-name`, `stamina` and maps to a character array, to save
 memory.
 
 .2017-01-08:
 
-Remove `graphicWindow`.
+Remove `graphic-window`.
 
 .2017-01-08:
 
-Convert `possibleNorth` flag and family to calculations.
-
-.2017-01-07:
-
-Rename all words after Forth conventions.
+Convert `possible-north` flag and family to calculations.
 
 == Old notes (in Spanish) from the abandoned Master BASIC version
 
-Desligar los valores en seaMap and islandMap de los objetos que
+Desligar los valores en `seaMap` e `islandMap` de los objetos que
 contienen (monedas, tiburón, barco enemigo, nativo...). Guardarlos en
 una matriz independiente. Esto hará más claros los algoritmos y
 evitará el problema de que la pantalla se redibuja cuando desaparece
@@ -42,7 +43,7 @@ Condiciones para los comandos del panel:
 - Matar: `not(islandMap(iPos)=2 or islandMap(iPos)=4 or
   islandMap(iPos)=6)`
 
-Cambiar la medida del daño del barco (variable «damage») por su
+Cambiar la medida del daño del barco (variable `damage`) por su
 estado, analógamente a la tripulación, y mostrarlo en forma de texto.
 
 Tabla de mejores puntuaciones.
@@ -84,8 +85,6 @@ Revisar los rangos de doblones al comerciar.
 Informar de si hay muertos cuando el bote es alcanzado por error.
 Calcular `alive` antes y después de herir a los hombres.
 
-Usar otro juego de caracteres.
-
 Hacer que el jugador pueda poner nombre a los miembros de la
 tripulación.
 
@@ -93,7 +92,7 @@ Cambiar el aspecto de las pantallas finales: negras y con calaveras.
 
 Hacer que el jugador pueda elegir nombre al capitán.
 
-Añadir Fin a la lista de comandos.
+Añadir «Fin» a la lista de comandos.
 
 Al embarcar, borrar panel antes de redibujar pantalla.
 
