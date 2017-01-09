@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.15.0+201701082049" ;
+: version  ( -- ca len )  s" 0.15.1+201701091756" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -25,6 +25,13 @@ cr cr .( Bandera Negra) cr version type cr
   cr .( Requirements)  \ {{{1
 
 forth-wordlist set-current
+
+  \ --------------------------------------------
+  cr .(   -Assembler)  \ {{{2
+
+  \ need transient
+  \ 2000 2000 transient  need assembler  end-transient
+  \ XXX TODO --
 
   \ --------------------------------------------
   cr .(   -Debugging tools)  \ {{{2
@@ -85,7 +92,8 @@ need columns  need inverse  need tabulate
 need set-udg  need rom-font  need set-font  need get-font
 
 need black  need blue  need red  need green
-need cyan  need yellow  need white  need color!
+need cyan  need yellow  need white
+need color!  need permcolor!
 need papery  need brighty
 
 need rdraw176 ' rdraw176 alias rdraw
@@ -101,6 +109,9 @@ need get-inkey ' get-inkey alias inkey
   \ XXX TMP --
 
   \ --------------------------------------------
+
+  \ forget-transient
+  \ XXX TODO --
 
 game-wordlist  set-current
 
@@ -250,6 +261,7 @@ men avariable stamina
   here ," Javi Oneta"
   here ," Javier Nesnoche"
   here ," Jorge Neral"
+  here ," Lope Dorreta"
   here ," Lope Lotilla"
   here ," Manolo Pillo"
   here ," Marcos Tilla"
@@ -1005,7 +1017,7 @@ variable dead
 
 white black papery + constant report-color#
 
-: set-report-color  ( -- )  report-color# color!  ;
+: set-report-color  ( -- )  report-color# permcolor!  ;
 
 : report-start  ( -- )
   save-screen set-report-color cls text-font set-font  ;
