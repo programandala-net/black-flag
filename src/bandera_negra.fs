@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.16.0+201701101645" ;
+: version  ( -- ca len )  s" 0.17.0+201701101758" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -43,7 +43,7 @@ need ~~  need see  need dump  need abort"
 
 need alias
 need 2avariable  need avariable    need cavariable  need value
-need far>sconstants  need /far>sconstants  need far,"
+need far>sconstants  need far,"
 
   \ --------------------------------------------
   cr .(   -Control structures)  \ {{{2
@@ -287,8 +287,8 @@ men avariable stamina
   hp@ far," Óscar Nicero"
   hp@ far," Óscar Romato"
   hp@ far," Óscar Terista"
-/far>sconstants stock-name$  ( n -- ca len )
-               constant stock-names
+far>sconstants stock-name$  ( n -- ca len )
+      constant stock-names
 
 men 2avariable name  ( n -- a )
   \ A double-cell array to hold the address and length
@@ -307,9 +307,9 @@ stock-names avariable used-name  ( n -- a )
   hp@ far," herido leve"
   hp@ far," herido grave"
   hp@ far," muerto"
-/far>sconstants stamina$  ( n -- ca len )
-1- constant max-stamina
- 0 constant min-stamina
+far>sconstants stamina$  ( n -- ca len )
+   1- constant max-stamina
+    0 constant min-stamina
 
 max-stamina 1+ cavariable stamina-attr
 
@@ -334,8 +334,8 @@ yellow black papery +         3 stamina-attr c!
   hp@ far," muy poco dañado"
   hp@ far," casi como nuevo"
   hp@ far," impecable"            \ best: perfect
-/far>sconstants damage-level$  ( n -- ca len )
-            constant damage-levels
+far>sconstants damage-level$  ( n -- ca len )
+      constant damage-levels
 
   \ --------------------------------------------
   cr .(   -Village names)  \ {{{2
@@ -355,8 +355,8 @@ yellow black papery +         3 stamina-attr c!
   hp@ far," Putotombo"  \ put-o-tomb-o= "well tomb"
   hp@ far," Ursorelo"   \ urs-orel-o= "ear of bear"
   hp@ far," Kukumemo"   \ kukum-em-o
-/far>sconstants village$  ( n -- ca len )
-            constant villages
+far>sconstants village$  ( n -- ca len )
+      constant villages
   \ XXX TODO -- invert the order of the strings?
 
   \ --------------------------------------------
@@ -367,7 +367,7 @@ yellow black papery +         3 stamina-attr c!
   hp@ far," este"
   hp@ far," sur"
   hp@ far," norte"
-far>sconstants cardinal$  ( n -- ca len )
+far>sconstants cardinal$  ( n -- ca len )  drop
 
   \ --------------------------------------------
   cr .(   -Hands)  \ {{{2
@@ -375,7 +375,7 @@ far>sconstants cardinal$  ( n -- ca len )
 0
   hp@ far," derecha"    \ right
   hp@ far," izquierda"  \ left
-far>sconstants hand$  ( n -- ca len )
+far>sconstants hand$  ( n -- ca len )  drop
 
   \ ============================================================
   cr .( Functions)  \ {{{1
