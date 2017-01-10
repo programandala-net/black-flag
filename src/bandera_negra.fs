@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.15.1+201701091756" ;
+: version  ( -- ca len )  s" 0.16.0+201701101645" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -42,8 +42,8 @@ need ~~  need see  need dump  need abort"
   cr .(   -Definers)  \ {{{2
 
 need alias
-need 2avariable  need avariable    need cavariable
-need sconstants  need /sconstants  need value
+need 2avariable  need avariable    need cavariable  need value
+need far>sconstants  need /far>sconstants  need far,"
 
   \ --------------------------------------------
   cr .(   -Control structures)  \ {{{2
@@ -250,45 +250,45 @@ men avariable stamina
   \ Crew names are pun funny names in Spanish:
 
 0
-  here ," Alfredo Minguero"
-  here ," Armando Bronca"
-  here ," Borja Monserrano"
-  here ," Clemente Cato"
-  here ," César Pullido"  \ XXX TODO -- check
-  here ," Enrique Sitos"
-  here ," Erasmo Coso"
-  here ," Felipe Llejo"
-  here ," Javi Oneta"
-  here ," Javier Nesnoche"
-  here ," Jorge Neral"
-  here ," Lope Dorreta"
-  here ," Lope Lotilla"
-  here ," Manolo Pillo"
-  here ," Marcos Tilla"
-  here ," Melchor Icete"
-  here ," Néstor Nillo"
-  here ," Néstor Tilla"
-  here ," Paco Tilla"
-  here ," Pascual Baricoque"
-  here ," Pedro Medario"
-  here ," Policarpio Nero"
-  here ," Ramiro Inoveo"
-  here ," Ricardo Borriquero"
-  here ," Roberto Mate"
-  here ," Rodrigo Minolas"
-  here ," Ulises Cocido"
-  here ," Ulises Tantería"
-  here ," Vicente Nario"
-  here ," Vicente Rador"
-  here ," Víctor Nillo"
-  here ," Víctor Pedo"
-  here ," Víctor Tilla"
-  here ," Zacarías Queroso"
-  here ," Óscar Nicero"
-  here ," Óscar Romato"
-  here ," Óscar Terista"
-/sconstants stock-name$  ( n -- ca len )
-            constant stock-names
+  hp@ far," Alfredo Minguero"
+  hp@ far," Armando Bronca"
+  hp@ far," Borja Monserrano"
+  hp@ far," Clemente Cato"
+  hp@ far," César Pullido"  \ XXX TODO -- check
+  hp@ far," Enrique Sitos"
+  hp@ far," Erasmo Coso"
+  hp@ far," Felipe Llejo"
+  hp@ far," Javi Oneta"
+  hp@ far," Javier Nesnoche"
+  hp@ far," Jorge Neral"
+  hp@ far," Lope Dorreta"
+  hp@ far," Lope Lotilla"
+  hp@ far," Manolo Pillo"
+  hp@ far," Marcos Tilla"
+  hp@ far," Melchor Icete"
+  hp@ far," Néstor Nillo"
+  hp@ far," Néstor Tilla"
+  hp@ far," Paco Tilla"
+  hp@ far," Pascual Baricoque"
+  hp@ far," Pedro Medario"
+  hp@ far," Policarpio Nero"
+  hp@ far," Ramiro Inoveo"
+  hp@ far," Ricardo Borriquero"
+  hp@ far," Roberto Mate"
+  hp@ far," Rodrigo Minolas"
+  hp@ far," Ulises Cocido"
+  hp@ far," Ulises Tantería"
+  hp@ far," Vicente Nario"
+  hp@ far," Vicente Rador"
+  hp@ far," Víctor Nillo"
+  hp@ far," Víctor Pedo"
+  hp@ far," Víctor Tilla"
+  hp@ far," Zacarías Queroso"
+  hp@ far," Óscar Nicero"
+  hp@ far," Óscar Romato"
+  hp@ far," Óscar Terista"
+/far>sconstants stock-name$  ( n -- ca len )
+               constant stock-names
 
 men 2avariable name  ( n -- a )
   \ A double-cell array to hold the address and length
@@ -302,12 +302,12 @@ stock-names avariable used-name  ( n -- a )
   \ name duplicates in the crew.
 
 0
-  here ," en forma"
-  here ," magullado"
-  here ," herido leve"
-  here ," herido grave"
-  here ," muerto"
-/sconstants stamina$  ( n -- ca len )
+  hp@ far," en forma"
+  hp@ far," magullado"
+  hp@ far," herido leve"
+  hp@ far," herido grave"
+  hp@ far," muerto"
+/far>sconstants stamina$  ( n -- ca len )
 1- constant max-stamina
  0 constant min-stamina
 
@@ -323,18 +323,18 @@ yellow black papery +         3 stamina-attr c!
   cr .(   -Ship damage descriptions)  \ {{{2
 
 0
-  here ," hundiéndose"            \ worst: sinking
-  here ," a punto de hundirse"
-  here ," haciendo agua"
-  here ," destrozado"
-  here ," casi destrozado"
-  here ," gravemente dañado"
-  here ," muy dañado"
-  here ," algo dañado"
-  here ," muy poco dañado"
-  here ," casi como nuevo"
-  here ," impecable"            \ best: perfect
-/sconstants damage-level$  ( n -- ca len )
+  hp@ far," hundiéndose"            \ worst: sinking
+  hp@ far," a punto de hundirse"
+  hp@ far," haciendo agua"
+  hp@ far," destrozado"
+  hp@ far," casi destrozado"
+  hp@ far," gravemente dañado"
+  hp@ far," muy dañado"
+  hp@ far," algo dañado"
+  hp@ far," muy poco dañado"
+  hp@ far," casi como nuevo"
+  hp@ far," impecable"            \ best: perfect
+/far>sconstants damage-level$  ( n -- ca len )
             constant damage-levels
 
   \ --------------------------------------------
@@ -345,17 +345,17 @@ yellow black papery +         3 stamina-attr c!
   \ and have funny meanings.
 
 0
-  here ," Mislongo"   \ mis-long-o= "wrong lenght"
-  here ," Ombreto"    \ ombr-et-o= "little shadow"
-  here ," Figokesto"  \ fig-o-kest-o= "fig basket"
-  here ," Misedukota" \ mis-eduk-ot-a= "one to be miseducated"
-  here ," Topikega"   \ topik-eg-a=
-  here ," Fibaloto"   \ fi-balot-o
-  here ," Pomotruko"  \ pom-o-truk-o
-  here ," Putotombo"  \ put-o-tomb-o= "well tomb"
-  here ," Ursorelo"   \ urs-orel-o= "ear of bear"
-  here ," Kukumemo"   \ kukum-em-o
-/sconstants village$  ( n -- ca len )
+  hp@ far," Mislongo"   \ mis-long-o= "wrong lenght"
+  hp@ far," Ombreto"    \ ombr-et-o= "little shadow"
+  hp@ far," Figokesto"  \ fig-o-kest-o= "fig basket"
+  hp@ far," Misedukota" \ mis-eduk-ot-a= "one to be miseducated"
+  hp@ far," Topikega"   \ topik-eg-a=
+  hp@ far," Fibaloto"   \ fi-balot-o
+  hp@ far," Pomotruko"  \ pom-o-truk-o
+  hp@ far," Putotombo"  \ put-o-tomb-o= "well tomb"
+  hp@ far," Ursorelo"   \ urs-orel-o= "ear of bear"
+  hp@ far," Kukumemo"   \ kukum-em-o
+/far>sconstants village$  ( n -- ca len )
             constant villages
   \ XXX TODO -- invert the order of the strings?
 
@@ -363,19 +363,19 @@ yellow black papery +         3 stamina-attr c!
   cr .(   -Cardinal points)  \ {{{2
 
 0
-  here ," oeste"
-  here ," este"
-  here ," sur"
-  here ," norte"
-sconstants cardinal$  ( n -- ca len )
+  hp@ far," oeste"
+  hp@ far," este"
+  hp@ far," sur"
+  hp@ far," norte"
+far>sconstants cardinal$  ( n -- ca len )
 
   \ --------------------------------------------
   cr .(   -Hands)  \ {{{2
 
 0
-  here ," derecha"    \ right
-  here ," izquierda"  \ left
-sconstants hand$  ( n -- ca len )
+  hp@ far," derecha"    \ right
+  hp@ far," izquierda"  \ left
+far>sconstants hand$  ( n -- ca len )
 
   \ ============================================================
   cr .( Functions)  \ {{{1
