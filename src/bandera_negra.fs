@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.18.0+201701111422" ;
+: version  ( -- ca len )  s" 0.19.0+201701111657" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -751,7 +751,7 @@ variable cloud1x
   \ --------------------------------------------
   cr .(   -Islands)  \ {{{2
 
-: draw-big-island5  ( -- )
+: .big-island5  ( -- )
   green ink  blue paper
   18  7 at-xy ." HI A"
   17  8 at-xy .\" G\::\::\::\::BC"
@@ -759,7 +759,7 @@ variable cloud1x
   14 10 at-xy .\" JK\::\::\::\::\::\::\::\::E"
   13 11 at-xy .\" F\::\::\::\::\::\::\::\::\::\::\::C"  ;
 
-: draw-big-island4  ( -- )
+: .big-island4  ( -- )
   green ink  blue paper
   16  7 at-xy ." WXYA"
   14  8 at-xy .\" :\::\::\::\::\::\::C F\::\::D"
@@ -767,18 +767,18 @@ variable cloud1x
   12 10 at-xy .\" F\::\::\::\::\::\::\::\::\::\::\::\::\::\::C"
   ;
 
-: draw-little-island2  ( -- )
+: .little-island2  ( -- )
   green ink  blue paper  14  8 at-xy .\" :\::\::C"
                          16  7 at-xy ." A"
                          13  9 at-xy .\" :\::\::\::\::D"
                          12 10 at-xy .\" F\::\::\::\::\::E"  ;
 
-: draw-little-island1  ( -- )
+: .little-island1  ( -- )
   green ink  blue paper  23  8 at-xy .\" JK\::C"
                          22  9 at-xy .\" :\::\::\::\::D"
                          21 10 at-xy .\" F\::\::\::\::\::E"  ;
 
-: draw-big-island3  ( -- )
+: .big-island3  ( -- )
   green ink  blue paper
   21  7 at-xy ." Z123"
   19  8 at-xy .\" :\::\::\::\::\::C"
@@ -786,21 +786,21 @@ variable cloud1x
   15 10 at-xy .\" F\::B\::\::\::\::\::\::\::\::E"
   13 11 at-xy .\" JK\::\::\::\::\::\::\::\::\::\::\::\::C"  ;
 
-: draw-big-island2  ( -- )
+: .big-island2  ( -- )
   green ink  blue paper
   17  7 at-xy ." Z123"
   14  8 at-xy .\" F\::B\::\::\::\::\::C"
   13  9 at-xy .\" G\::\::\::\::\::\::\::\::\::D"
   12 10 at-xy .\" F\::\::\::\::\::\::\::\::\::\::E"  ;
 
-: draw-big-island1  ( -- )
+: .big-island1  ( -- )
   green ink  blue paper
   20  7 at-xy ." HI A"
   19  8 at-xy .\" G\::\::B\::\::\::C"
   18  9 at-xy .\" F\::\::\::\::\::\::\::\::D"
   16 10 at-xy .\" JK\::\::\::\::\::\::\::\::\::E"  ;
 
-: draw-two-little-islands  ( -- )
+: .two-little-islands  ( -- )
   green ink  blue paper
   17  6 at-xy ." WXY  A"
   16  7 at-xy .\" A   A   F\::C"
@@ -808,11 +808,11 @@ variable cloud1x
   14  9 at-xy .\" G\::\::\::D   F\::\::\::\::E"
   13 10 at-xy .\" F\::\::\::\::E"  ;
 
-: draw-far-islands  ( -- )
+: .far-islands  ( -- )
   green ink  cyan paper
   0 2 at-xy ." Z123 HI A Z123 HI A Z123 HI Z123"  ;
 
-: draw-treasure-island  ( -- )
+: .treasure-island  ( -- )
   graph-font1 set-font  green ink  blue paper
   16  7 at-xy ." A A   HI"
   13  8 at-xy .\" F\::\::\::B\::\::\::B\::\::B\::\::\::C"
@@ -866,8 +866,8 @@ variable cloud1x
 : reef?  ( n -- f )  sea-map @ reef =  ;
   \ Is there a reef at sea map position _n_?
 
-: draw-reefs  ( -- )
-  ship-pos @ sea-map-cols + reef? if  draw-far-islands  then
+: .reefs  ( -- )
+  ship-pos @ sea-map-cols + reef? if  .far-islands  then
   ship-pos @ sea-map-cols - reef? if  bottom-reef      then
   ship-pos @ 1-           reef? if  left-reef        then
   ship-pos @ 1+           reef? if  right-reef       then  ;
@@ -875,22 +875,22 @@ variable cloud1x
   \ --------------------------------------------
   cr .(   -Ships)  \ {{{2
 
-: draw-ship-up  ( x y -- )
+: .ship-up  ( x y -- )
   2dup    at-xy .\" \A\B\C"
   2dup 1+ at-xy .\" \D\E\F"
        2+ at-xy .\" \G\H\I"  ;
 
-: draw-ship-down  ( x y -- )
+: .ship-down  ( x y -- )
   2dup    at-xy .\" \J\K\L"
   2dup 1+ at-xy .\" \M\N\O"
        2+ at-xy .\" \P\Q\R"  ;
 
 : redraw-ship  ( -- )
   white ink blue paper  ship-x @ ship-y @
-  ship-up @ if    draw-ship-down  ship-up off
-           else  draw-ship-up    ship-up on   then  ;
+  ship-up @ if   .ship-down  ship-up off
+           else  .ship-up    ship-up on   then  ;
 
-: draw-enemy-ship  ( -- )
+: .enemy-ship  ( -- )
   yellow ink  blue paper  11 4 2dup    at-xy ."  ab"
                                2dup 1+ at-xy ."  90"
                                     2+ at-xy ." 678"  ;
@@ -900,42 +900,42 @@ variable cloud1x
                    2dup 1+ at-xy ."    "
                         2+ at-xy ."    "  ;
 
-: draw-boat  ( -- )
+: .boat  ( -- )
   yellow ink  blue paper  11 7 at-xy ." <>"  ;
 
-: draw-shark  ( -- )
+: .shark  ( -- )
   white ink  blue paper  18 13 at-xy .\" \S"  ;
   \ XXX TODO -- check if `emit-udg` is faster
 
 : sea-picture  ( n -- )
   graph-font1 set-font  case
-   2 of  draw-big-island5  19 4 palm1                   endof
-   3 of  draw-big-island4
-         14 4 palm1  19 4 palm1  24 4 palm1  draw-shark endof
-   4 of  draw-little-island2  14 4 palm1                endof
-   5 of  draw-little-island1  24 4 palm1                endof
-   6 of  draw-little-island1  24 4 palm1
-         draw-little-island2  14 4 palm1                endof
-   7 of  draw-big-island3  19 4 palm1                   endof
-   8 of  draw-big-island2  14 4 palm1  draw-shark       endof
-   9 of  draw-big-island1  24 4 palm1                   endof
-  10 of  24 4 palm1  draw-two-little-islands            endof
-  11 of  draw-shark                                     endof
+   2 of  .big-island5  19 4 palm1                   endof
+   3 of  .big-island4
+         14 4 palm1  19 4 palm1  24 4 palm1  .shark endof
+   4 of  .little-island2  14 4 palm1                endof
+   5 of  .little-island1  24 4 palm1                endof
+   6 of  .little-island1  24 4 palm1
+         .little-island2  14 4 palm1                endof
+   7 of  .big-island3  19 4 palm1                   endof
+   8 of  .big-island2  14 4 palm1  .shark           endof
+   9 of  .big-island1  24 4 palm1                   endof
+  10 of  24 4 palm1  .two-little-islands            endof
+  11 of  .shark                                     endof
   13 of  24 4 palm1
-         draw-two-little-islands  draw-enemy-ship       endof
-  14 of  draw-big-island1  24 4 palm1  draw-enemy-ship  endof
-  15 of  draw-big-island2  14 4 palm1  draw-enemy-ship  endof
-  16 of  draw-big-island3  19 4 palm1  draw-enemy-ship  endof
-  17 of  draw-little-island2  14 4 palm1  draw-boat
-         draw-little-island1  24 4 palm1                endof
-  18 of  draw-little-island1  24 4 palm1  draw-boat     endof
-  19 of  draw-big-island4
+         .two-little-islands  .enemy-ship           endof
+  14 of  .big-island1  24 4 palm1  .enemy-ship      endof
+  15 of  .big-island2  14 4 palm1  .enemy-ship      endof
+  16 of  .big-island3  19 4 palm1  .enemy-ship      endof
+  17 of  .little-island2  14 4 palm1  .boat
+         .little-island1  24 4 palm1                endof
+  18 of  .little-island1  24 4 palm1  .boat         endof
+  19 of  .big-island4
          14 4 palm1  19 4 palm1  24 4 palm1
-         draw-boat  draw-shark                          endof
-  20 of  draw-big-island5  19 4 palm1  draw-boat        endof
-  shark of  draw-shark                                  endof
-  treasure-island of  draw-treasure-island              endof
-  endcase  draw-reefs  ;
+         .boat  .shark                              endof
+  20 of  .big-island5  19 4 palm1  .boat            endof
+  shark of  .shark                                  endof
+  treasure-island of  .treasure-island              endof
+  endcase  .reefs  ;
   \ XXX TODO -- `12 of` is not in the original
   \ XXX TODO -- use constants
   \ XXX TODO -- simpler, use an execution table
@@ -982,7 +982,7 @@ variable dead
 
 : max-damage?  ( -- f )  damage @ max-damage =  ;
 
-: draw-run-aground-reefs  ( -- )
+: .run-aground-reefs  ( -- )
   black ink  blue paper
   17 10 at-xy ." WXY     A"
   19  6 at-xy ." A   Z123"
@@ -1001,8 +1001,8 @@ variable dead
 : run-aground  ( -- )
   wipe-message  \ XXX TODO remove?
   graph-font1 set-font
-  wipe-sea draw-far-islands bottom-reef left-reef right-reef
-  white ink 14 8 draw-ship-up draw-run-aground-reefs
+  wipe-sea .far-islands bottom-reef left-reef right-reef
+  white ink 14 8 .ship-up .run-aground-reefs
   run-aground-damages run-aground-message
   3 seconds  ;
 
@@ -1474,16 +1474,16 @@ variable option
   [ yellow dup papery + ] literal color-sea  ;
   \ XXX TODO -- print spaces instead
 
-: draw-horizon-waves  ( -- )
+: .horizon-waves  ( -- )
   white ink  blue paper
   0 3 at-xy ."  kl  mn     nm    klk   nm nm n"  ;
 
-: draw-bottom-waves  ( -- )
+: .bottom-waves  ( -- )
   white ink  blue paper
   0 14 at-xy ."  kl     mn  mn    kl    kl kl  m"
              ."     mn      klmn   mn m  mn   "  ;
 
-: draw-left-waves  ( -- )
+: .left-waves  ( -- )
   white ink blue paper
   16 3 do  0 i at-xy ."  "  loop
   0 6 at-xy ." mn" 0 10 at-xy ." kl" 0 13 at-xy ." k"
@@ -1499,7 +1499,7 @@ variable option
   graph-font1 set-font  ;
   \ XXX TODO -- factor `island-map @ coast =`
 
-: draw-right-waves  ( -- )
+: .right-waves  ( -- )
   white ink  blue paper
   16 3 do  30 i at-xy ."  "  loop
   white ink  blue paper
@@ -1513,7 +1513,7 @@ variable option
   else  29  3 at-xy 'B'
   then  emit  graph-font1 set-font  ;
 
-: draw-village  ( -- )
+: .village  ( -- )
   graph-font2 set-font  green ink  yellow paper
   6  5 at-xy .\"  S\::T    ST   S\::T"
   6  6 at-xy .\"  VUW    78   VUW   4"
@@ -1533,58 +1533,58 @@ variable option
   17  6 at-xy ." YX"
   26  6 at-xy ." Z"  graph-font1 set-font  ;
 
-: draw-native  ( -- )
+: .native  ( -- )
   black ink  yellow paper  8 10 at-xy ."  _ `"
                            8 11 at-xy ." }~.,"
                            8 12 at-xy ." {|\?"  ;
 
-: draw-ammo  ( -- )
+: .ammo  ( -- )
   black ink  yellow paper  14 12 at-xy ." hi"  ;
 
-: draw-supplies  ( -- )
+: .supplies  ( -- )
   graph-font2 set-font
   black ink  yellow paper 14 12 at-xy ." 90  9099 0009"
   graph-font1 set-font  ;
   \ XXX TODO draw graphics depending on the actual ammount
 
-: draw-snake  ( -- )
+: .snake  ( -- )
   graph-font2 set-font
   black ink  yellow paper  14 12 at-xy ." xy"
   graph-font1 set-font  ;
 
-: draw-dubloons  ( n -- )
+: .dubloons  ( n -- )
   graph-font2 set-font  black ink  yellow paper
   12 dup at-xy s" vw vw vw vw vw vw vw vw " drop swap 3 * type
   graph-font1 set-font  ;
 
 : island-waves  ( -- )
   i-pos @ 6 - island-map @ coast =
-  if  draw-bottom-waves   then
+  if  .bottom-waves   then
   i-pos @ 6 + island-map @ coast =
-  if  draw-horizon-waves  then
+  if  .horizon-waves  then
   i-pos @ 1-  island-map @ coast =
-  if  draw-left-waves     then
+  if  .left-waves     then
   i-pos @ 1+  island-map @ coast =
-  if  draw-right-waves    then  ;
+  if  .right-waves    then  ;
   \ XXX TODO -- factor `island-map @ coast =`
   \ XXX TODO -- use constant instead of 6
 
 : island-location  ( -- )
   i-pos @ island-map @ case
-    native-village of  draw-village                      endof
-    dubloons-found of  4 8 palm2 14 5 palm2              endof
-    native-fights  of  14 5 palm2 25 8 palm2 draw-native endof
-                 4 of  25 8 palm2  4 8 palm2 16 5 palm2  endof
+    native-village of  .village                         endof
+    dubloons-found of  4 8 palm2 14 5 palm2             endof
+    native-fights  of  14 5 palm2 25 8 palm2 .native    endof
+                 4 of  25 8 palm2  4 8 palm2 16 5 palm2 endof
     \ XXX TODO constant
     snake of
-      13 5 palm2 5 6 palm2 18 8 palm2 23 8 palm2 draw-snake
-    endof
-                 6 of  23 8 palm2 17 5 palm2 4 8 palm2   endof
+      13 5 palm2 5 6 palm2 18 8 palm2 23 8 palm2 .snake
+                                                        endof
+                 6 of  23 8 palm2 17 5 palm2 4 8 palm2  endof
     \ XXX TODO constant
     native-supplies of
-      draw-supplies  draw-native  16 4 palm2
-    endof
-    native-ammo    of  draw-ammo draw-native 20 5 palm2  endof
+      .supplies  .native  16 4 palm2
+                                                        endof
+    native-ammo    of  .ammo .native 20 5 palm2         endof
   endcase  ;
 
 : island-scenery  ( -- )
@@ -1624,7 +1624,7 @@ variable option
 : event7  ( -- )
   2 5 random-range >r
   s" Encuentras " r@ coins$ s+ s" ." s+ message
-  r@ cash +!  r> draw-dubloons  ;
+  r@ cash +!  r> .dubloons  ;
 
 : event8  ( -- )
   s" Sin novedad, capitán." message  ;
@@ -1666,7 +1666,7 @@ create island-events>  ( -- a )
     1 2 random-range >r
     s" Encuentras " r@ coins$ s+ s" ." s+ message
     r@ cash +!
-    r> draw-dubloons
+    r> .dubloons
     4 i-pos @ island-map !
       \ XXX TODO -- constant for 4
   endof
@@ -1785,16 +1785,16 @@ create island-events>  ( -- a )
 : ship-command?  ( c -- f )
   ?break  \ XXX TMP --  for debugging
   dup 0exit  case  ( c )
-  'N' key-up                or-of  ?sea-move-north?     endof
-  'S' key-down              or-of  ?sea-move-south?     endof
-  'E' key-right             or-of  ?sea-move-west?      endof
-  'O' key-left              or-of  ?sea-move-west?      endof
-  'I'                          of  main-report   true  endof
-  'A' feasible-attack @ and     of  attack-ship   true  endof
-  'T'                          of  crew-report   true  endof
-  'P'                          of  score-report  true  endof
-  'D' feasible-disembark @ and  of  disembark    true  endof
-  'F'                          of  quit-game on  true  endof
+  'N' key-up                or-of  ?sea-move-north?    endof
+  'S' key-down              or-of  ?sea-move-south?    endof
+  'E' key-right             or-of  ?sea-move-west?     endof
+  'O' key-left              or-of  ?sea-move-west?     endof
+  'I'                          of  main-report    true endof
+  'A' feasible-attack @ and    of  attack-ship    true endof
+  'T'                          of  crew-report    true endof
+  'P'                          of  score-report   true endof
+  'D' feasible-disembark @ and of  disembark      true endof
+  'F'                          of  quit-game on   true endof
   false swap  ( false c )  endcase  ( false )  ;
   \ If character _c_ is a valid ship command, execute it and
   \ return true; else return false.
@@ -1930,7 +1930,7 @@ variable price  variable offer
   graph-font1 set-font  black ink  yellow paper
   16 3 do  0 i at-xy blank-line$ type  loop
     \ XXX TODO improve with `fill`
-  4 4 palm2  draw-native native-speech-balloon
+  4 4 palm2  .native native-speech-balloon
   s" Un comerciante nativo te sale al encuentro." message  ;
 
 : trade  ( -- )
@@ -1996,10 +1996,10 @@ variable price  variable offer
   1 5 random-range case
   1 of  man-dead
         s" El nativo muere, pero antes mata a "
-        dead @ name$ s+ s" ." s+ message  endof
+        dead @ name$ s+ s" ." s+ message              endof
   2 of  s" El nativo tiene provisiones"
         s"  escondidas en su taparrabos." s+ message
-        1 supplies +!  endof
+        1 supplies +!                                 endof
 
     2 3 random-range r>
     s" Encuentras " r@ coins$ s+
@@ -2049,14 +2049,14 @@ variable price  variable offer
 : island-command?  ( c -- f )
   ?break  \ XXX TMP --  for debugging
   case  ( c )
-    'N' key-up    or-of  ?island-move-north?  endof
-    'S' key-down  or-of  ?island-move-south?  endof
-    'E' key-right or-of  ?island-move-east?   endof
-    'O' key-left  or-of  ?island-move-west?   endof
-    'C'              of  ?trade?            endof
-    'B'              of  ?embark?           endof
+    'N' key-up    or-of  ?island-move-north? endof
+    'S' key-down  or-of  ?island-move-south? endof
+    'E' key-right or-of  ?island-move-east?  endof
+    'O' key-left  or-of  ?island-move-west?  endof
+    'C'              of  ?trade?             endof
+    'B'              of  ?embark?            endof
     'I'              of  main-report   true  endof
-    'M'              of  ?attack?           endof
+    'M'              of  ?attack?            endof
     'T'              of  crew-report   true  endof
     'P'              of  score-report  true  endof
     'F'              of  quit-game on  true  endof
