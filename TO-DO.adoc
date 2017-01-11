@@ -10,6 +10,31 @@
 - Wait for the space key after the reports, to prevent the key to
   activate a command after returning to the panel.
 
+.2017-01-10:
+
+Combine all graphics into one single UDG set:
+
+- 95 chars from graph font 1
+- 95 chars from graph font 2
+- -1 (space common to both graph fonts)
+- 21 UDG
+- 16 block chars (perhaps not all of them are used)
+- -1 useless empty block char
+
+Total: 225 characters
+
+|===
+| Character codes  | Origin
+
+| 32..127          | graph font 1
+| 128              | *not used*
+| 129..143         | block chars
+| 144..164         | UDG set
+|===
+
+The strings printed with graph font 2 must be changed:
+
+
 .2017-01-08:
 
 Simplify the ship damage calculations: Use only one counter and one
