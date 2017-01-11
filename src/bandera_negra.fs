@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.17.0+201701101758" ;
+: version  ( -- ca len )  s" 0.18.0+201701111422" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -791,7 +791,7 @@ variable cloud1x
   17  7 at-xy ." Z123"
   14  8 at-xy .\" F\::B\::\::\::\::\::C"
   13  9 at-xy .\" G\::\::\::\::\::\::\::\::\::D"
-  12 10 at-xy .\" F\::\::\::\::\::\::\::\::\::\::E;"  ;
+  12 10 at-xy .\" F\::\::\::\::\::\::\::\::\::\::E"  ;
 
 : draw-big-island1  ( -- )
   green ink  blue paper
@@ -1141,7 +1141,7 @@ variable done
   \ XXX TODO -- use a calculation instead the last `case`
   \ XXX TODO -- factor
 
-: draw-wave  ( -- )
+: .wave  ( -- )
   cyan ink 11 30 random-range 1 20 random-range at-xy ." kl"  ;
 
 : move-enemy-ship  ( -- )
@@ -1168,13 +1168,24 @@ variable done
   enemy-ship-x @ 1- enemy-ship-y @ 2+  at-xy ."  678 "
   enemy-ship-x @    enemy-ship-y @ 1-  at-xy ."    "
   enemy-ship-x @    enemy-ship-y @ 3 + at-xy ."    "
-  enemy-ship-move @ 5 = if  draw-wave  then  ;
+  enemy-ship-move @ 5 = if  .wave  then  ;
 
 0 value fire-y
 
+: .ammo  ( -- )  ammo @ 1 .r  ;
+
+: .new-ammo  ( -- )
+  white ink red paper 21 23 at-xy .ammo  ;
+
+: less-ammo  ( -- )
+  -1 ammo +!  text-font set-font .new-ammo  ;
+
+: .ammo-label  ( -- )
+  text-font set-font
+  white ink red paper 10 23 at-xy ." Munición = " .ammo  ;
+
 : fire  ( y -- )
-  to fire-y  -1 ammo +!
-  text-font set-font white ink  red paper 22 21 at-xy ammo ?
+  to fire-y  less-ammo
   graph-font1 set-font
   yellow ink  blue paper
   dup 1- 9 swap at-xy ." +" dup 1+ 9 swap at-xy ." -"
@@ -1200,6 +1211,7 @@ variable done
       \ XXX TODO -- combine both expressions
     if  sunk  then
   loop  blue paper 30 swap at-xy ."  "  ;
+  \ XXX TODO -- rewrite, factor, improve
   \ XXX TODO -- store _row_ in a variable, as local
 
 : no-ammo-left  ( -- )
@@ -1207,38 +1219,46 @@ variable done
   \ XXX TODO the enemy wins; our ship sinks,
   \ or the money and part of the crew is captured
 
-: battle-scenery  ( -- )
-  blue paper cls  text-font set-font
-  white ink  red paper  10 21 at-xy ." Munición = " ammo ?
+: .gun  ( col row -- )
+  2dup    at-xy ." cde"
+       1+ at-xy ." fg"  ;
+  \ Print a ship gun.
 
+: .gun-man  ( col row -- )
+  2dup 1- at-xy '1' emit
+  2dup    at-xy '2' emit
+       1+ at-xy '3' emit  ;
+  \ Print a ship gun man.
+
+: init-enemy-ship  ( -- )
+  6 enemy-ship-y !  20 enemy-ship-x !  ;
+  \ XXX TODO -- random coords
+
+: gun>row  ( n -- row )  7 * 2+  ;
+
+: battle-scenery  ( -- )
+  blue paper cls 31 1 do  .wave  loop
   black ink yellow paper
   22 0 do  0 i at-xy  ." ________ "  loop
-
-  black ink  white paper
-  0 2 at-xy ." 1" 0 9 at-xy ." 2" 0 16 at-xy ." 3"
-
-  18 3 do
-    black ink  graph-font2 set-font
-    4 i 1- at-xy '1' emit
-    4 i    at-xy '2' emit
-    4 1 1+ at-xy '3' emit
-    red ink  graph-font1 set-font
-    6 i    at-xy ." cde"
-    6 i 1+ at-xy ." fg"
-    1 i 1+ at-xy ." hi"
-  7 +loop
-
-  6 enemy-ship-y !  20 enemy-ship-x !
-  31 1 do  draw-wave  loop  ;
+  3 0 do
+    i gun>row
+    white paper text-font set-font 0 over at-xy i 1 .r
+    yellow paper
+    graph-font2 set-font  1+ 4 over .gun-man
+    graph-font1 set-font     6 over .gun
+                             1 swap 1+ at-xy ." hi"  \ ammo
+  loop
+  .ammo-label init-enemy-ship  ;
+  \ XXX TODO -- factor more
 
 : ship-battle  ( -- )
   done off  save-screen battle-scenery
   begin  move-enemy-ship
-    inkey case  '1' of   3 fire  endof
-                '2' of  10 fire  endof
-                '3' of  17 fire  endof  endcase
-                  \ XXX TODO -- use a calculation or a
-                  \ table instead?
+    inkey case  '1' of  [ 0 gun>row ] literal fire  endof
+                '2' of  [ 1 gun>row ] literal fire  endof
+                '3' of  [ 2 gun>row ] literal fire  endof
+          endcase
+          \ XXX TODO -- use a table instead?
   done @ ammo 0= or until
   restore-screen  ammo @ 0= if  no-ammo-left  then  ;
 
@@ -2241,7 +2261,7 @@ variable price  variable offer
 variable invflag
   \ XXX TMP --
 
-: show-sea  ( -- )
+: .sea  ( -- )
   cls
   sea-map-rows 0 do
     sea-map-cols 0 do
@@ -2265,8 +2285,8 @@ variable invflag
 : .graphs  ( -- )
   cls graph-font1 .font graph-font2 .font .udg  ;
 
-: show-damages  ( -- )
-  101 0 do
+: .damages  ( -- )
+  max-damage 1+ 0 do
     cr i . damage-index . damage$ type  key drop
   loop  ;
 
