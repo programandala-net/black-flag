@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.19.0+201701111657" ;
+: version  ( -- ca len )  s" 0.20.0+201701121156" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -58,7 +58,7 @@ need pick
   \ --------------------------------------------
   cr .(   -Math)  \ {{{2
 
-need >=  need <=  need under+
+need >=  need <=  need under+  need between
 need random-range  need randomize0
 
   \ --------------------------------------------
@@ -394,26 +394,25 @@ far>sconstants hand$  ( n -- ca len )  drop
   s" dobl " rot 1 > if  s" ones"  else  s" ón"  then  s+  ;
   \ Return string "doubloon" or "doubloons", depending on _n_.
 
-: number$  ( n -- ca len )
-  case   1 of  s" un"     endof
-         2 of  s" dos"    endof
-         3 of  s" tres"   endof
-         4 of  s" cuatro" endof
-         5 of  s" cinco"  endof
-         6 of  s" seis"   endof
-         7 of  s" siete"  endof
-         8 of  s" ocho"   endof
-         9 of  s" nueve"  endof
-        10 of  s" diez"   endof
-        11 of  s" once"   endof  endcase  ;
-  \ Convert _n_ to text in string _ca len_.
-  \
-  \ XXX TODO -- use a faster vector table instead, or
-  \ `sconstants`
+0
+  hp@ far," once"
+  hp@ far," diez"
+  hp@ far," nueve"
+  hp@ far," ocho"
+  hp@ far," siete"
+  hp@ far," seis"
+  hp@ far," cinco"
+  hp@ far," cuatro"
+  hp@ far," tres"
+  hp@ far," dos"
+  hp@ far," un"
+  hp@ far," cero"
+far>sconstants number$  ( n -- ca len )  drop
 
 : highlighted$  ( c -- ca len )
   0 20 rot 1 20 5 chars>string  ;
-  \ Convert _c_ to a string to print _c_ as a highlighted char.
+  \ Convert _c_ to a string to print _c_ as a highlighted char,
+  \ using control characters.
 
 : >option$  ( ca1 len1 n -- ca2 len2 )
   >r 2dup drop r@
@@ -426,8 +425,11 @@ far>sconstants hand$  ( n -- ca len )  drop
 : ?>option$  ( ca1 len1 n f -- ca1 len1 | ca2 len2 )
   if  >option$  else  drop  then  ;
   \ Prepare a panel option _ca1 len1_.  If the option is
-  \ active, _f_ is true and _n_ is the position of its
-  \ highlighted letter (0..len1-1).
+  \ active, _f_ is true,  _n_ (0..len1-1) is the position of
+  \ its highlighted letter, and _ca2 len2_ is the
+  \ option with the given letter highlighted. If the option is
+  \ not active, _f_ is false, _n_ is ignored and the string
+  \ remains unchanged.
 
 : coins$  ( n -- ca len )
   dup >r number$ s"  " s+ r> dubloons$ s+  ;
@@ -894,18 +896,20 @@ variable cloud1x
   yellow ink  blue paper  11 4 2dup    at-xy ."  ab"
                                2dup 1+ at-xy ."  90"
                                     2+ at-xy ." 678"  ;
+  \ XXX TODO -- receive coordinates as parameters and reuse
 
 : wipe-enemy-ship  ( -- )
   blue paper  11 4 2dup    at-xy ."    "
                    2dup 1+ at-xy ."    "
                         2+ at-xy ."    "  ;
+  \ XXX TODO -- receive coordinates as parameters and reuse
 
 : .boat  ( -- )
   yellow ink  blue paper  11 7 at-xy ." <>"  ;
 
 : .shark  ( -- )
   white ink  blue paper  18 13 at-xy .\" \S"  ;
-  \ XXX TODO -- check if `emit-udg` is faster
+  \ XXX TODO -- `emit-udg` is faster
 
 : sea-picture  ( n -- )
   graph-font1 set-font  case
@@ -1029,17 +1033,19 @@ white black papery + constant report-color#
   discard-key key drop  restore-screen  ;
   \ Common task at the end of all reports.
 
+: .datum  ( a -- )  tabulate @ 2 .r cr cr  ;
+
 : main-report  ( -- )
   report-start
   0 1 at-xy s" Informe de situación" columns type-center
   0 4 at-xy  18 /tabulate !
-  ." Días:"             tabulate day       @ 2 .r cr cr
-  ." Hombres:"          tabulate alive     @ 2 .r cr cr
-  ." Moral:"            tabulate morale    @ 2 .r cr cr
-  ." Provisiones:"      tabulate supplies  @ 2 .r cr cr
-  ." Doblones:"         tabulate cash      @ 2 .r cr cr
-  ." Barcos hundidos:"  tabulate sunk-ships @ 2 .r cr cr
-  ." Munición:"         tabulate ammo      @ 2 .r cr cr
+  ." Días:"             day        .datum
+  ." Hombres:"          alive      .datum
+  ." Moral:"            morale     .datum
+  ." Provisiones:"      supplies   .datum
+  ." Doblones:"         cash       .datum
+  ." Barcos hundidos:"  sunk-ships .datum
+  ." Munición:"         ammo       .datum
   ." Estado del buque:" tabulate damage$ 2dup uppers1 type
   report-end  ;
 
@@ -1114,7 +1120,8 @@ variable done
   \ XXX TODO -- factor
 
 : sunk  ( -- )
-  white ink  blue paper  enemy-ship-x @ enemy-ship-y @
+  graph-font1 set-font  white ink  blue paper
+  enemy-ship-x @ enemy-ship-y @
   2dup    at-xy ."    "
   2dup 1+ at-xy ."  ab"
   2dup 2+ at-xy ."  90"
@@ -1136,15 +1143,18 @@ variable done
     14 of   9  endof
     15 of   8  endof
     16 of   7  endof
+    dup
   endcase  ship-pos @ sea-map !  ;
   \ Sunk the enemy ship
   \ XXX TODO -- use a calculation instead the last `case`
   \ XXX TODO -- factor
 
 : .wave  ( -- )
+  graph-font1 set-font
   cyan ink 11 30 random-range 1 20 random-range at-xy ." kl"  ;
 
 : move-enemy-ship  ( -- )
+  graph-font1 set-font
   1 5 random-range enemy-ship-move !
     \ XXX TODO -- use the stack instead of `enemy-ship-move`?
 
@@ -1169,8 +1179,7 @@ variable done
   enemy-ship-x @    enemy-ship-y @ 1-  at-xy ."    "
   enemy-ship-x @    enemy-ship-y @ 3 + at-xy ."    "
   enemy-ship-move @ 5 = if  .wave  then  ;
-
-0 value fire-y
+  \ XXX TODO -- improve, simplify, factor
 
 : .ammo  ( -- )  ammo @ 1 .r  ;
 
@@ -1184,51 +1193,48 @@ variable done
   text-font set-font
   white ink red paper 10 23 at-xy ." Munición = " .ammo  ;
 
+0 value fire-y
+  \ y coordinate of the cannon ball
+
+: sunk?  ( col -- f )
+  false    swap enemy-ship-x @ dup 2+ between 0exit
+         fire-y enemy-ship-y @ dup 2+ between 0exit  0=  ;
+  \ Is the enemy ship sunk by the cannon ball, which is
+  \ at x coordinate _col_?
+
+: .cannon-ball-fire  ( row -- )
+  9 swap 2dup 1- at-xy ." +"
+         2dup 1+ at-xy ." -"
+         2dup    at-xy ." j"
+         2dup 1- at-xy space
+              1+ at-xy space  ;
+  \ Print the fire effect of the cannon ball, which is at y
+  \ coordinate _row.
+
 : fire  ( y -- )
-  to fire-y  less-ammo
-  graph-font1 set-font
-  yellow ink  blue paper
-  dup 1- 9 swap at-xy ." +" dup 1+ 9 swap at-xy ." -"
+  graph-font1 set-font  yellow ink  blue paper
+  dup to fire-y .cannon-ball-fire less-ammo
   move-enemy-ship
-  dup 1- 9 swap at-xy space dup 1+ 9 swap at-xy space
-  9 over at-xy ."  j"
-  move-enemy-ship
-  31 9 do
-    dup i swap at-xy ."  j"
-    \ enemy-ship-y=fire-y and i=enemy-ship-x or enemy-ship-y=fire-y-1 and i=enemy-ship-x or enemy-ship-y=fire-y-2 and i=enemy-ship-x
-      \ XXX OLD -- original expression
-    enemy-ship-y @ fire-y    =  enemy-ship-x @ i =  and
-    enemy-ship-y @ fire-y 1- =  enemy-ship-x @ i =  and or
-    enemy-ship-y @ fire-y 2- =  enemy-ship-x @ i =  and or
-      \ XXX TODO -- simplify the expression
-    if  sunk  then
-    \ enemy-ship-y=fire-y and i=enemy-ship-x+1 or enemy-ship-y=fire-y-1 and i=enemy-ship-x+1 or enemy-ship-y=fire-y-2 and i=enemy-ship-x+1
-      \ XXX OLD -- original expression
-    enemy-ship-y @ fire-y    =  enemy-ship-x @ 1+ i =  and
-    enemy-ship-y @ fire-y 1- =  enemy-ship-x @ 1+ i =  and or
-    enemy-ship-y @ fire-y 2- =  enemy-ship-x @ 1+ i =  and or
-      \ XXX TODO -- simplify the expression
-      \ XXX TODO -- combine both expressions
-    if  sunk  then
-  loop  blue paper 30 swap at-xy ."  "  ;
-  \ XXX TODO -- rewrite, factor, improve
-  \ XXX TODO -- store _row_ in a variable, as local
+  [ columns 1- ] literal 31 9 do
+    i fire-y at-xy ."  j"
+    i sunk? if  sunk unloop leave  then
+  loop  blue paper 31 fire-y at-xy space  ;
 
 : no-ammo-left  ( -- )
   s" Te quedaste sin munición." message  4 seconds  ;
   \ XXX TODO the enemy wins; our ship sinks,
-  \ or the money and part of the crew is captured
+  \ or the money and part of the crew are captured
 
 : .gun  ( col row -- )
   2dup    at-xy ." cde"
        1+ at-xy ." fg"  ;
-  \ Print a ship gun.
+  \ Print a ship gun at _col row_.
 
 : .gun-man  ( col row -- )
   2dup 1- at-xy '1' emit
   2dup    at-xy '2' emit
        1+ at-xy '3' emit  ;
-  \ Print a ship gun man.
+  \ Print a ship gun man at _col row_.
 
 : init-enemy-ship  ( -- )
   6 enemy-ship-y !  20 enemy-ship-x !  ;
@@ -1238,11 +1244,11 @@ variable done
 
 : battle-scenery  ( -- )
   blue paper cls 31 1 do  .wave  loop
-  black ink yellow paper
+  text-font set-font black ink yellow paper
   22 0 do  0 i at-xy  ." ________ "  loop
   3 0 do
     i gun>row
-    white paper text-font set-font 0 over at-xy i 1 .r
+    white paper text-font set-font 0 over at-xy i 1+ 1 .r
     yellow paper
     graph-font2 set-font  1+ 4 over .gun-man
     graph-font1 set-font     6 over .gun
@@ -1259,8 +1265,9 @@ variable done
                 '3' of  [ 2 gun>row ] literal fire  endof
           endcase
           \ XXX TODO -- use a table instead?
-  done @ ammo 0= or until
+  done @ ammo @ 0= or until
   restore-screen  ammo @ 0= if  no-ammo-left  then  ;
+  \ XXX TODO -- factor
 
 : attack-ship  ( -- )
   ammo @ 0= if    no-ammo-left

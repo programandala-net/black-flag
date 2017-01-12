@@ -1,6 +1,6 @@
 = To-Do list of Bandera Negra
 :author: Marcos Cruz (programandala.net)
-:revdate: 2017-01-08
+:revdate: 2017-01-12
 
 == New notes about the conversion to Forth
 
@@ -9,6 +9,11 @@
 - Convert `goto` and `label`.
 - Wait for the space key after the reports, to prevent the key to
   activate a command after returning to the panel.
+
+.2017-01-12:
+
+Change `." X"` (4 bytes) to `'X' emit` (5 bytes) in some places,
+because it's faster.
 
 .2017-01-10:
 
