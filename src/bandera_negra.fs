@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.20.0+201701121156" ;
+: version  ( -- ca len )  s" 0.21.0+201701131125" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -42,8 +42,6 @@ need ~~  need see  need dump  need abort"
   cr .(   -Definers)  \ {{{2
 
 need alias
-need 2avariable  need avariable    need cavariable  need value
-need far>sconstants  need far,"
 
   \ --------------------------------------------
   cr .(   -Control structures)  \ {{{2
@@ -59,7 +57,7 @@ need pick
   cr .(   -Math)  \ {{{2
 
 need >=  need <=  need under+  need between
-need random-range  need randomize0
+need random-range  need randomize0  need -1..1  need d<>
 
   \ --------------------------------------------
   cr .(   -Memory)  \ {{{2
@@ -72,7 +70,11 @@ need move>far  need move<far
 need frames@  need pause
 
   \ --------------------------------------------
-  cr .(   -Strings)  \ {{{2
+  cr .(   -Data and strings)  \ {{{2
+
+need 2avariable  need avariable    need cavariable  need value
+
+need far>sconstants  need far,"
 
 need u>str
 need uppers1  need s+  need chars>string  need ruler
@@ -219,6 +221,7 @@ variable ship-pos
 variable enemy-ship-move
 variable enemy-ship-x
 variable enemy-ship-y
+variable enemy-ship-pos
 
   \ --------------------------------------------
   cr .(   -Clues)  \ {{{2
@@ -523,7 +526,7 @@ window the-end-window  5 2 22 20 set-window
   cr .( Screen)  \ {{{1
 
 : init-screen  ( -- )
-  white ink blue dup paper border cls
+  default-colors white ink blue dup paper border cls
   graphic-window graph-font1 set-font  ;
 
 16384 constant screen  6912 constant /screen
@@ -614,8 +617,13 @@ variable possible-west           \ flag
   \ XXX TODO use a modified  version of "+"?
 
 : feasible-attack?  ( -- f )
-  ship-pos @ sea-map @
-  dup >r 13 <  r@ shark = or  r> treasure-island = or 0=  ;
+  ship-pos @ sea-map @ dup >r 13 <
+                           r@ shark = or
+                           r> treasure-island = or  0=
+  ammo @ 0> and  ;
+  \ XXX TODO -- rewrite: use presence of the enemy ship, which
+  \ now is associated with certain locations but should be
+  \ independent
 
 : common-panel-commands  ( -- )
   0 panel-y at-xy s" Información" 0 >option$ type cr
@@ -629,7 +637,7 @@ variable possible-west           \ flag
   ship-pos @ sea-map @ treasure-island =  or  ;
 
 : ship-panel-commands  ( -- )
-  home ship-pos ?  \ XXX INFORMER
+  home ship-pos ? ship-pos @ sea-map ?  \ XXX INFORMER
   feasible-disembark? dup >r feasible-disembark !
   16 panel-y 1+ at-xy s" Desembarcar" 0 r> ?>option$ type  ;
   \ XXX TODO -- factor both conditions
@@ -645,7 +653,7 @@ variable possible-west           \ flag
   \ disembarking position
 
 : island-panel-commands  ( -- )
-  home i-pos ?  \ XXX INFORMER
+  home i-pos ? i-pos @ island-map ?  \ XXX INFORMER
   feasible-embark? dup >r feasible-embark !
   16 panel-y 1+ at-xy s" emBarcar" 2 r> ?>option$ type
   feasible-trade? dup >r feasible-trade !
@@ -893,15 +901,17 @@ variable cloud1x
            else  .ship-up    ship-up on   then  ;
 
 : .enemy-ship  ( -- )
-  yellow ink  blue paper  11 4 2dup    at-xy ."  ab"
-                               2dup 1+ at-xy ."  90"
-                                    2+ at-xy ." 678"  ;
+  yellow ink  blue paper
+  enemy-ship-x @ enemy-ship-y @ 2dup    at-xy ."  ab"
+                                2dup 1+ at-xy ."  90"
+                                     2+ at-xy ." 678"  ;
   \ XXX TODO -- receive coordinates as parameters and reuse
 
 : wipe-enemy-ship  ( -- )
-  blue paper  11 4 2dup    at-xy ."    "
-                   2dup 1+ at-xy ."    "
-                        2+ at-xy ."    "  ;
+  blue paper
+  enemy-ship-x @ enemy-ship-y @ 2dup    at-xy ."    "
+                                2dup 1+ at-xy ."    "
+                                     2+ at-xy ."    "  ;
   \ XXX TODO -- receive coordinates as parameters and reuse
 
 : .boat  ( -- )
@@ -1021,13 +1031,14 @@ variable dead
 
 white black papery + constant report-color#
 
-: set-report-color  ( -- )  report-color# permcolor!  ;
+: set-report-color  ( -- )
+  report-color# color! permanent-colors  ;
 
-: report-start  ( -- )
+: start-report  ( -- )
   save-screen set-report-color cls text-font set-font  ;
   \ Common task at the start of all reports.
 
-: report-end  ( -- )
+: end-report  ( -- )
   set-report-color
   0 row 2+ at-xy s" Pulsa una tecla" columns type-center
   discard-key key drop  restore-screen  ;
@@ -1036,7 +1047,7 @@ white black papery + constant report-color#
 : .datum  ( a -- )  tabulate @ 2 .r cr cr  ;
 
 : main-report  ( -- )
-  report-start
+  start-report
   0 1 at-xy s" Informe de situación" columns type-center
   0 4 at-xy  18 /tabulate !
   ." Días:"             day        .datum
@@ -1047,23 +1058,27 @@ white black papery + constant report-color#
   ." Barcos hundidos:"  sunk-ships .datum
   ." Munición:"         ammo       .datum
   ." Estado del buque:" tabulate damage$ 2dup uppers1 type
-  report-end  ;
+  end-report  ;
 
- 1 constant name-x
-20 constant data-x
+ 1 cconstant name-x
+  \ x coordinate of the crew member name in the crew report
+20 cconstant status-x
+  \ x coordinate of the crew member status in the crew report
+
+: .crew-member-data  ( n -- )
+  >r white color!
+  name-x r@ 6 + at-xy r@ name$ type
+  r@ stamina @ stamina-attr c@ color!
+  status-x r@ 6 + at-xy
+  r> stamina @ stamina$ 2dup uppers1 type  ;
+
+: .crew-report-header  ( -- )
+  0 1 at-xy s" Informe de tripulación" columns type-center
+  name-x 4 at-xy ." Nombre"  status-x 4 at-xy ." Condición"  ;
 
 : crew-report  ( -- )
-  report-start
-  0 1 at-xy s" Informe de tripulación" columns type-center
-  name-x 4 at-xy ." Nombre"  data-x 4 at-xy ." Condición"
-  men 0 do
-    white ink
-    name-x i 6 + at-xy i name$ type
-    i stamina @ stamina-attr c@ color!
-    data-x i 6 + at-xy
-    i stamina @ stamina$ 2dup uppers1 type
-  loop  report-end  ;
-  \ XXX FIXME -- restore the color after printing the status
+  start-report .crew-report-header
+  men 0 do  i .crew-member-data  loop  end-report  ;
 
 : update-score  ( -- )
   found-clues @ 1000 *
@@ -1074,7 +1089,7 @@ white black papery + constant report-color#
              score +!  ;
 
 : score-report  ( -- )
-  report-start
+  start-report
   0 1 at-xy s" Informe de puntuación" columns type-center
   0 4 at-xy
   ." Días"            tab day         @ 4 .r ."  x  200" cr cr
@@ -1084,7 +1099,7 @@ white black papery + constant report-color#
   ." Tesoro"          tab 4000          4 .r             cr cr
   update-score
   ." Total"           tab ."       "
-                      score @ 4 .r  report-end  ;
+                      score @ 4 .r  end-report  ;
   \ XXX TODO -- add subtotals
 
   \ ============================================================
@@ -1153,9 +1168,9 @@ variable done
   graph-font1 set-font
   cyan ink 11 30 random-range 1 20 random-range at-xy ." kl"  ;
 
-: move-enemy-ship  ( -- )
+: (move-enemy-ship)  ( -- )
   graph-font1 set-font
-  1 5 random-range enemy-ship-move !
+  5 random 1+ enemy-ship-move !
     \ XXX TODO -- use the stack instead of `enemy-ship-move`?
 
   \ (enemy-ship-move=1 and enemy-ship-x<28)-(enemy-ship-move=2 and enemy-ship-x>18)
@@ -1173,13 +1188,20 @@ variable done
   enemy-ship-y +!
 
   white ink  blue paper
-  enemy-ship-x @    enemy-ship-y @     at-xy ."  ab "
-  enemy-ship-x @    enemy-ship-y @ 1+  at-xy ."  90 "
-  enemy-ship-x @ 1- enemy-ship-y @ 2+  at-xy ."  678 "
-  enemy-ship-x @    enemy-ship-y @ 1-  at-xy ."    "
-  enemy-ship-x @    enemy-ship-y @ 3 + at-xy ."    "
+  enemy-ship-x @    enemy-ship-y @ 2dup 2dup at-xy  ."  ab "
+                                   1+        at-xy  ."  90 "
+  enemy-ship-x @ 1- enemy-ship-y @ 2+        at-xy ."  678 "
+                                   2dup  1-  at-xy ."    "
+                                         3 + at-xy ."    "
   enemy-ship-move @ 5 = if  .wave  then  ;
-  \ XXX TODO -- improve, simplify, factor
+  \ XXX UNDER DEVELOPMENT
+
+: move-enemy-ship  ( -- )
+  \ enemy-ship-x @ enemy-ship-y @
+  \ 2dup 2dup -1..1 + swap -1..1 + swap 2 d<>
+  \ if  (move-enemy-ship)  then  ;
+  \ XXX UNDER DEVELOPMENT
+  (move-enemy-ship)  ; \ XXX TMP --
 
 : .ammo  ( -- )  ammo @ 1 .r  ;
 
@@ -1203,24 +1225,34 @@ variable done
   \ at x coordinate _col_?
 
 : .cannon-ball-fire  ( row -- )
+  red ink
   9 swap 2dup 1- at-xy ." +"
-         2dup 1+ at-xy ." -"
-         2dup    at-xy ." j"
-         2dup 1- at-xy space
-              1+ at-xy space  ;
+              1+ at-xy ." -"  ;
   \ Print the fire effect of the cannon ball, which is at y
   \ coordinate _row.
 
+: -cannon-ball-fire  ( row -- )
+  9 swap 2dup 1- at-xy space
+              1+ at-xy space  ;
+  \ Erase the fire effect of the cannon ball, which is at y
+  \ coordinate _row.
+
 : fire  ( y -- )
-  graph-font1 set-font  yellow ink  blue paper
+  graph-font1 set-font  blue paper
   dup to fire-y .cannon-ball-fire less-ammo
   move-enemy-ship
+  black ink 9 fire-y at-xy ."  j"
   [ columns 1- ] literal 31 9 do
     i fire-y at-xy ."  j"
     i sunk? if  sunk unloop leave  then
-  loop  blue paper 31 fire-y at-xy space  ;
+  loop
+  fire-y -cannon-ball-fire
+  31 fire-y at-xy space  ;
+  \ XXX FIXME -- the cannon ball is erased at col 31, but it's
+  \ not its position if the loop was left with `leave`.
 
 : no-ammo-left  ( -- )
+  feasible-attack off
   s" Te quedaste sin munición." message  4 seconds  ;
   \ XXX TODO the enemy wins; our ship sinks,
   \ or the money and part of the crew are captured
@@ -1237,8 +1269,10 @@ variable done
   \ Print a ship gun man at _col row_.
 
 : init-enemy-ship  ( -- )
-  6 enemy-ship-y !  20 enemy-ship-x !  ;
-  \ XXX TODO -- random coords
+  6 enemy-ship-y ! 20 enemy-ship-x !  ;
+  \  11 30 random-range enemy-ship-y !
+  \   20 random 1+    enemy-ship-x !  ;
+  \ XXX TODO --
 
 : gun>row  ( n -- row )  7 * 2+  ;
 
@@ -1565,7 +1599,7 @@ variable option
   graph-font1 set-font  ;
 
 : island-waves  ( -- )
-  i-pos @ 6 - island-map @ coast =
+  i-pos @ island-map-cols - island-map @ coast =
   if  .bottom-waves   then
   i-pos @ 6 + island-map @ coast =
   if  .horizon-waves  then
@@ -1639,12 +1673,15 @@ variable option
 : event9  ( -- )
   s" La costa está despejada, capitán." message  ;
 
-create island-events>  ( -- a )
+create island-events-table  ( -- a )  here
+
 ] event1 event2 event3 event4 event5 event6
   event7 event8 event8 event9 event9 noop noop [
 
-: island-events  ( -- )
-  0 10 random-range cells island-events> + perform  ;
+here - cell / constant island-events
+
+: island-event  ( -- )
+  island-events random island-events-table array> perform  ;
 
   \ ============================================================
   cr .( Enter island location)  \ {{{1
@@ -1697,12 +1734,12 @@ create island-events>  ( -- a )
 
   4 of
     \ XXX TODO constant for this case
-    island-events
+    island-event
   endof
 
   6 of
     \ XXX TODO constant for this case
-    island-events
+    island-event
   endof
 
   endcase

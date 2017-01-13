@@ -12,6 +12,19 @@
 
 .2017-01-12:
 
+Remove `dead` and `injured`. Make `man-dead` and `man-injured` return
+the result on the stack instead.
+
+.2017-01-12:
+
+Bug: names of the crew members are corrupted after the first actions.
+
+.2017-01-12:
+
+Move the palms into the word of their islands.
+
+.2017-01-12:
+
 Change `." X"` (4 bytes) to `'X' emit` (5 bytes) in some places,
 because it's faster.
 
