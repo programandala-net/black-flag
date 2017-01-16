@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.21.0+201701131125" ;
+: version  ( -- ca len )  s" 0.21.1+201701161243" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -526,7 +526,7 @@ window the-end-window  5 2 22 20 set-window
   cr .( Screen)  \ {{{1
 
 : init-screen  ( -- )
-  default-colors white ink blue dup paper border cls
+  default-colors white ink blue paper black border cls
   graphic-window graph-font1 set-font  ;
 
 16384 constant screen  6912 constant /screen
@@ -921,6 +921,9 @@ variable cloud1x
   white ink  blue paper  18 13 at-xy .\" \S"  ;
   \ XXX TODO -- `emit-udg` is faster
 
+: scenery-init-enemy-ship  ( -- )
+  11 enemy-ship-x ! 4 enemy-ship-y !  ;
+
 : sea-picture  ( n -- )
   graph-font1 set-font  case
    2 of  .big-island5  19 4 palm1                   endof
@@ -936,10 +939,14 @@ variable cloud1x
   10 of  24 4 palm1  .two-little-islands            endof
   11 of  .shark                                     endof
   13 of  24 4 palm1
-         .two-little-islands  .enemy-ship           endof
-  14 of  .big-island1  24 4 palm1  .enemy-ship      endof
-  15 of  .big-island2  14 4 palm1  .enemy-ship      endof
-  16 of  .big-island3  19 4 palm1  .enemy-ship      endof
+         .two-little-islands
+         scenery-init-enemy-ship  .enemy-ship       endof
+  14 of  .big-island1  24 4 palm1
+         scenery-init-enemy-ship  .enemy-ship       endof
+  15 of  .big-island2  14 4 palm1
+         scenery-init-enemy-ship  .enemy-ship       endof
+  16 of  .big-island3  19 4 palm1
+         scenery-init-enemy-ship  .enemy-ship       endof
   17 of  .little-island2  14 4 palm1  .boat
          .little-island1  24 4 palm1                endof
   18 of  .little-island1  24 4 palm1  .boat         endof
@@ -1252,7 +1259,7 @@ variable done
   \ not its position if the loop was left with `leave`.
 
 : no-ammo-left  ( -- )
-  feasible-attack off
+  feasible-attack off  panel
   s" Te quedaste sin munición." message  4 seconds  ;
   \ XXX TODO the enemy wins; our ship sinks,
   \ or the money and part of the crew are captured
@@ -1268,13 +1275,17 @@ variable done
        1+ at-xy '3' emit  ;
   \ Print a ship gun man at _col row_.
 
-: init-enemy-ship  ( -- )
-  6 enemy-ship-y ! 20 enemy-ship-x !  ;
-  \  11 30 random-range enemy-ship-y !
-  \   20 random 1+    enemy-ship-x !  ;
+: battle-init-enemy-ship  ( -- )
+  20 enemy-ship-x ! 6 enemy-ship-y !  ;
+  \   20 random 1+    enemy-ship-x !
+  \  11 30 random-range enemy-ship-y ! ;
   \ XXX TODO --
 
 : gun>row  ( n -- row )  7 * 2+  ;
+  \ Convert gun number _n_ (0..2) to its label _row_.
+
+: gun>fire-row  ( n -- row )  gun>row 1+  ;
+  \ Convert gun number _n_ (0..2) to its fire _row_.
 
 : battle-scenery  ( -- )
   blue paper cls 31 1 do  .wave  loop
@@ -1288,15 +1299,15 @@ variable done
     graph-font1 set-font     6 over .gun
                              1 swap 1+ at-xy ." hi"  \ ammo
   loop
-  .ammo-label init-enemy-ship  ;
+  .ammo-label battle-init-enemy-ship  ;
   \ XXX TODO -- factor more
 
 : ship-battle  ( -- )
   done off  save-screen battle-scenery
   begin  move-enemy-ship
-    inkey case  '1' of  [ 0 gun>row ] literal fire  endof
-                '2' of  [ 1 gun>row ] literal fire  endof
-                '3' of  [ 2 gun>row ] literal fire  endof
+    inkey case  '1' of  [ 0 gun>fire-row ] literal fire  endof
+                '2' of  [ 1 gun>fire-row ] literal fire  endof
+                '3' of  [ 2 gun>fire-row ] literal fire  endof
           endcase
           \ XXX TODO -- use a table instead?
   done @ ammo @ 0= or until
