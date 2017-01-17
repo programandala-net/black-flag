@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.21.2.201701171648" ;
+: version  ( -- ca len )  s" 0.22.0.201701171751" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -67,7 +67,7 @@ need move>far  need move<far
   \ --------------------------------------------
   cr .(   -Time)  \ {{{2
 
-need frames@  need pause
+need frames@  need pause  need ms
 
   \ --------------------------------------------
   cr .(   -Data and strings)  \ {{{2
@@ -1773,7 +1773,7 @@ here - cell / constant island-events
   25 10 at-xy .\" F\::\::\::\::\::\::"
   23 11 at-xy .\" JK\::\::\::\::\::\::\::"
   yellow ink blue paper
-  21 0 do  i 11 at-xy ."  <>" 10 pause  loop  ;
+  21 0 do  i 11 at-xy ."  <>" 200 ms  loop  ;
 
 : enter-island  ( -- )
   aboard off  ship-pos @ sea-map @ treasure-island =
