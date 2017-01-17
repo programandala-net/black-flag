@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.23.0.201701171931" ;
+: version  ( -- ca len )  s" 0.24.0.201701172035" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -971,29 +971,24 @@ variable cloud1x
   \ ============================================================
   cr .( Crew stamina)  \ {{{1
 
-variable injured
+: dead?  ( n -- f )  stamina @ 0=  ;
+  \ Is man _n_ dead?
 
-: man-injured  ( -- )
-  begin
-    1 men random-range dup injured !
-  stamina @ until
-  -1 injured @ stamina +!
-  injured @ stamina @ 0<> alive +!  ;
-  \ A man is injured.
-  \ Output: `injured` = his number
-  \ XXX TODO -- return the output on the stack
+: somebody-alive  ( -- n )
+  begin  men random dup dead?  while  drop  repeat  ;
+  \ Return a random alive man _n_.
 
-variable dead
+: is-injured  ( n -- )  -1 over stamina +!  dead? alive +!  ;
+  \ Man _n_ is injured.
 
-: man-dead  ( -- )
-  begin
-    1 men random-range dup dead !
-  stamina @ until
-  dead @ stamina off
-  -1 alive +!  ;
-  \ A man dies
-  \ Output: dead = his number
-  \ XXX TODO -- return the output on the stack
+: injured  ( -- n )  somebody-alive dup is-injured  ;
+  \ A random man _n_ is injured.
+
+: is-dead  ( n -- )  stamina off  -1 alive +!  ;
+  \ Man _n_ is dead.
+
+: dead  ( -- n )  somebody-alive dup is-dead  ;
+  \ A random man _n_ is dead.
 
   \ ============================================================
   cr .( Run aground)  \ {{{1
@@ -1019,7 +1014,8 @@ variable dead
   message  ;
 
 : run-aground-damages  ( -- )
-  10 29 damaged  man-injured  man-dead
+  10 29 damaged injured drop  dead drop
+    \ XXX TODO -- random number of dead and injured
   -4 -1 random-range morale +!  ;
 
 : run-aground  ( -- )
@@ -1129,7 +1125,7 @@ variable done
     s" La bala alcanza su objetivo."
     s"  Esto desmoraliza a la tripulación." s+ message
     -2 morale +!
-    3 4 random-range 1 ?do  man-injured  loop
+    3 4 random-range 1 ?do  injured drop  loop
   then  5 seconds  wipe-message  ;
   \ XXX TODO -- factor
 
@@ -1416,11 +1412,8 @@ variable option
 
   \ XXX TODO finish the new interface
 
-  cls
-  sunny-sky
-  wipe-island
-  graph-font2 set-font
-  green ink  yellow paper
+  cls sunny-sky wipe-island
+  graph-font2 set-font green ink  yellow paper
   0 3 at-xy ."  5     6       45     6       5"
   black ink
   25 0 do
@@ -1428,7 +1421,6 @@ variable option
     i 2+  4 at-xy .\" :\::\::\x7F"
     i 1+  5 at-xy .\" :\::\::\::\::\x7F"
     i     6 at-xy .\" :\::\::\::\::\::\::\x7F"
-    \ XXX TODO -- adapt the graphics notation
   8 +loop
   text-font set-font  white ink  red paper
   0 7 at-xy ."    1       2       3       4    "
@@ -1458,12 +1450,11 @@ variable option
   2 seconds
   option @ tree @ = abs found-clues +!
 
-  \ XXX TODO better, with letters
   black paper
   7 14 at-xy ." Izquierda Derecha"
   8 16 at-xy ." I=1  D=2 "
-  23 15 at-xy ." ? "
-  9 get-digit option !
+  23 15 at-xy ." ? " 9 get-digit option !
+    \ XXX TODO use letters instead of digits
   text-font set-font
   23 15 at-xy option ?
   beep .2,30
@@ -1490,12 +1481,11 @@ variable option
   2 seconds
   option village @ = if  1 found-clues +!  then  \ XXX TODO --
 
-  \ XXX TODO better, with letters
   7 13 at-xy ." ¿Qué camino"
   7 14 at-xy ." capitán?"
   7 16 at-xy ." 1N 2S 3E 4O"
-  23 15 at-xy ." ? "
-  9 get-digit option !
+  23 15 at-xy ." ? " 9 get-digit option !
+    \ XXX TODO -- use letters instead of digits
   23 15 at-xy option . \ XXX TODO -- adapt
   beep .2,30
   2 seconds
@@ -1523,7 +1513,8 @@ variable option
     at-xy ." equivocado"
     at-xy ." capitán!"
   then  2 seconds  graph-font1 set-font  ;
-  \ XXX TODO -- use a window for the last message
+  \ XXX TODO -- use a window for messages
+  \ XXX TODO -- factor
 
   \ ============================================================
   cr .( Island graphics)  \ {{{1
@@ -1653,20 +1644,17 @@ variable option
   cr .( Events on an island)  \ {{{1
 
 : event1  ( -- )
-  man-dead
-  dead @ name$ s"  se hunde en arenas movedizas." s+ message  ;
+  dead name$ s"  se hunde en arenas movedizas." s+ message  ;
 
 : event2  ( -- )
-  man-dead
-  dead @ name$ s"  se hunde en un pantano." s+ message  ;
+  dead name$ s"  se hunde en un pantano." s+ message  ;
 
 : event3  ( -- )
-  man-injured s" A " injured @ name$ s+
-             s"  le muerde una araña." s+ message  ;
+  s" A " injured name$ s+
+  s"  le muerde una araña." s+ message  ;
 
 : event4  ( -- )
-  man-injured
-  s" A " injured @ name$ s+ s"  le pica un escorpión." s+
+  s" A " injured name$ s+ s"  le pica un escorpión." s+
   message  ;
 
 : event5  ( -- )
@@ -1711,16 +1699,14 @@ here - cell / constant island-events
   case
 
   snake of
-    man-injured
-    s" Una serpiente ha mordido a " injured @ name$ s+ s" ." s+
-    message
+    s" Una serpiente ha mordido a "
+    injured name$ s+ s" ." s+ message
   endof
 
   hostile-native of
-    man-injured
     s" Un nativo intenta bloquear el paso y hiere a "
-    injured @ name$ s+ s" , que resulta " s+
-    injured @ condition$ s+ s" ." s+ message
+    injured dup >r name$ s+ s" , que resulta " s+
+    r> condition$ s+ s" ." s+ message
   endof
 
   dubloons-found of
@@ -2046,23 +2032,20 @@ variable price  variable offer
 
   i-pos @ island-map @ 5 = if
     \ XXX TODO --  5=snake?
-    man-dead
     s" Lo matas, pero la serpiente mata a "
-    dead @ name$ s+ s" ." s+ message
+    dead name$ s+ s" ." s+ message
     goto L6897
   then
 
   i-pos @ island-map @ native-village = if
-    man-dead
     s" Un poblado entero es un enemigo muy difícil. "
-    dead @ name$ s+ s"  muere en el combate." s+
+    dead name$ s+ s"  muere en el combate." s+
     message
     goto L6898
   then
 
   1 5 random-range case
-  1 of  man-dead
-        s" El nativo muere, pero antes mata a "
+  1 of  s" El nativo muere, pero antes mata a "
         dead @ name$ s+ s" ." s+ message              endof
   2 of  s" El nativo tiene provisiones"
         s"  escondidas en su taparrabos." s+ message
