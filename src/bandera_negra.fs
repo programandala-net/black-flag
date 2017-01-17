@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.22.0.201701171751" ;
+: version  ( -- ca len )  s" 0.23.0.201701171931" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -152,19 +152,19 @@ island-map-cols island-map-rows * constant /island-map
 : ship-name$  ( -- ca len )  s" Furioso"  ;
   \ XXX TODO -- not used yet
 
-  \ Ids of sea and island cells
+  \ Sea location types
   \ XXX TODO complete
  1 constant reef
  1 constant coast
 21 constant shark
 22 constant treasure-island
 
-  \ Ids of island cells
-  \ XXX TODO complete
+  \ Island location types
 2 constant dubloons-found
-3 constant native-fights
-\ 4 constant \ XXX TODO --
+3 constant hostile-native
+4 constant just-3-palms-1
 5 constant snake
+6 constant just-3-palms-2
 7 constant native-supplies
 8 constant native-ammo
 9 constant native-village
@@ -656,7 +656,7 @@ variable possible-west           \ flag
   \ disembarking position
 
 : island-panel-commands  ( -- )
-  home i-pos ? i-pos @ island-map ?  \ XXX INFORMER
+  home i-pos ? i-pos @ island-map ? .s  \ XXX INFORMER
   feasible-embark? dup >r feasible-embark !
   16 panel-y 1+ at-xy s" emBarcar" 2 r> ?>option$ type
   feasible-trade? dup >r feasible-trade !
@@ -1328,10 +1328,10 @@ variable done
   \ ============================================================
   cr .( Island map)  \ {{{1
 
-: empty-island-map  ( -- )
+: erase-island  ( -- )
   0 island-map /island-map cells erase  ;
 
-: create-island-coast  ( -- )
+: create-coast  ( -- )
   coast  0 island-map !  coast  1 island-map !
   coast  2 island-map !  coast  3 island-map !
   coast  4 island-map !  coast  5 island-map !
@@ -1343,16 +1343,19 @@ variable done
   coast 28 island-map !  coast 29 island-map !  ;
   \ XXX TODO -- use a byte table and loop
 
-: new-island-map  ( -- )
-  empty-island-map  create-island-coast
-  23 7 do
-    i island-map @ coast <>
-    if  2 5 random-range i island-map !  then
-      \ XXX TODO -- use constants instead of `2 5`
+: location-random-type  ( -- n )
+  dubloons-found just-3-palms-2 random-range  ;
+
+: populate  ( -- )
+  23 7 do  i island-map @ coast <>
+           if  location-random-type i island-map !  then
   loop
-  native-village 20 23 random-range island-map !
-  native-ammo 14 17 random-range island-map !
-  native-supplies 8 11 random-range island-map !
+  native-village  20 23 random-range island-map !
+  native-ammo     14 17 random-range island-map !
+  native-supplies  8 11 random-range island-map !  ;
+
+: new-island  ( -- )
+  erase-island create-coast populate
   8 11 random-range i-pos !  ;
 
   \ ============================================================
@@ -1624,27 +1627,27 @@ variable option
   \ XXX TODO -- factor `island-map @ coast =`
   \ XXX TODO -- use constant instead of 6
 
-: island-location  ( -- )
-  i-pos @ island-map @ case
-    native-village of  .village                         endof
-    dubloons-found of  4 8 palm2 14 5 palm2             endof
-    native-fights  of  14 5 palm2 25 8 palm2 .native    endof
-                 4 of  25 8 palm2  4 8 palm2 16 5 palm2 endof
-    \ XXX TODO constant
+: (.island-location)  ( n -- )
+  case
+    native-village  of  .village                         endof
+    dubloons-found  of  4 8 palm2 14 5 palm2             endof
+      \ XXX TODO -- print dubloons here
+    hostile-native  of  14 5 palm2 25 8 palm2 .native    endof
+    just-3-palms-1  of  25 8 palm2  4 8 palm2 16 5 palm2 endof
     snake of
       13 5 palm2 5 6 palm2 18 8 palm2 23 8 palm2 .snake
-                                                        endof
-                 6 of  23 8 palm2 17 5 palm2 4 8 palm2  endof
-    \ XXX TODO constant
-    native-supplies of
-      .supplies  .native  16 4 palm2
-                                                        endof
-    native-ammo    of  .ammo .native 20 5 palm2         endof
+                                                         endof
+    just-3-palms-2  of  23 8 palm2 17 5 palm2 4 8 palm2  endof
+    native-supplies of .supplies  .native  16 4 palm2    endof
+    native-ammo     of  .ammo .native 20 5 palm2         endof
   endcase  ;
+
+: .island-location  ( -- )
+  i-pos @ island-map @ (.island-location)  ;
 
 : island-scenery  ( -- )
   graphic-window graph-font1 set-font
-  wipe-island-scenery sunny-sky island-waves island-location  ;
+  wipe-island-scenery sunny-sky island-waves .island-location  ;
 
   \ ============================================================
   cr .( Events on an island)  \ {{{1
@@ -1667,14 +1670,14 @@ variable option
   message  ;
 
 : event5  ( -- )
-  \ XXX TODO only if supplies are not enough
   s" La tripulación está hambrienta." message
   -1 morale +!  ;
+  \ XXX TODO only if supplies are not enough
 
 : event6  ( -- )
-  \ XXX TODO only if supplies are not enough
   s" La tripulación está sedienta." message
   -1 morale +!  ;
+  \ XXX TODO only if supplies are not enough
 
 : event7  ( -- )
   2 5 random-range >r
@@ -1700,12 +1703,12 @@ here - cell / constant island-events
   \ ============================================================
   cr .( Enter island location)  \ {{{1
 
-: enter-island-location  ( -- )
+: be-hostile-native  ( -- )
+  hostile-native i-pos @ island-map !  ;
 
-  wipe-message  \ XXX TODO needed?
-  island-scenery
+: (enter-island-location)  ( n -- )
 
-  i-pos @ island-map @ case
+  case
 
   snake of
     man-injured
@@ -1713,7 +1716,7 @@ here - cell / constant island-events
     message
   endof
 
-  native-fights of
+  hostile-native of
     man-injured
     s" Un nativo intenta bloquear el paso y hiere a "
     injured @ name$ s+ s" , que resulta " s+
@@ -1721,40 +1724,41 @@ here - cell / constant island-events
   endof
 
   dubloons-found of
+
     1 2 random-range >r
     s" Encuentras " r@ coins$ s+ s" ." s+ message
     r@ cash +!
     r> .dubloons
-    4 i-pos @ island-map !
-      \ XXX TODO -- constant for 4
+
+    just-3-palms-1 i-pos @ island-map !
+      \ XXX FIXME -- the location should be the same, without
+      \ dubloons!
+
   endof
 
   native-ammo of
     s" Un nativo te da algo de munición." message
-    1 ammo +!
-    native-fights i-pos @ island-map !
+    1 ammo +!  be-hostile-native
+      \ XXX TODO random ammount
+      \ XXX TODO -- choose it in advance and draw it in
+      \ `.island-location`
   endof
 
   native-supplies of
     s" Un nativo te da provisiones." message
-    \ XXX TODO random ammount
-    1 supplies +!
-    native-fights i-pos @ island-map !
+    1 supplies +!  be-hostile-native
+      \ XXX TODO random ammount
+      \ XXX TODO -- choose it in advance and draw it in
+      \ `.island-location`
   endof
 
   native-village of
     s" Descubres un poblado nativo." message
   endof
 
-  4 of
-    \ XXX TODO constant for this case
-    island-event
-  endof
+  just-3-palms-1 of  island-event  endof
 
-  6 of
-    \ XXX TODO constant for this case
-    island-event
-  endof
+  just-3-palms-2 of  island-event  endof
 
   endcase
 
@@ -1762,6 +1766,11 @@ here - cell / constant island-events
   100 pause \ XXX OLD
 
   ;
+
+: enter-island-location  ( -- )
+  wipe-message  \ XXX TODO needed?
+  island-scenery
+  i-pos @ island-map @ (enter-island-location)  ;
 
   \ ============================================================
   cr .( Disembark)  \ {{{1
@@ -1778,7 +1787,7 @@ here - cell / constant island-events
 : enter-island  ( -- )
   aboard off  ship-pos @ sea-map @ treasure-island =
   if    enter-treasure-island
-  else  new-island-map enter-island-location  then  ;
+  else  new-island enter-island-location  then  ;
 
 : disembark  ( -- )
   -2 -1 random-range supplies +!
