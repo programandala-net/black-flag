@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.21.1+201701161243" ;
+: version  ( -- ca len )  s" 0.21.2.201701171648" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -123,7 +123,10 @@ game-wordlist  set-current
 :  ~~h  ( -- )  2 border key drop 1 border  ;
   \ Break point.
 
-'q' ~~quit-key !  ~~resume-key on  22 ~~y !  ~~? on
+'q' ~~quit-key !  ~~resume-key on  22 ~~y !  ~~? off
+
+' default-font ' ~~app-info defer!
+  \ Make sure the debug information is printed with the ROM font.
 
 : ?break  ( -- )  break-key? abort" Aborted!" ;
 
@@ -637,7 +640,7 @@ variable possible-west           \ flag
   ship-pos @ sea-map @ treasure-island =  or  ;
 
 : ship-panel-commands  ( -- )
-  home ship-pos ? ship-pos @ sea-map ?  \ XXX INFORMER
+  home ship-pos ? ship-pos @ sea-map ? .s  \ XXX INFORMER
   feasible-disembark? dup >r feasible-disembark !
   16 panel-y 1+ at-xy s" Desembarcar" 0 r> ?>option$ type  ;
   \ XXX TODO -- factor both conditions
@@ -663,12 +666,12 @@ variable possible-west           \ flag
   black paper 0 21 at-xy low-win-chars spaces  ;
   \ XXX TODO -- use window
 
-: panel  ( -- )
+: panel  ( -- )  ~~
   text-font set-font  white ink
-  wipe-panel common-panel-commands
+  wipe-panel common-panel-commands  ~~
   aboard @ if    ship-panel-commands
            else  island-panel-commands
-           then  directions-menu  ;
+           then  directions-menu  ~~  ;
   \ XXX TODO check condition -- what about the enemy ship?
   \ XXX TODO several commands: attack ship/island/shark?
 
@@ -2273,7 +2276,7 @@ variable price  variable offer
   \ Draw top and bottom borders of skulls.
 
 : intro  ( -- )
-  ink black paper cls
+  white ink black paper cls
   skull-border intro-window whome get-font text-font set-font
   s" Viejas leyendas hablan del tesoro "
   s" que esconde la perdida isla de " s+
@@ -2291,20 +2294,20 @@ variable price  variable offer
   \ ============================================================
   cr .( Main)  \ {{{1
 
-: scenery  ( -- )
-  aboard @ if    sea-scenery
-           else  island-scenery
-           then  panel  ;
+: scenery  ( -- )  ~~
+  aboard @ if    sea-scenery  ~~
+           else  island-scenery  ~~
+           then  panel  ~~  ;
 
 : command  ( -- )
   aboard @ if  ship-command  else  island-command  then  ;
 
 : game  ( -- )
   cls  screen-restored off
-  begin
+  begin  ~~
     screen-restored @ if    screen-restored off
                      else  scenery
-                     then  command
+                     then  command  ~~
   game-over? until  ;
 
 : run  ( -- )
