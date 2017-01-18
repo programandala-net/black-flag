@@ -27,7 +27,7 @@ Move the palms into the word of their islands.
 Change `." X"` (4 bytes) to `'X' emit` (5 bytes) in some places,
 because it's faster.
 
-.2017-01-10:
+.2017-01-10, 2017-01-18:
 
 Combine all graphics into one single UDG set:
 
@@ -56,9 +56,15 @@ Then add the characters needed for Spanish and Esperanto:
 | 165..226         | graph font 2
 | 227..242         | Spanish characters
 | 243..254         | Esperanto characters
+| 255              | *not used*
 |===
 
 Only the strings printed with graph font 2 must be adapted.
+
+Problem: two sets of Spanish and Esperanto characters will be needed,
+one for each font (sticks and twisty). Therefore they have to be
+defined apart, as independet UDG sets, and activated when the
+corresponding text font is selected.
 
 .2017-01-08:
 

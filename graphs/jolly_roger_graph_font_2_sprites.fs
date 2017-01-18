@@ -3,16 +3,28 @@
 \ This file is part of Bandera Negra
 \ http://programandala.net/
 
-\ This file was created by FantomoUDG
-\ (http://programandala.net/en.program.fantomoudg.html) from
-\ the original TAP and then manually edited to combine the
-\ original graphic characters into blocks and sprites.  The
-\ final goal is to create a single source of graphics, easy to
-\ edit as text and to convert automatically to Forth source.
-
 \ XXX UNDER DEVELOPMENT
 
-\ Last modified: 201701102045
+\ Last modified: 201701181353
+
+\ Credit:
+\
+\ This is the second graphic font included in the original game
+\ "Jolly Roger", written by Barry Jones and published by Video
+\ Vault ltd. in 1984.
+
+\ Description:
+\
+\ This file was created by FantomoUDG
+\ (http://programandala.net/en.program.fantomoudg.html) from a
+\ TAP file extracted from the original game and then manually
+\ edited to combine the original graphic characters into blocks
+\ and sprites.  The final goal is to create a single source of
+\ graphics, easy to edit as text and to convert automatically to
+\ Forth source.
+
+
+\ ==============================================================
 
 \ character 32 (' ')
 00000000

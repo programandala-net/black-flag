@@ -1,3 +1,27 @@
+\ twisty_font.fs
+
+\ This file is part of Bandera Negra
+\ http://programandala.net/
+
+\ XXX UNDER DEVELOPMENT
+
+\ Last modified: 201701181351
+
+\ Credit:
+\
+\ The twisty font was designed by Paul Howard for Alchemist PD,
+\ 1995, and packed into a viewer called "Fontbox I".
+
+\ Description:
+\
+\ This file was created by FantomoUDG
+\ (http://programandala.net/en.program.fantomoudg.html) from the
+\ original TAP.  The final goal is to create a source font, easy
+\ to edit as text, with the Spanish and Esperanto characters
+\ added, and to convert automatically to Forth code.
+
+\ ==============================================================
+
 \ UDG position 0 = UDG 144 in a UDG set = character 32 (' ') in a font
 00000000
 00000000
