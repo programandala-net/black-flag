@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.25.1.201701181306" ;
+: version  ( -- ca len )  s" 0.25.2.201701181533" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -36,7 +36,7 @@ forth-wordlist set-current
   \ --------------------------------------------
   cr .(   -Debugging tools)  \ {{{2
 
-need ~~  need see  need dump  need abort"
+need ~~  need see  need dump
 
   \ --------------------------------------------
   cr .(   -Definers)  \ {{{2
@@ -90,7 +90,7 @@ need window  need set-window  need wcls  need wtype
 need whome
 
 need tab  need type-center  need at-x  need row
-need columns  need inverse  need tabulate
+need columns  need last-column  need inverse  need tabulate
 need set-udg  need rom-font  need set-font  need get-font
 
 need black  need blue  need red  need green
@@ -129,7 +129,8 @@ game-wordlist  set-current
   \ Make sure the debug information compiled by `~~` is printed
   \ with the ROM font.
 
-: ?break  ( -- )  break-key? abort" Aborted!" ;
+: ?break  ( -- )
+  break-key? if  cr ." Aborted!" cr quit  then  ;
 
   \ ============================================================
   cr .( Constants)  \ {{{1
@@ -684,6 +685,7 @@ variable possible-west           \ flag
 
 variable cloud0x
 variable cloud1x
+  \ XXX TODO -- rename
 
 : sun-and-clouds  ( f -- )
   bright  yellow ink  cyan paper
@@ -724,6 +726,8 @@ variable cloud1x
 : sunny-sky  ( -- )
   [ cyan dup papery + brighty ] literal color-sky  ;
   \ Make the sky sunny.
+  \ XXX FIXME -- why `sun-and-clouds` is not called here,
+  \ like in `stormy-sky`?
 
 : color-sea  ( c -- )
   [ sea-top-y attr-line ] literal
@@ -1250,16 +1254,18 @@ variable done
   \ Is the enemy ship sunk by the cannon ball, which is
   \ at x coordinate _col_?
 
+9 constant cannon-muzzle-x
+
 : .cannon-ball-fire  ( row -- )
   red ink
-  9 swap 2dup 1- at-xy ." +"
-              1+ at-xy ." -"  ;
+  cannon-muzzle-x swap 2dup 1- at-xy ." +"
+                            1+ at-xy ." -"  ;
   \ Print the fire effect of the cannon ball, which is at y
   \ coordinate _row_.
 
 : -cannon-ball-fire  ( row -- )
-  9 swap 2dup 1- at-xy space
-              1+ at-xy space  ;
+  cannon-muzzle-x swap 2dup 1- at-xy space
+                            1+ at-xy space  ;
   \ Erase the fire effect of the cannon ball, which is at y
   \ coordinate _row_.
 
@@ -1267,15 +1273,16 @@ variable done
   graph-font1 set-font  blue paper
   dup to fire-y .cannon-ball-fire less-ammo
   move-enemy-ship
-  black ink 9 fire-y at-xy ."  j"
-  [ columns 1- ] literal 31 9 do
+  black ink cannon-muzzle-x fire-y at-xy ."  j"
+  last-column cannon-muzzle-x do
     i fire-y at-xy ."  j"
     i sunk? if  sunk unloop leave  then
   loop
   fire-y -cannon-ball-fire
-  31 fire-y at-xy space  ;
-  \ XXX FIXME -- the cannon ball is erased at col 31, but it's
-  \ not its position if the loop was left with `leave`.
+  last-column fire-y at-xy space  ;
+  \ XXX FIXME -- the cannon ball is erased at the last column,
+  \ but it's not its position if the loop was left with
+  \ `leave`.
 
 : no-ammo-left  ( -- )
   feasible-attack off  panel
@@ -1809,6 +1816,8 @@ here - cell / constant island-events
 
 : -rain  ( -- )
   cloud0x @ 2 at-xy ."     " cloud1x @ 2 at-xy ."    "  ;
+  \ XXX FIXME -- wrong color; move color commands fram
+  \ `rain-drops` to `storm`
 
 : storm  ( -- )
   wipe-panel stormy-sky
@@ -1824,6 +1833,7 @@ here - cell / constant island-events
   \ XXX TODO -- sound
   \ XXX TODO make the enemy ship to move, if present
   \ (use the same graphic of the player ship)
+  r
 
   \ ============================================================
   cr .( Ship command)  \ {{{1
