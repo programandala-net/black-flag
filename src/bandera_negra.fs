@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.26.0.201701181926" ;
+: version  ( -- ca len )  s" 0.26.1.201701190034" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -582,11 +582,11 @@ far-banks 3 + c@ cconstant screen-backup-bank
   get-font >r sticks-font set-font native-window wcls wtype
   r> set-font  ;
 
-: wipe-message  ( -- )
+: new-message  ( -- )
   message-window  white ink  black paper  wcls  ;
 
 : message  ( ca len -- )
-  text-font set-font wipe-message wtype graphic-window ;
+  text-font set-font new-message wtype graphic-window ;
 
   \ ============================================================
   cr .( Sound )  \ {{{1
@@ -645,7 +645,7 @@ variable possible-west           \ flag
   ship-pos @ sea-map @ dup >r 13 <
                            r@ shark = or
                            r> treasure-island = or  0=
-  ammo @ 0> and  ;
+  ammo @ 0<> and  ;
   \ XXX TODO -- rewrite: use presence of the enemy ship, which
   \ now is associated with certain locations but should be
   \ independent
@@ -1130,14 +1130,11 @@ white black papery + constant report-color#
   update-score
   ." Total"           tab ."       "
                       score @ 4 .r  end-report  ;
-  \ XXX TODO -- add subtotals
+  \ XXX TODO -- add subtotals (use constants)
   \ XXX TODO -- draw a ruler above "Total"
 
   \ ============================================================
   cr .( Ship battle)  \ {{{1
-
-variable done
-  \ XXX TODO -- rename
 
 : miss-own-boat  ( -- )
   s" Por suerte el disparo no ha dado en el blanco." message  ;
@@ -1188,17 +1185,26 @@ variable done
                                 2dup .sunk-step-1 sunk-delay
                                      .sunk-step-2  ;
 
+variable done
+  \ XXX TODO -- remove; use the stack instead
+
 : sunk  ( -- )
   .sunk 2 seconds
-  ship-pos @ sea-map @ 13 >=
-  ship-pos @ sea-map @ 16 <= and
-    \ XXX why the condition?
-    \ XXX TODO -- simplify the condition and factor out
-  if  1 sunk-ships +!  1000 score +!  done on  then
 
-  ship-pos @ sea-map @ case 13 of  10  endof 14 of   9  endof
-  15 of   8  endof 16 of   7  endof dup endcase  ship-pos @
-  sea-map !  ;
+  \ ship-pos @ sea-map @ 13 >=
+  \ ship-pos @ sea-map @ 16 <= and
+  \ if  1 sunk-ships +!  1000 score +!  done on  then
+    \ XXX OLD
+
+  1 sunk-ships +!  1000 score +!  done on
+    \ XXX TODO -- use constant to increase the score, and in
+    \ the score report
+
+  ship-pos @ sea-map @ case
+    13 of  10  endof
+    14 of   9  endof
+    15 of   8  endof
+    16 of   7  endof  dup endcase  ship-pos @ sea-map !  ;
   \ Sunk the enemy ship
   \
   \ XXX FIXME -- The `case` changes the type of location, what
@@ -1255,55 +1261,59 @@ variable done
 : .new-ammo  ( -- )
   white ink red paper 21 23 at-xy .ammo  ;
 
-: less-ammo  ( -- )
+: -ammo  ( -- )
   -1 ammo+!  text-font set-font .new-ammo  ;
 
 : .ammo-label  ( -- )
   text-font set-font
   white ink red paper 10 23 at-xy ." Munición = " .ammo  ;
 
-0 value fire-y
+0 value gun-muzzle-y
   \ y coordinate of the cannon ball
 
+: sunk-range?  ( n a -- f )  @ dup 2+ between  ;
+  \ Is _n_ between the cell hold in _a_ and the cell hold in
+  \ _a_ plus 2?
+
 : sunk?  ( col -- f )
-  false    swap enemy-ship-x @ dup 2+ between 0exit
-         fire-y enemy-ship-y @ dup 2+ between 0exit  0=  ;
+  false   swap enemy-ship-x sunk-range? 0exit
+  gun-muzzle-y enemy-ship-y sunk-range? 0exit  0=  ;
   \ Is the enemy ship sunk by the cannon ball, which is
   \ at x coordinate _col_?
 
 9 constant cannon-muzzle-x
 
-: .cannon-ball-fire  ( row -- )
-  red ink
-  cannon-muzzle-x swap 2dup 1- at-xy ." +"
-                            1+ at-xy ." -"  ;
-  \ Print the fire effect of the cannon ball, which is at y
+: cannon-muzzle-fire-coords  ( row -- col row1 col row2 )
+  cannon-muzzle-x swap 2- 2dup 1-  ;
+
+: .cannon-muzzle-fire  ( row -- )
+  red ink cannon-muzzle-fire-coords at-xy ." -" at-xy ." +"  ;
+  \ Print the fire effect of the cannon muzzle, which is at y
   \ coordinate _row_.
 
-: -cannon-ball-fire  ( row -- )
-  cannon-muzzle-x swap 2dup 1- at-xy space
-                            1+ at-xy space  ;
-  \ Erase the fire effect of the cannon ball, which is at y
+: -cannon-muzzle-fire  ( row -- )
+  cannon-muzzle-fire-coords at-xy space at-xy space  ;
+  \ Erase the fire effect of the cannon muzzle, which is at y
   \ coordinate _row_.
 
-: fire  ( y -- )
+: gun>label-y  ( n -- row )  7 * 2+  ;
+  \ Convert gun number _n_ (0..2) to its label _row_.
+
+: gun>muzzle-y  ( n -- row )  gun>label-y 1+  ;
+  \ Convert gun number _n_ (0..2) to its fire _row_.
+
+: -cannon-ball  ( -- )  last-column gun-muzzle-y at-xy space  ;
+
+: fire  ( n -- )
   graph-font1 set-font  blue paper
-  dup to fire-y .cannon-ball-fire less-ammo
+  gun>muzzle-y dup .cannon-muzzle-fire to gun-muzzle-y  -ammo
   move-enemy-ship
-  black ink cannon-muzzle-x fire-y at-xy ."  j"
+  black ink cannon-muzzle-x gun-muzzle-y at-xy ."  j"
+  gun-muzzle-y -cannon-muzzle-fire
   last-column cannon-muzzle-x do
-    i fire-y at-xy ."  j"
-    i sunk? if  sunk unloop leave  then
-  loop
-  fire-y -cannon-ball-fire
-  last-column fire-y at-xy space  ;
-  \ XXX FIXME -- The cannon ball is erased at the last column,
-  \ but it's not its position if the loop was left with
-  \ `leave`.
-  \
-  \ XXX TODO -- Improve, receive the cannon number (0..2) as
-  \ parameter, not the y coordinate.
-  \
+    i gun-muzzle-y at-xy ."  j"
+    i sunk? if  sunk unloop exit  then
+  loop  -cannon-ball  ;
   \ XXX FIXME -- the system crashes after `sunk`.
 
 : no-ammo-left  ( -- )
@@ -1329,17 +1339,11 @@ variable done
   \  11 30 random-range enemy-ship-y ! ;
   \ XXX TODO --
 
-: gun>row  ( n -- row )  7 * 2+  ;
-  \ Convert gun number _n_ (0..2) to its label _row_.
-
-: gun>fire-row  ( n -- row )  gun>row 1+  ;
-  \ Convert gun number _n_ (0..2) to its fire _row_.
-
 : clear-for-action  ( -- )
   text-font set-font black ink yellow paper
   22 0 do  0 i at-xy  ." ________ "  loop
   3 0 do
-    i gun>row
+    i gun>label-y
     white paper text-font set-font 0 over at-xy i 1+ 1 .r
     yellow paper
     graph-font2 set-font  1+ 4 over .gun-man
@@ -1352,24 +1356,26 @@ variable done
   blue paper cls 31 1 do  .wave  loop
   clear-for-action .ammo-label battle-init-enemy-ship  ;
 
-: ship-battle  ( -- )
-  done off  save-screen battle-scenery
-  begin  move-enemy-ship
-    inkey case  '1' of  [ 0 gun>fire-row ] literal fire  endof
-                '2' of  [ 1 gun>fire-row ] literal fire  endof
-                '3' of  [ 2 gun>fire-row ] literal fire  endof
-          endcase
+: trigger  ( -- )
+  inkey case  '1' of  0 fire  endof
+              '2' of  1 fire  endof
+              '3' of  2 fire  endof  endcase  ;
           \ XXX TODO -- use a table instead?
-  done @ ammo @ 0= or until
-  restore-screen  ammo @ 0= if  no-ammo-left  then  ;
-  \ XXX TODO -- factor
+
+: (ship-battle)  ( -- )
+  battle-scenery  done off
+  begin  trigger move-enemy-ship done @ ammo @ 0= or until
+  ammo @ ?exit no-ammo-left ;
+
+: ship-battle  ( -- )
+  save-screen (ship-battle) restore-screen  ;
 
 : enemy-ship-here?  ( -- f )
   ship-pos @ sea-map @ 13 16 between  ;
 
 : (attack-ship)  ( -- )
-  enemy-ship-here?
-  if  ship-battle  else  attack-own-boat  then  ;
+  enemy-ship-here? if    ship-battle
+                   else  attack-own-boat  then  ;
 
 : attack-ship  ( -- )
   ammo @ if  (attack-ship)  else  no-ammo-left  then  ;
