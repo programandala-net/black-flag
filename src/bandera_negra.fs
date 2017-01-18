@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.25.0.201701180331" ;
+: version  ( -- ca len )  s" 0.25.1.201701181306" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -74,7 +74,7 @@ need frames@  need ms  need seconds  need ?seconds
 
 need 2avariable  need avariable    need cavariable  need value
 
-need far>sconstants  need far,"
+need far>sconstants  need farsconstants  need far,"
 
 need u>str
 need uppers1  need s+  need chars>string  need ruler
@@ -302,14 +302,14 @@ men avariable stamina
   hp@ far," Óscar Nicero"
   hp@ far," Óscar Romato"
   hp@ far," Óscar Terista"
-far>sconstants stock-name$  ( n -- ca len )
+farsconstants stock-name$  ( n -- ca len )
       constant stock-names
 
 men 2avariable name  ( n -- a )
   \ A double-cell array to hold the address and length
   \ of the names of the crew members, compiled in `names$`.
 
-: name$  ( n -- ca len )  name 2@  ;
+: name$  ( n -- ca len )  name 2@ save-farstring  ;
 
 stock-names avariable used-name  ( n -- a )
   \ An array to hold a true flag when the correspondent name
@@ -374,7 +374,6 @@ far>sconstants damage-level$  ( n -- ca len )
   hp@ far," Kukumemo"   \ kukum-em-o
 far>sconstants village$  ( n -- ca len )
       constant villages
-  \ XXX TODO -- invert the order of the strings?
 
   \ --------------------------------------------
   cr .(   -Cardinal points)  \ {{{2
@@ -402,10 +401,7 @@ far>sconstants hand$  ( n -- ca len )  drop
 
 : attr-line  ( l -- a )  columns * attributes +  ;
   \ First attribute address of a character line.
-
-: >attr  ( paper ink bright -- c )  64 * + swap 8 * +  ;
-  \ Convert _paper_, _ink_ and _bright_ to an attribute byte
-  \ _c_.
+  \ XXX TODO -- move to the Solo Forth library
 
 : dubloons$  ( n -- ca len )
   s" dobl" rot 1 > if  s" ones"  else  s" ón"  then  s+  ;
