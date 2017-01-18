@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.25.2.201701181533" ;
+: version  ( -- ca len )  s" 0.25.3.201701181648" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -531,7 +531,7 @@ window native-window 16 6 11 4 set-window
 
 window sailor-window  12 6 12 6 set-window
 
-window the-end-window  5 2 22 20 set-window
+window the-end-window  5 3 22 20 set-window
 
   \ ============================================================
   cr .( Screen)  \ {{{1
@@ -1087,7 +1087,7 @@ white black papery + constant report-color#
   r> stamina @ stamina$ 2dup uppers1 type  ;
 
 : .crew-report-header  ( -- )
-  0 1 at-xy s" Informe de tripulación" columns type-center
+  0 1 at-xy s" Estado de la tripulación" columns type-center
   name-x 4 at-xy ." Nombre"  status-x 4 at-xy ." Condición"  ;
 
 : crew-report  ( -- )
@@ -1104,7 +1104,7 @@ white black papery + constant report-color#
 
 : score-report  ( -- )
   begin-report
-  0 1 at-xy s" Informe de puntuación" columns type-center
+  0 1 at-xy s" Puntuación" columns type-center
   0 4 at-xy
   ." Días"            tab day         @ 4 .r ."  x  200" cr cr
   ." Barcos hundidos" tab sunk-ships  @ 4 .r ."  x 1000" cr cr
@@ -1115,6 +1115,7 @@ white black papery + constant report-color#
   ." Total"           tab ."       "
                       score @ 4 .r  end-report  ;
   \ XXX TODO -- add subtotals
+  \ XXX TODO -- draw a ruler above "Total"
 
   \ ============================================================
   cr .( Ship battle)  \ {{{1
@@ -1280,9 +1281,14 @@ variable done
   loop
   fire-y -cannon-ball-fire
   last-column fire-y at-xy space  ;
-  \ XXX FIXME -- the cannon ball is erased at the last column,
+  \ XXX FIXME -- The cannon ball is erased at the last column,
   \ but it's not its position if the loop was left with
   \ `leave`.
+  \
+  \ XXX TODO -- Improve, receive the cannon number (0..2) as
+  \ parameter, not the y coordinate.
+  \
+  \ XXX FIXME -- the system crashes after `sunk`.
 
 : no-ammo-left  ( -- )
   feasible-attack off  panel
@@ -1833,7 +1839,6 @@ here - cell / constant island-events
   \ XXX TODO -- sound
   \ XXX TODO make the enemy ship to move, if present
   \ (use the same graphic of the player ship)
-  r
 
   \ ============================================================
   cr .( Ship command)  \ {{{1
@@ -2249,8 +2254,8 @@ variable price  variable offer
 
 : sad-end  ( -- )
   text-font set-font  white ink  red paper
-  0 3 at-xy s" FIN DEL JUEGO" columns type-center
-  the-end-window
+  0 1 at-xy s" FIN DEL JUEGO" columns type-center
+  the-end-window  black ink  yellow paper
   supplies @ 0 <= if
     s" - Las provisiones se han agotado." wtype wcr  then
   morale @ 0 <= if

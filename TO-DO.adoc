@@ -10,6 +10,11 @@
 - Wait for the space key after the reports, to prevent the key to
   activate a command after returning to the panel.
 
+.2017-01-18:
+
+Write `use-text-font`, `use-graph-font1`, `use-graph-font2`,
+`use-native-text-font`?
+
 .2017-01-12, 2017-01-18:
 
 Bug: names of the crew members are corrupted after the first actions.
