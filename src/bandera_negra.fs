@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.25.3.201701181648" ;
+: version  ( -- ca len )  s" 0.26.0.201701181926" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -222,6 +222,22 @@ variable score            \ counter
 variable sunk-ships       \ counter
 variable supplies         \ counter
 variable trades           \ counter
+
+: ammo+!  ( n -- )  ammo @ + 0 max ammo !  ;
+  \ Add _n_ to `ammo`, making sure the minimum result is
+  \ zero.
+
+: cash+!  ( n -- )  cash @ + 0 max cash !  ;
+  \ Add _n_ to `cash`, making sure the minimum result is
+  \ zero.
+
+: morale+!  ( n -- )  morale @ + 0 max morale !  ;
+  \ Add _n_ to `morale`, making sure the minimum result is
+  \ zero.
+
+: supplies+!  ( n -- )  supplies @ + 0 max supplies !  ;
+  \ Add _n_ to `supplies`, making sure the minimum result is
+  \ zero.
 
   \ --------------------------------------------
   cr .(   -Ships)  \ {{{2
@@ -460,10 +476,10 @@ far>sconstants number$  ( n -- ca len )  drop
 
 : failure?  ( -- f )
   alive @ 0=
-  morale @ 1 < or
+  morale @ 0= or
   max-damage-index? or
-  supplies @ 1 < or
-  cash @ 1 < or  ;
+  supplies @ 0= or
+  cash @ 0= or  ;
   \ Failed mission?
   \
   \ XXX TODO -- use `0=` instead of `1 <`
@@ -1024,7 +1040,7 @@ variable cloud1x
 : run-aground-damages  ( -- )
   10 29 damaged injured drop  dead drop
     \ XXX TODO -- random number of dead and injured
-  -4 -1 random-range morale +!  ;
+  -4 -1 random-range morale+!  ;
 
 : run-aground  ( -- )
   wipe-message  \ XXX TODO remove?
@@ -1129,12 +1145,12 @@ variable done
 : hit-own-boat  ( -- )
   s" La bala alcanza su objetivo. "
   s" Esto desmoraliza a la tripulación." s+ message
-  -2 morale +!
+  -2 morale+!
   3 4 random-range 1 ?do  injured drop  loop  ;
   \ XXX TODO inform about how many injured?
 
 : do-attack-own-boat  ( -- )
-  -1 ammo +!
+  -1 ammo+!
   s" Disparas por error a uno de tus propios botes..." message
   2 seconds
   3 random if    miss-own-boat
@@ -1240,7 +1256,7 @@ variable done
   white ink red paper 21 23 at-xy .ammo  ;
 
 : less-ammo  ( -- )
-  -1 ammo +!  text-font set-font .new-ammo  ;
+  -1 ammo+!  text-font set-font .new-ammo  ;
 
 : .ammo-label  ( -- )
   text-font set-font
@@ -1689,18 +1705,18 @@ variable option
 
 : event5  ( -- )
   s" La tripulación está hambrienta." message
-  -1 morale +!  ;
+  -1 morale+!  ;
   \ XXX TODO only if supplies are not enough
 
 : event6  ( -- )
   s" La tripulación está sedienta." message
-  -1 morale +!  ;
+  -1 morale+!  ;
   \ XXX TODO only if supplies are not enough
 
 : event7  ( -- )
   2 5 random-range >r
   s" Encuentras " r@ coins$ s+ s" ." s+ message
-  r@ cash +!  r> .dubloons  ;
+  r@ cash+!  r> .dubloons  ;
 
 : event8  ( -- )
   s" Sin novedad, capitán." message  ;
@@ -1743,7 +1759,7 @@ here - cell / constant island-events
 
     1 2 random-range >r
     s" Encuentras " r@ coins$ s+ s" ." s+ message
-    r@ cash +!
+    r@ cash+!
     r> .dubloons
 
     just-3-palms-1 i-pos @ island-map !
@@ -1756,7 +1772,7 @@ here - cell / constant island-events
 
   native-ammo of
     s" Un nativo te da algo de munición." message
-    1 ammo +!  be-hostile-native
+    1 ammo+!  be-hostile-native
       \ XXX TODO random ammount
       \ XXX TODO -- choose it in advance and draw it in
       \ `.island-location`
@@ -1764,7 +1780,7 @@ here - cell / constant island-events
 
   native-supplies of
     s" Un nativo te da provisiones." message
-    1 supplies +!  be-hostile-native
+    1 supplies+!  be-hostile-native
       \ XXX TODO random ammount
       \ XXX TODO -- choose it in advance and draw it in
       \ `.island-location`
@@ -1803,7 +1819,7 @@ here - cell / constant island-events
   else  new-island enter-island-location  then  ;
 
 : disembark  ( -- )
-  -2 -1 random-range supplies +!
+  -2 -1 random-range supplies+!
   wipe-message sea-and-sky disembarking-scene enter-island  ;
 
   \ ============================================================
@@ -1985,7 +2001,7 @@ variable price  variable offer
 
 : accepted-offer  ( -- )
   wipe-message
-  offer @ negate cash +!  200 score +!  1 trades +!
+  offer @ negate cash+!  200 score +!  1 trades +!
   native-tells-clue  4 seconds  embark  ;
 
 : new-price  ( -- )
@@ -2078,12 +2094,12 @@ variable price  variable offer
         dead @ name$ s+ s" ." s+ message              endof
   2 of  s" El nativo tiene provisiones"
         s"  escondidas en su taparrabos." s+ message
-        1 supplies +!                                 endof
+        1 supplies+!                                 endof
 
     2 3 random-range r>
     s" Encuentras " r@ coins$ s+
     s"  en el cuerpo del nativo muerto." s+ message
-    r> cash +!
+    r> cash+!
 
   endcase
 
@@ -2256,9 +2272,9 @@ variable price  variable offer
   text-font set-font  white ink  red paper
   0 1 at-xy s" FIN DEL JUEGO" columns type-center
   the-end-window  black ink  yellow paper
-  supplies @ 0 <= if
+  supplies @ 0= if
     s" - Las provisiones se han agotado." wtype wcr  then
-  morale @ 0 <= if
+  morale @ 0= if
     s" - La tripulación se ha amotinado." wtype wcr  then
   ammo @ 0 <= if
     s" - La munición se ha terminado." wtype wcr  then
@@ -2268,7 +2284,7 @@ variable price  variable offer
     s" - El barco está muy dañado y es imposible repararlo."
     wtype wcr
   then
-  cash @ 0 <= if  s" - No te queda dinero." wtype  then  ;
+  cash @ 0= if  s" - No te queda dinero." wtype  then  ;
 
 : happy-end  ( -- )
   s" Lo lograste, capitán." message  ;
