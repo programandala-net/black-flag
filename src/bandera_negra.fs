@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.24.0.201701172035" ;
+: version  ( -- ca len )  s" 0.25.0.201701180331" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -67,7 +67,7 @@ need move>far  need move<far
   \ --------------------------------------------
   cr .(   -Time)  \ {{{2
 
-need frames@  need pause  need ms
+need frames@  need ms  need seconds  need ?seconds
 
   \ --------------------------------------------
   cr .(   -Data and strings)  \ {{{2
@@ -126,7 +126,8 @@ game-wordlist  set-current
 'q' ~~quit-key !  ~~resume-key on  22 ~~y !  ~~? off
 
 ' default-font ' ~~app-info defer!
-  \ Make sure the debug information is printed with the ROM font.
+  \ Make sure the debug information compiled by `~~` is printed
+  \ with the ROM font.
 
 : ?break  ( -- )  break-key? abort" Aborted!" ;
 
@@ -155,11 +156,19 @@ island-map-cols island-map-rows * constant /island-map
   \ Sea location types
   \ XXX TODO complete
  1 constant reef
- 1 constant coast
+   \ 7 constant
+   \ 8 constant
+   \ 9 constant
+  \ 10 constant
+  \ 13 constant
+  \ 14 constant
+  \ 15 constant
+  \ 16 constant
 21 constant shark
 22 constant treasure-island
 
   \ Island location types
+1 constant coast
 2 constant dubloons-found
 3 constant hostile-native
 4 constant just-3-palms-1
@@ -306,6 +315,8 @@ stock-names avariable used-name  ( n -- a )
   \ An array to hold a true flag when the correspondent name
   \ in `names$` has been used in `name`. The goal is to prevent
   \ name duplicates in the crew.
+  \
+  \ XXX TODO -- Store in far memory.
 
 0
   hp@ far," en forma"
@@ -397,7 +408,7 @@ far>sconstants hand$  ( n -- ca len )  drop
   \ _c_.
 
 : dubloons$  ( n -- ca len )
-  s" dobl " rot 1 > if  s" ones"  else  s" ón"  then  s+  ;
+  s" dobl" rot 1 > if  s" ones"  else  s" ón"  then  s+  ;
   \ Return string "doubloon" or "doubloons", depending on _n_.
 
 0
@@ -574,10 +585,8 @@ far-banks 3 + c@ cconstant screen-backup-bank
   \ ============================================================
   cr .( User input)  \ {{{1
 
-: seconds  ( n -- )  50 * pause  ;
-
 : get-digit  ( n1 -- n2 )
-  begin  dup 0 pause inkey '0' - dup >r
+  begin  dup key '0' - dup >r
          1 < over r@ < or  while  r> drop beep .1,10
   repeat  drop r>  ;
   \ Wait for a digit to be pressed by the player, until its
@@ -638,14 +647,13 @@ variable possible-west           \ flag
 : feasible-disembark?  ( -- f )
   ship-pos @ visited @ 0=
   ship-pos @ sea-map @ treasure-island =  or  ;
+  \ XXX TODO -- not if an enemy ship is present
 
 : ship-panel-commands  ( -- )
   home ship-pos ? ship-pos @ sea-map ? .s  \ XXX INFORMER
   feasible-disembark? dup >r feasible-disembark !
   16 panel-y 1+ at-xy s" Desembarcar" 0 r> ?>option$ type  ;
   \ XXX TODO -- factor both conditions
-  \ XXX TODO -- `feasible-disembark` only if no enemy ship
-  \ is present
 
 : feasible-trade?  ( -- f )
   i-pos @ island-map @ native-village =  ;
@@ -666,12 +674,12 @@ variable possible-west           \ flag
   black paper 0 21 at-xy low-win-chars spaces  ;
   \ XXX TODO -- use window
 
-: panel  ( -- )  ~~
+: panel  ( -- )
   text-font set-font  white ink
-  wipe-panel common-panel-commands  ~~
+  wipe-panel common-panel-commands
   aboard @ if    ship-panel-commands
            else  island-panel-commands
-           then  directions-menu  ~~  ;
+           then  directions-menu  ;
   \ XXX TODO check condition -- what about the enemy ship?
   \ XXX TODO several commands: attack ship/island/shark?
 
@@ -1040,7 +1048,7 @@ white black papery + constant report-color#
 : set-report-color  ( -- )
   report-color# color! permanent-colors  ;
 
-: start-report  ( -- )
+: begin-report  ( -- )
   save-screen set-report-color cls text-font set-font  ;
   \ Common task at the start of all reports.
 
@@ -1053,7 +1061,7 @@ white black papery + constant report-color#
 : .datum  ( a -- )  tabulate @ 2 .r cr cr  ;
 
 : main-report  ( -- )
-  start-report
+  begin-report
   0 1 at-xy s" Informe de situación" columns type-center
   0 4 at-xy  18 /tabulate !
   ." Días:"             day        .datum
@@ -1061,9 +1069,9 @@ white black papery + constant report-color#
   ." Moral:"            morale     .datum
   ." Provisiones:"      supplies   .datum
   ." Doblones:"         cash       .datum
-  ." Barcos hundidos:"  sunk-ships .datum
   ." Munición:"         ammo       .datum
-  ." Estado del buque:" tabulate damage$ 2dup uppers1 type
+  ." Barcos hundidos:"  sunk-ships .datum
+  ." Barco:"            tabulate damage$ 2dup uppers1 type
   end-report  ;
 
  1 cconstant name-x
@@ -1083,7 +1091,7 @@ white black papery + constant report-color#
   name-x 4 at-xy ." Nombre"  status-x 4 at-xy ." Condición"  ;
 
 : crew-report  ( -- )
-  start-report .crew-report-header
+  begin-report .crew-report-header
   men 0 do  i .crew-member-data  loop  end-report  ;
 
 : update-score  ( -- )
@@ -1095,7 +1103,7 @@ white black papery + constant report-color#
              score +!  ;
 
 : score-report  ( -- )
-  start-report
+  begin-report
   0 1 at-xy s" Informe de puntuación" columns type-center
   0 4 at-xy
   ." Días"            tab day         @ 4 .r ."  x  200" cr cr
@@ -1114,61 +1122,72 @@ white black papery + constant report-color#
 variable done
   \ XXX TODO -- rename
 
+: miss-own-boat  ( -- )
+  s" Por suerte el disparo no ha dado en el blanco." message  ;
+
+: hit-own-boat  ( -- )
+  s" La bala alcanza su objetivo. "
+  s" Esto desmoraliza a la tripulación." s+ message
+  -2 morale +!
+  3 4 random-range 1 ?do  injured drop  loop  ;
+  \ XXX TODO inform about how many injured?
+
 : do-attack-own-boat  ( -- )
   -1 ammo +!
   s" Disparas por error a uno de tus propios botes..." message
-  5 seconds
-  3 random if
-    s" Por suerte el disparo no ha dado en el blanco." message
-  else
-    \ XXX TODO inform about how many injured?
-    s" La bala alcanza su objetivo."
-    s"  Esto desmoraliza a la tripulación." s+ message
-    -2 morale +!
-    3 4 random-range 1 ?do  injured drop  loop
-  then  5 seconds  wipe-message  ;
-  \ XXX TODO -- factor
+  2 seconds
+  3 random if    miss-own-boat
+           else  hit-own-boat
+           then  5 seconds wipe-message  ;
+
+: almost-attack-own-boat  ( -- )
+  s" Por suerte no hay munición para disparar..." message
+  2 seconds
+  s" Pues enseguida te das cuenta de que ibas a hundir "
+  s" uno de tus botes." s+ message
+  5 seconds wipe-message  ;
 
 : attack-own-boat  ( -- )
-  ammo @ if  do-attack-own-boat exit  then
-  s" Por suerte no hay munición para disparar..." message
-  3 pause
-  s" Enseguida te das cuenta de que ibas a hundir"
-  s"  uno de tus botes." s+ message
-  3 pause
-  wipe-message \ XXX TODO -- needed?
-  ;
-  \ XXX TODO -- factor
+  ammo @ if     do-attack-own-boat
+         else   almost-attack-own-boat  then  ;
 
-: sunk  ( -- )
-  graph-font1 set-font  white ink  blue paper
-  enemy-ship-x @ enemy-ship-y @
+: .sunk-step-0  ( col row -- )
   2dup    at-xy ."    "
   2dup 1+ at-xy ."  ab"
-  2dup 2+ at-xy ."  90"
-  2dup    at-xy ."    "
+       2+ at-xy ."  90"  ;
+
+: .sunk-step-1  ( col row -- )
   2dup 1+ at-xy ."    "
-  2dup 2+ at-xy ."  ab"
-  2dup    at-xy ."    "
-  2dup 1+ at-xy ."    "
-       2+ at-xy ."    "
-  2 seconds
+       2+ at-xy ."  ab"  ;
+
+: .sunk-step-2  ( col row -- )
+       2+ at-xy ."    "  ;
+
+: sunk-delay  ( -- )  100 ms  ;
+
+: .sunk  ( -- )
+  graph-font1 set-font  white ink  blue paper
+  enemy-ship-x @ enemy-ship-y @ 2dup .sunk-step-0 sunk-delay
+                                2dup .sunk-step-1 sunk-delay
+                                     .sunk-step-2  ;
+
+: sunk  ( -- )
+  .sunk 2 seconds
   ship-pos @ sea-map @ 13 >=
   ship-pos @ sea-map @ 16 <= and
     \ XXX why the condition?
     \ XXX TODO -- simplify the condition and factor out
   if  1 sunk-ships +!  1000 score +!  done on  then
 
-  ship-pos @ sea-map @ case
-    13 of  10  endof
-    14 of   9  endof
-    15 of   8  endof
-    16 of   7  endof
-    dup
-  endcase  ship-pos @ sea-map !  ;
+  ship-pos @ sea-map @ case 13 of  10  endof 14 of   9  endof
+  15 of   8  endof 16 of   7  endof dup endcase  ship-pos @
+  sea-map !  ;
   \ Sunk the enemy ship
-  \ XXX TODO -- use a calculation instead the last `case`
-  \ XXX TODO -- factor
+  \
+  \ XXX FIXME -- The `case` changes the type of location, what
+  \ makes the picture different.  This is a problem of the
+  \ original game.  The enemy ship must be independent from the
+  \ location type.
 
 : .wave  ( -- )
   graph-font1 set-font
@@ -1201,13 +1220,18 @@ variable done
                                          3 + at-xy ."    "
   enemy-ship-move @ 5 = if  .wave  then  ;
   \ XXX UNDER DEVELOPMENT
+  \ XXX TODO -- factor
 
 : move-enemy-ship  ( -- )
+
   \ enemy-ship-x @ enemy-ship-y @
   \ 2dup 2dup -1..1 + swap -1..1 + swap 2 d<>
-  \ if  (move-enemy-ship)  then  ;
+  \ if  (move-enemy-ship)  then
+
+  (move-enemy-ship) \ XXX TMP --
+
+  ;
   \ XXX UNDER DEVELOPMENT
-  (move-enemy-ship)  ; \ XXX TMP --
 
 : .ammo  ( -- )  ammo @ 1 .r  ;
 
@@ -1235,13 +1259,13 @@ variable done
   9 swap 2dup 1- at-xy ." +"
               1+ at-xy ." -"  ;
   \ Print the fire effect of the cannon ball, which is at y
-  \ coordinate _row.
+  \ coordinate _row_.
 
 : -cannon-ball-fire  ( row -- )
   9 swap 2dup 1- at-xy space
               1+ at-xy space  ;
   \ Erase the fire effect of the cannon ball, which is at y
-  \ coordinate _row.
+  \ coordinate _row_.
 
 : fire  ( y -- )
   graph-font1 set-font  blue paper
@@ -1286,8 +1310,7 @@ variable done
 : gun>fire-row  ( n -- row )  gun>row 1+  ;
   \ Convert gun number _n_ (0..2) to its fire _row_.
 
-: battle-scenery  ( -- )
-  blue paper cls 31 1 do  .wave  loop
+: clear-for-action  ( -- )
   text-font set-font black ink yellow paper
   22 0 do  0 i at-xy  ." ________ "  loop
   3 0 do
@@ -1297,9 +1320,12 @@ variable done
     graph-font2 set-font  1+ 4 over .gun-man
     graph-font1 set-font     6 over .gun
                              1 swap 1+ at-xy ." hi"  \ ammo
-  loop
-  .ammo-label battle-init-enemy-ship  ;
-  \ XXX TODO -- factor more
+  loop  ;
+  \ XXX TODO -- factor
+
+: battle-scenery  ( -- )
+  blue paper cls 31 1 do  .wave  loop
+  clear-for-action .ammo-label battle-init-enemy-ship  ;
 
 : ship-battle  ( -- )
   done off  save-screen battle-scenery
@@ -1313,13 +1339,15 @@ variable done
   restore-screen  ammo @ 0= if  no-ammo-left  then  ;
   \ XXX TODO -- factor
 
+: enemy-ship-here?  ( -- f )
+  ship-pos @ sea-map @ 13 16 between  ;
+
+: (attack-ship)  ( -- )
+  enemy-ship-here?
+  if  ship-battle  else  attack-own-boat  then  ;
+
 : attack-ship  ( -- )
-  ammo @ 0= if    no-ammo-left
-            else  ship-pos @ sea-map @ 13 >=
-                  ship-pos @ sea-map @ 16 <= and
-                  if  ship-battle  else  attack-own-boat  then
-            then  ;
-  \ XXX TODO -- improve the expression with `between`
+  ammo @ if  (attack-ship)  else  no-ammo-left  then  ;
 
   \ ============================================================
   cr .( Island map)  \ {{{1
@@ -1358,16 +1386,14 @@ variable done
   cr .( On the treasure island)  \ {{{1
 
 : sailor-speech-balloon  ( -- )
-  25 44 plot
-  20 10 rdraw 0 30 rdraw 2 2 rdraw 100 0 rdraw
-  2 -2 rdraw 0 -60 rdraw -2 -2 rdraw -100 0 rdraw
-  -2 2 rdraw 0 19 rdraw -20 0 rdraw  ;
+  25 44 plot 20 10 rdraw 0  30 rdraw   2  2 rdraw  100 0 rdraw
+              2 -2 rdraw 0 -60 rdraw  -2 -2 rdraw -100 0 rdraw
+             -2  2 rdraw 0  19 rdraw -20  0 rdraw  ;
 
 : captain-speech-balloon  ( -- )
-  220 44 plot
-  -15 5 rdraw 0 20 rdraw -2 2 rdraw -30 0 rdraw
-  -2 -2 rdraw 0 -40 rdraw 2 -2 rdraw 30 0 rdraw 2 2 rdraw
-  0 14 rdraw 15 0 rdraw  ;
+  220 44 plot -15  5 rdraw 0  20 rdraw -2  2 rdraw -30 0 rdraw
+               -2 -2 rdraw 0 -40 rdraw  2 -2 rdraw  30 0 rdraw
+                2  2 rdraw 0  14 rdraw 15  0 rdraw  ;
 
 : sailor-and-captain  ( -- )
   graph-font1 set-font  cyan ink  black paper
@@ -1405,6 +1431,7 @@ variable done
   s" ¡Capitán, somos ricos!" message
   4 seconds  graph-font1 set-font  ;
   \ XXX TODO use this proc instead of happy-end?
+  \ XXX TODO -- factor
 
 variable option
 
@@ -1523,43 +1550,37 @@ variable option
   [ yellow dup papery + ] literal color-sea  ;
   \ XXX TODO -- print spaces instead
 
-: .horizon-waves  ( -- )
-  white ink  blue paper
-  0 3 at-xy ."  kl  mn     nm    klk   nm nm n"  ;
+: .north-waves  ( -- )
+  0 3 at-xy ."  kl  mn     nm    klk   nm nm n "  ;
 
-: .bottom-waves  ( -- )
-  white ink  blue paper
+: .south-waves  ( -- )
   0 14 at-xy ."  kl     mn  mn    kl    kl kl  m"
-             ."     mn      klmn   mn m  mn   "  ;
+             ."     mn      klmn   mn m  mn     "  ;
 
-: .left-waves  ( -- )
-  white ink blue paper
-  16 3 do  0 i at-xy ."  "  loop
+: island-coast?  ( a -- f )  island-map @ coast =  ;
+  \ Does cell _a_ of the island map is coast?
+
+: .west-waves  ( -- )
+  16 3 do  0 i at-xy ."   "  loop
   0 6 at-xy ." mn" 0 10 at-xy ." kl" 0 13 at-xy ." k"
   0 4 at-xy ." m" 1 8 at-xy ." l"
-  \ graph-font2 set-font \ XXX TMP -- deactivated for debugging
-  yellow ink  blue paper
-  i-pos @ 6 +
-  island-map @ coast <> if  2  3 at-xy 'A' emit  then
-  i-pos @ 6 + island-map @ coast =
-  if  2  4 at-xy 'A' emit  then
-  i-pos @ 6 - island-map @ coast =
+  graph-font2 set-font yellow ink
+  2 4 i-pos @ island-map-cols + island-coast? 0= +
+  at-xy 'A' emit
+  i-pos @ island-map-cols - island-coast?
   if  2 13 at-xy 'C' emit  then
   graph-font1 set-font  ;
-  \ XXX TODO -- factor `island-map @ coast =`
 
-: .right-waves  ( -- )
-  white ink  blue paper
-  16 3 do  30 i at-xy ."  "  loop
-  white ink  blue paper
+: .east-waves  ( -- )
+  16 3 do  30 i at-xy ."   "  loop
   30 6 at-xy ." mn" 30 10 at-xy ." kl" 31 13 at-xy ." k"
   30 4 at-xy ." m" 31 8 at-xy ." l"
-  yellow ink  blue paper  graph-font2 set-font
-  i-pos @ 6 + island-map @ coast =
+  yellow ink  graph-font2 set-font
+  i-pos @ island-map-cols + island-coast?
   if    29  4 at-xy 'B' emit  then
-  i-pos @ 6 - island-map @ coast =
-  if    29 13 at-xy 'D'
-  else  29  3 at-xy 'B'
+  29  i-pos @ island-map-cols - island-coast?
+  if    13 at-xy 'D'
+  else   3 at-xy 'B'
   then  emit  graph-font1 set-font  ;
 
 : .village  ( -- )
@@ -1587,8 +1608,9 @@ variable option
                            8 11 at-xy ." }~.,"
                            8 12 at-xy ." {|\?"  ;
 
-: .ammo  ( -- )
+: .ammo-gift  ( -- )
   black ink  yellow paper  14 12 at-xy ." hi"  ;
+  \ XXX TODO draw graphics depending on the actual ammount
 
 : .supplies  ( -- )
   graph-font2 set-font
@@ -1607,16 +1629,15 @@ variable option
   graph-font1 set-font  ;
 
 : island-waves  ( -- )
-  i-pos @ island-map-cols - island-map @ coast =
-  if  .bottom-waves   then
-  i-pos @ 6 + island-map @ coast =
-  if  .horizon-waves  then
-  i-pos @ 1-  island-map @ coast =
-  if  .left-waves     then
-  i-pos @ 1+  island-map @ coast =
-  if  .right-waves    then  ;
-  \ XXX TODO -- factor `island-map @ coast =`
-  \ XXX TODO -- use constant instead of 6
+  graph-font1 set-font white ink  blue paper
+  i-pos @ island-map-cols - island-coast?
+  if  .south-waves   then
+  i-pos @ island-map-cols + island-coast?
+  if  .north-waves  then
+  i-pos @ 1-  island-coast?
+  if  .west-waves     then
+  i-pos @ 1+  island-coast?
+  if  .east-waves    then  ;
 
 : (.island-location)  ( n -- )
   case
@@ -1629,8 +1650,8 @@ variable option
       13 5 palm2 5 6 palm2 18 8 palm2 23 8 palm2 .snake
                                                          endof
     just-3-palms-2  of  23 8 palm2 17 5 palm2 4 8 palm2  endof
-    native-supplies of .supplies  .native  16 4 palm2    endof
-    native-ammo     of  .ammo .native 20 5 palm2         endof
+    native-supplies of  .supplies  .native  16 4 palm2   endof
+    native-ammo     of  .ammo-gift .native 20 5 palm2    endof
   endcase  ;
 
 : .island-location  ( -- )
@@ -1717,8 +1738,10 @@ here - cell / constant island-events
     r> .dubloons
 
     just-3-palms-1 i-pos @ island-map !
-      \ XXX FIXME -- the location should be the same, without
-      \ dubloons!
+      \ XXX FIXME -- This changes the type of location, what
+      \ makes the picture different.  This is a problem of the
+      \ original game.  The dubloons must be independent from
+      \ the location type.
 
   endof
 
@@ -1746,12 +1769,7 @@ here - cell / constant island-events
 
   just-3-palms-2 of  island-event  endof
 
-  endcase
-
-  graph-font1 set-font
-  100 pause \ XXX OLD
-
-  ;
+  endcase  ;
 
 : enter-island-location  ( -- )
   wipe-message  \ XXX TODO needed?
@@ -1785,7 +1803,7 @@ here - cell / constant island-events
 : rain-drops  ( c -- )
   white ink  cyan paper
   cloud0x @ 2 at-xy dup 4 ruler type
-  cloud1x @ 2 at-xy     3 ruler type  3 pause  ;
+  cloud1x @ 2 at-xy     3 ruler type  60 ms  ;
 
 : rain  ( -- )
   graph-font1 set-font  71 1 do
@@ -2028,7 +2046,7 @@ variable price  variable offer
   \   exit proc
 
   s" Atacas al nativo..." message \ XXX OLD
-  100 pause
+  2 seconds
 
   i-pos @ island-map @ 5 = if
     \ XXX TODO --  5=snake?
@@ -2250,7 +2268,7 @@ variable price  variable offer
   graph-font1 set-font  16 1 do  27 i palm2  1 i palm2  7 +loop
   success? if  happy-end  else  sad-end  then
   s" Pulsa una tecla para ver tus puntos" message
-  0 pause beep .2,30 score-report  ;
+  key drop beep .2,30 score-report  ;
   \ XXX TODO new graphic, based on the cause of the end
 
   \ ============================================================
@@ -2281,25 +2299,25 @@ variable price  variable offer
   island-name$ s+
   s"  y sigue las pistas hasta el tesoro..." s+ wtype wcr wcr
   0 row 2+ at-xy s" Pulsa una tecla" columns type-center
-  6000 pause set-font  ;
+  120 ?seconds set-font  ;
 
   \ ============================================================
   cr .( Main)  \ {{{1
 
-: scenery  ( -- )  ~~
-  aboard @ if    sea-scenery  ~~
-           else  island-scenery  ~~
-           then  panel  ~~  ;
+: scenery  ( -- )
+  aboard @ if    sea-scenery
+           else  island-scenery
+           then  panel  ;
 
 : command  ( -- )
   aboard @ if  ship-command  else  island-command  then  ;
 
 : game  ( -- )
   cls  screen-restored off
-  begin  ~~
+  begin
     screen-restored @ if    screen-restored off
                      else  scenery
-                     then  command  ~~
+                     then  command
   game-over? until  ;
 
 : run  ( -- )

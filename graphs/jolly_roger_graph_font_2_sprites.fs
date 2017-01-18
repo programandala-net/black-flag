@@ -12,9 +12,9 @@
 
 \ XXX UNDER DEVELOPMENT
 
-\ Last updated: 201701102045
+\ Last modified: 201701102045
 
-\ UDG position 0 = UDG 144 in a UDG set = character 32 (' ') in a font
+\ character 32 (' ')
 00000000
 00000000
 00000000
@@ -22,19 +22,19 @@
 00000000
 00000000
 00000000
-00000000
-
-\ UDG position 1 = UDG 145 in a UDG set = character 33 ('!') in a font
-00000000
-00010000
-00010000
-00010000
-00010000
-00000000
-00010000
 00000000
 
-\ UDG position 2 = UDG 146 in a UDG set = character 34 ('"') in a font
+\ character 33 ('!')
+00000000
+00010000
+00010000
+00010000
+00010000
+00000000
+00010000
+00000000
+
+\ character 34 ('"')
 00000000
 00100100
 00100100
@@ -44,7 +44,7 @@
 00000000
 00000000
 
-\ UDG position 3 = UDG 147 in a UDG set = character 35 ('#') in a font
+\ character 35 ('#')
 00000000
 00100100
 01111110
@@ -54,7 +54,7 @@
 00100100
 00000000
 
-\ UDG position 4 = UDG 148 in a UDG set = character 36 ('$') in a font
+\ character 36 ('$')
 00000000
 00001000
 00111110
@@ -64,7 +64,7 @@
 00111110
 00001000
 
-\ UDG position 5 = UDG 149 in a UDG set = character 37 ('%') in a font
+\ character 37 ('%')
 00000000
 01100010
 01100100
@@ -74,7 +74,7 @@
 01000110
 00000000
 
-\ UDG position 6 = UDG 150 in a UDG set = character 38 ('&') in a font
+\ character 38 ('&')
 00000000
 00010000
 00101000
@@ -84,7 +84,7 @@
 00111010
 00000000
 
-\ UDG position 7 = UDG 151 in a UDG set = character 39 (''') in a font
+\ character 39 (''')
 00000000
 00001000
 00010000
@@ -94,7 +94,7 @@
 00000000
 00000000
 
-\ UDG position 8 = UDG 152 in a UDG set = character 40 ('(') in a font
+\ character 40 ('(')
 00000000
 00000100
 00001000
@@ -104,7 +104,7 @@
 00000100
 00000000
 
-\ UDG position 9 = UDG 153 in a UDG set = character 41 (')') in a font
+\ character 41 (')')
 00000000
 00100000
 00010000
@@ -114,7 +114,7 @@
 00100000
 00000000
 
-\ UDG position 10 = UDG 154 in a UDG set = character 42 ('*') in a font
+\ character 42 ('*')
 00000000
 00000000
 00010100
@@ -124,7 +124,7 @@
 00010100
 00000000
 
-\ UDG position 11 = UDG 155 in a UDG set = character 43 ('+') in a font
+\ character 43 ('+')
 00000000
 00000000
 00001000
@@ -134,7 +134,7 @@
 00001000
 00000000
 
-\ UDG position 12 = UDG 156 in a UDG set = character 44 (',') in a font
+\ character 44 (',')
 00000000
 00000000
 00000000
@@ -144,7 +144,7 @@
 00001000
 00010000
 
-\ UDG position 13 = UDG 157 in a UDG set = character 45 ('-') in a font
+\ character 45 ('-')
 00000000
 00000000
 00000000
@@ -154,7 +154,7 @@
 00000000
 00000000
 
-\ UDG position 14 = UDG 158 in a UDG set = character 46 ('.') in a font
+\ character 46 ('.')
 00000000
 00000000
 00000000
@@ -164,7 +164,7 @@
 00011000
 00000000
 
-\ UDG position 15 = UDG 159 in a UDG set = character 47 ('/') in a font
+\ character 47 ('/')
 00000000
 00000000
 00000010
@@ -174,7 +174,7 @@
 00100000
 00000000
 
-\ UDG position 16 = UDG 160 in a UDG set = character 48 ('0') in a font
+\ character 48 ('0')
 00000000
 00111111
 01111101
@@ -184,7 +184,7 @@
 10001100
 11111000
 
-\ UDG position 17 = UDG 161 in a UDG set = character 49 ('1') in a font
+\ character 49 ('1')
 00000000
 00000000
 00000000
@@ -194,7 +194,7 @@
 11111100
 01111000
 
-\ UDG position 18 = UDG 162 in a UDG set = character 50 ('2') in a font
+\ character 50 ('2')
 00110000
 01111000
 11111000
@@ -204,7 +204,7 @@
 01111000
 01111000
 
-\ UDG position 19 = UDG 163 in a UDG set = character 51 ('3') in a font
+\ character 51 ('3')
 01111100
 01101100
 01101110
@@ -214,7 +214,7 @@
 01110111
 01110111
 
-\ UDG position 20 = UDG 164 in a UDG set = character 52 ('4') in a font
+\ character 52 ('4')
 00111100
 01111110
 11111111
@@ -224,7 +224,7 @@
 01111110
 01111110
 
-\ UDG position 21 = UDG 165 in a UDG set = character 53 ('5') in a font
+\ character 53 ('5')
 00011000
 00111100
 01111110
@@ -234,7 +234,7 @@
 01111010
 01111010
 
-\ UDG position 22 = UDG 166 in a UDG set = character 54 ('6') in a font
+\ character 54 ('6')
 00011000
 00111100
 01111110
@@ -244,7 +244,7 @@
 01100110
 01100110
 
-\ UDG position 23 = UDG 167 in a UDG set = character 55 ('7') in a font
+\ character 55 ('7')
 00111111
 00111111
 00111111
@@ -254,7 +254,7 @@
 00111100
 00111100
 
-\ UDG position 24 = UDG 168 in a UDG set = character 56 ('8') in a font
+\ character 56 ('8')
 11111100
 11111100
 11111100
@@ -264,7 +264,7 @@
 00111100
 00111100
 
-\ UDG position 25 = UDG 169 in a UDG set = character 57 ('9') in a font
+\ character 57 ('9')
 00111100
 01000010
 10111101
@@ -274,7 +274,7 @@
 01000010
 00111100
 
-\ UDG position 26 = UDG 170 in a UDG set = character 58 (':') in a font
+\ character 58 (':')
 00000000
 00000000
 00000000
@@ -284,7 +284,7 @@
 00010000
 00000000
 
-\ UDG position 27 = UDG 171 in a UDG set = character 59 (';') in a font
+\ character 59 (';')
 00000000
 00000000
 00010000
@@ -294,7 +294,7 @@
 00010000
 00100000
 
-\ UDG position 28 = UDG 172 in a UDG set = character 60 ('<') in a font
+\ character 60 ('<')
 00000011
 00000101
 00000101
@@ -304,7 +304,7 @@
 00010001
 00100001
 
-\ UDG position 29 = UDG 173 in a UDG set = character 61 ('=') in a font
+\ character 61 ('=')
 11000000
 10100000
 10100000
@@ -314,7 +314,7 @@
 10001000
 10000100
 
-\ UDG position 30 = UDG 174 in a UDG set = character 62 ('>') in a font
+\ character 62 ('>')
 11111111
 00000000
 00000000
@@ -324,7 +324,7 @@
 00000000
 00000000
 
-\ UDG position 31 = UDG 175 in a UDG set = character 63 ('?') in a font
+\ character 63 ('?')
 00000000
 00111100
 01000010
@@ -334,7 +334,7 @@
 00001000
 00000000
 
-\ UDG position 32 = UDG 176 in a UDG set = character 64 ('@') in a font
+\ character 64 ('@')
 00000000
 00111100
 01001010
@@ -344,7 +344,7 @@
 00111100
 00000000
 
-\ UDG position 33 = UDG 177 in a UDG set = character 65 ('A') in a font
+\ character 65 ('A')
 \ Sun:
 \ AB
 \ CD
@@ -365,7 +365,7 @@
 0000111111110000
 0000001111000000
 
-\ UDG position 37 = UDG 181 in a UDG set = character 69 ('E') in a font
+\ character 69 ('E')
 \ Cloud 0:
 \ EFGH
 \ IJKL
@@ -386,7 +386,7 @@
 01111110000011111001100111111000
 00111000000001110000100011110000
 
-\ UDG position 45 = UDG 189 in a UDG set = character 77 ('M') in a font
+\ character 77 ('M')
 \ Cloud 1:
 \ MNO
 \ PQR
@@ -407,7 +407,7 @@
 011111001111100001111110
 001110000111000000001100
 
-\ UDG position 51 = UDG 195 in a UDG set = character 83 ('S') in a font
+\ character 83 ('S')
 \ Part of the village
 00000001
 00000011
@@ -418,7 +418,7 @@
 01111111
 11111111
 
-\ UDG position 52 = UDG 196 in a UDG set = character 84 ('T') in a font
+\ character 84 ('T')
 \ Part of the village
 10000000
 11000000
@@ -429,7 +429,7 @@
 11111110
 11111111
 
-\ UDG position 53 = UDG 197 in a UDG set = character 85 ('U') in a font
+\ character 85 ('U')
 \ Part of the village
 11111111
 11111111
@@ -440,7 +440,7 @@
 11000011
 11000011
 
-\ UDG position 54 = UDG 198 in a UDG set = character 86 ('V') in a font
+\ character 86 ('V')
 \ Part of the village
 00011111
 00011111
@@ -451,7 +451,7 @@
 00011111
 00011111
 
-\ UDG position 55 = UDG 199 in a UDG set = character 87 ('W') in a font
+\ character 87 ('W')
 \ Part of the village
 11111000
 11111000
@@ -462,7 +462,7 @@
 11111000
 11111000
 
-\ UDG position 56 = UDG 200 in a UDG set = character 88 ('X') in a font
+\ character 88 ('X')
 \ Part of the village
 00000010
 00110010
@@ -473,7 +473,7 @@
 01001010
 01001010
 
-\ UDG position 57 = UDG 201 in a UDG set = character 89 ('Y') in a font
+\ character 89 ('Y')
 \ Part of the village
 00001000
 00110100
@@ -484,7 +484,7 @@
 01001000
 01001000
 
-\ UDG position 58 = UDG 202 in a UDG set = character 90 ('Z') in a font
+\ character 90 ('Z')
 \ Part of the village
 00000000
 00011000
@@ -495,7 +495,7 @@
 00100100
 00100100
 
-\ UDG position 59 = UDG 203 in a UDG set = character 91 ('[') in a font
+\ character 91 ('[')
 00000000
 00001110
 00001000
@@ -505,7 +505,7 @@
 00001110
 00000000
 
-\ UDG position 60 = UDG 204 in a UDG set = character 92 ('\') in a font
+\ character 92 ('\')
 00000000
 00000000
 01000000
@@ -515,7 +515,7 @@
 00000100
 00000000
 
-\ UDG position 61 = UDG 205 in a UDG set = character 93 (']') in a font
+\ character 93 (']')
 00000000
 01110000
 00010000
@@ -525,7 +525,7 @@
 01110000
 00000000
 
-\ UDG position 62 = UDG 206 in a UDG set = character 94 ('^') in a font
+\ character 94 ('^')
 00000000
 00010000
 00111000
@@ -535,7 +535,7 @@
 00010000
 00000000
 
-\ UDG position 63 = UDG 207 in a UDG set = character 95 ('_') in a font
+\ character 95 ('_')
 00000000
 00000000
 00000000
@@ -545,7 +545,7 @@
 00000000
 11111111
 
-\ UDG position 64 = UDG 208 in a UDG set = character 96 ('`') in a font
+\ character 96 ('`')
 00000000
 00011100
 00100010
@@ -555,7 +555,7 @@
 01111110
 00000000
 
-\ UDG position 65 = UDG 209 in a UDG set = character 97 ('a') in a font
+\ character 97 ('a')
 00000000
 00000000
 00000011
@@ -565,7 +565,7 @@
 11100100
 00001100
 
-\ UDG position 66 = UDG 210 in a UDG set = character 98 ('b') in a font
+\ character 98 ('b')
 00000110
 00001111
 00001111
@@ -575,7 +575,7 @@
 00000110
 00000011
 
-\ UDG position 67 = UDG 211 in a UDG set = character 99 ('c') in a font
+\ character 99 ('c')
 01100000
 11110000
 11111000
@@ -585,7 +585,7 @@
 01100000
 11000000
 
-\ UDG position 68 = UDG 212 in a UDG set = character 100 ('d') in a font
+\ character 100 ('d')
 00110001
 11111111
 11101111
@@ -595,7 +595,7 @@
 01100111
 00100111
 
-\ UDG position 69 = UDG 213 in a UDG set = character 101 ('e') in a font
+\ character 101 ('e')
 10000000
 11111100
 01111110
@@ -605,7 +605,7 @@
 01100110
 11100010
 
-\ UDG position 70 = UDG 214 in a UDG set = character 102 ('f') in a font
+\ character 102 ('f')
 00100111
 00100110
 00100110
@@ -615,7 +615,7 @@
 00100000
 00100000
 
-\ UDG position 71 = UDG 215 in a UDG set = character 103 ('g') in a font
+\ character 103 ('g')
 11100000
 01100000
 01100000
@@ -625,7 +625,7 @@
 01111000
 01011000
 
-\ UDG position 72 = UDG 216 in a UDG set = character 104 ('h') in a font
+\ character 104 ('h')
 11100000
 01100000
 01100000
@@ -635,7 +635,7 @@
 00000000
 00000000
 
-\ UDG position 73 = UDG 217 in a UDG set = character 105 ('i') in a font
+\ character 105 ('i')
 00100111
 00100110
 00100110
@@ -645,7 +645,7 @@
 00000000
 00000000
 
-\ UDG position 74 = UDG 218 in a UDG set = character 106 ('j') in a font
+\ character 106 ('j')
 00000000
 00011000
 00111100
@@ -655,7 +655,7 @@
 00011000
 00011000
 
-\ UDG position 75 = UDG 219 in a UDG set = character 107 ('k') in a font
+\ character 107 ('k')
 11111111
 11111111
 00000000
@@ -665,7 +665,7 @@
 00000000
 00000000
 
-\ UDG position 76 = UDG 220 in a UDG set = character 108 ('l') in a font
+\ character 108 ('l')
 00000000
 00000111
 00011111
@@ -675,7 +675,7 @@
 00000111
 00000000
 
-\ UDG position 77 = UDG 221 in a UDG set = character 109 ('m') in a font
+\ character 109 ('m')
 00000000
 11100000
 11111000
@@ -685,7 +685,7 @@
 11100000
 00000000
 
-\ UDG position 78 = UDG 222 in a UDG set = character 110 ('n') in a font
+\ character 110 ('n')
 01100000
 11100000
 11100000
@@ -695,7 +695,7 @@
 00000000
 00000000
 
-\ UDG position 79 = UDG 223 in a UDG set = character 111 ('o') in a font
+\ character 111 ('o')
 00111100
 01111110
 11111111
@@ -705,7 +705,7 @@
 11111111
 11111111
 
-\ UDG position 80 = UDG 224 in a UDG set = character 112 ('p') in a font
+\ character 112 ('p')
 00000110
 00000111
 00000111
@@ -715,7 +715,7 @@
 00000000
 00000000
 
-\ UDG position 81 = UDG 225 in a UDG set = character 113 ('q') in a font
+\ character 113 ('q')
 00000010
 00000100
 00001000
@@ -725,7 +725,7 @@
 01100000
 00000000
 
-\ UDG position 82 = UDG 226 in a UDG set = character 114 ('r') in a font
+\ character 114 ('r')
 01111110
 00000000
 00111100
@@ -735,7 +735,7 @@
 00000000
 00000000
 
-\ UDG position 83 = UDG 227 in a UDG set = character 115 ('s') in a font
+\ character 115 ('s')
 01000000
 00100000
 00010000
@@ -745,7 +745,7 @@
 00000110
 00000000
 
-\ UDG position 84 = UDG 228 in a UDG set = character 116 ('t') in a font
+\ character 116 ('t')
 00000010
 00000010
 00000010
@@ -755,7 +755,7 @@
 00000010
 00000010
 
-\ UDG position 85 = UDG 229 in a UDG set = character 117 ('u') in a font
+\ character 117 ('u')
 00000000
 00000000
 00000000
@@ -775,7 +775,7 @@
 0000011111100000
 0000000000000000
 
-\ UDG position 88 = UDG 232 in a UDG set = character 120 ('x') in a font
+\ character 120 ('x')
 00000000
 00000000
 10000000
@@ -785,7 +785,7 @@
 00000000
 00000000
 
-\ UDG position 89 = UDG 233 in a UDG set = character 121 ('y') in a font
+\ character 121 ('y')
 00000000
 00000000
 00000000
@@ -795,7 +795,7 @@
 00000000
 00000000
 
-\ UDG position 90 = UDG 234 in a UDG set = character 122 ('z') in a font
+\ character 122 ('z')
 00000000
 00000000
 11000000
@@ -805,7 +805,7 @@
 00100111
 00110000
 
-\ UDG position 91 = UDG 235 in a UDG set = character 123 ('{') in a font
+\ character 123 ('{')
 00000000
 00001110
 00001000
@@ -815,7 +815,7 @@
 00001110
 00000000
 
-\ UDG position 92 = UDG 236 in a UDG set = character 124 ('|') in a font
+\ character 124 ('|')
 00000000
 00001000
 00001000
@@ -825,7 +825,7 @@
 00001000
 00000000
 
-\ UDG position 93 = UDG 237 in a UDG set = character 125 ('}') in a font
+\ character 125 ('}')
 00000000
 01110000
 00010000
@@ -835,7 +835,7 @@
 01110000
 00000000
 
-\ UDG position 94 = UDG 238 in a UDG set = character 126 ('~') in a font
+\ character 126 ('~')
 00000000
 00010100
 00101000
@@ -845,7 +845,7 @@
 00000000
 00000000
 
-\ UDG position 95 = UDG 239 in a UDG set = character 127 in a font
+\ character 127
 00111100
 01000010
 10011001

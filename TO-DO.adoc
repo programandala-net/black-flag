@@ -1,6 +1,6 @@
 = To-Do list of Bandera Negra
 :author: Marcos Cruz (programandala.net)
-:revdate: 2017-01-12
+:revdate: 2017-01-18
 
 == New notes about the conversion to Forth
 
@@ -10,14 +10,13 @@
 - Wait for the space key after the reports, to prevent the key to
   activate a command after returning to the panel.
 
-.2017-01-12:
-
-Remove `dead` and `injured`. Make `man-dead` and `man-injured` return
-the result on the stack instead.
-
-.2017-01-12:
+.2017-01-12, 2017-01-18:
 
 Bug: names of the crew members are corrupted after the first actions.
+
+The reason is the strings chosen from `stock-name$` to be stored in
+`name` are in the circular string buffer. Their original address in
+far memory has to be stored instead.
 
 .2017-01-12:
 
@@ -41,17 +40,25 @@ Combine all graphics into one single UDG set:
 
 Total: 225 characters
 
+Then add the characters needed for Spanish and Esperanto:
+
+- 16 chars for Spanish: áéíóúüñÁÉÍÓÚÜÑ¡¿
+- 12 chars for Esperanto: ĉĝĥĵŝŭĈĜĤĴŜŬ
+
 |===
 | Character codes  | Origin
 
+| 0..31            | graph font 2
 | 32..127          | graph font 1
 | 128              | *not used*
 | 129..143         | block chars
 | 144..164         | UDG set
+| 165..226         | graph font 2
+| 227..242         | Spanish characters
+| 243..254         | Esperanto characters
 |===
 
-The strings printed with graph font 2 must be changed:
-
+Only the strings printed with graph font 2 must be adapted.
 
 .2017-01-08:
 
@@ -86,19 +93,11 @@ Condiciones para los comandos del panel:
 - Matar: `not(islandMap(iPos)=2 or islandMap(iPos)=4 or
   islandMap(iPos)=6)`
 
-Cambiar la medida del daño del barco (variable `damage`) por su
-estado, analógamente a la tripulación, y mostrarlo en forma de texto.
-
 Tabla de mejores puntuaciones.
 
 Hacer dos aspectos para el final: éxito y fracaso.
 
 Ampliar `fn number$()` y usarla en la negociación.
-
-Hacer que el número de doblones hallados varíe.
-
-Usar un juego de caracteres diferente para las palabras de los
-nativos.
 
 Hacer, si no está, que se reciban provisiones, munición y tropa tras
 vencer a un barco.
@@ -121,8 +120,6 @@ siempre 1.
 Informar de que no se puede desembarcar porque la isla ya ha sido
 visitada.
 
-Fallo: el barco sale con fondo negro cuando encalla.
-
 Revisar los rangos de doblones al comerciar.
 
 Informar de si hay muertos cuando el bote es alcanzado por error.
@@ -130,8 +127,6 @@ Calcular `alive` antes y después de herir a los hombres.
 
 Hacer que el jugador pueda poner nombre a los miembros de la
 tripulación.
-
-Cambiar el aspecto de las pantallas finales: negras y con calaveras.
 
 Hacer que el jugador pueda elegir nombre al capitán.
 
