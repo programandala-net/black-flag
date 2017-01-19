@@ -15,16 +15,17 @@
   \ ============================================================
 
 only forth definitions
+
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.26.2-pre.2+201701190250" ;
+: version  ( -- ca len )  s" 0.26.2-pre.3+201701191631" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
   \ ============================================================
   cr .( Requirements)  \ {{{1
 
-forth-wordlist set-current
+only forth definitions
 
   \ --------------------------------------------
   cr .(   -Assembler)  \ {{{2
@@ -36,7 +37,7 @@ forth-wordlist set-current
   \ --------------------------------------------
   cr .(   -Debugging tools)  \ {{{2
 
-need ~~  need see  need dump  need where
+need order  need ~~  need see  need dump  need where
 
   \ --------------------------------------------
   cr .(   -Definers)  \ {{{2
@@ -115,7 +116,7 @@ need get-inkey ' get-inkey alias inkey
   \ forget-transient
   \ XXX TODO --
 
-game-wordlist  set-current
+game-wordlist  dup >order set-current
 
   \ ============================================================
   cr .( Debugging tools [1])  \ {{{1
@@ -895,17 +896,17 @@ variable cloud1x
   \ --------------------------------------------
   cr .(   -Reefs)  \ {{{2
 
-: bottom-reef  ( -- )
+: .south-reef  ( -- )
   black ink  blue paper
   2 14 at-xy ."  A  HI   HI       HI  HI  A"
   0 15 at-xy .\" WXY  :\::\::\x7F     Z123     :\::\::\x7F"  ;
 
-: left-reef  ( -- )
+: .east-reef  ( -- )
   black ink  blue paper
    0 4 at-xy ." A"   1 6 at-xy ." HI"  0 8 at-xy ." WXY"
   1 11 at-xy ." A"  0 13 at-xy ." HI"  ;
 
-: right-reef  ( -- )
+: .west-reef  ( -- )
   black ink  blue paper
   30 4 at-xy ." HI"   28 6 at-xy ." A"
   29 7 at-xy ." WXY"  31 9 at-xy ." A"  ;
@@ -913,11 +914,19 @@ variable cloud1x
 : reef?  ( n -- f )  sea-map @ reef =  ;
   \ Is there a reef at sea map position _n_?
 
+: east-of-ship-pos  ( -- n )  ship-pos @ 1+  ;
+
+: west-of-ship-pos  ( -- n )  ship-pos @ 1-  ;
+
+: north-of-ship-pos  ( -- n )  ship-pos @ sea-map-cols +  ;
+
+: south-of-ship-pos  ( -- n )  ship-pos @ sea-map-cols -  ;
+
 : .reefs  ( -- )
-  ship-pos @ sea-map-cols + reef? if  .far-islands  then
-  ship-pos @ sea-map-cols - reef? if  bottom-reef      then
-  ship-pos @ 1-           reef? if  left-reef        then
-  ship-pos @ 1+           reef? if  right-reef       then  ;
+  north-of-ship-pos  reef? if  .far-islands   then
+  south-of-ship-pos  reef? if  .south-reef   then
+  west-of-ship-pos   reef? if  .east-reef     then
+  east-of-ship-pos   reef? if  .west-reef    then  ;
 
   \ --------------------------------------------
   cr .(   -Ships)  \ {{{2
@@ -1055,7 +1064,7 @@ variable cloud1x
 : run-aground  ( -- )
   wipe-message  \ XXX TODO remove?
   graph-font1 set-font
-  wipe-sea .far-islands bottom-reef left-reef right-reef
+  wipe-sea .far-islands .south-reef .east-reef .west-reef
   white ink 14 8 .ship-up .run-aground-reefs
   run-aground-damages run-aground-message
   3 seconds  ;
@@ -1393,8 +1402,7 @@ variable done
   \ ============================================================
   cr .( Island map)  \ {{{1
 
-: erase-island  ( -- )
-  0 island-map /island-map cells erase  ;
+: erase-island  ( -- )  0 island-map /island-map cells erase  ;
 
 : is-coast  ( n -- )  coast swap island-map !  ;
   \ Make cell _n_ of the island map be coast.
@@ -1404,7 +1412,7 @@ variable done
   \ be coast.
 
 : make-north-coast  ( -- )
-  [ /island-map sea-map-cols - ] literal sea-map-cols
+  [ /island-map island-map-cols - ] literal island-map-cols
   (make-coast)  ;
 
 : make-south-coast  ( -- )  0 island-map-cols (make-coast)  ;
@@ -1417,7 +1425,7 @@ variable done
   \ XXX TODO -- generalize for any size of island
 
 : make-coast  ( -- )  make-north-coast make-west-coast
-                      make-east-coast make-south-coast  ;
+                      make-south-coast make-east-coast  ;
 
 : location-random-type  ( -- n )
   dubloons-found just-3-palms-2 random-range  ;
@@ -2385,10 +2393,21 @@ variable invflag
   \ XXX TMP --
 
 : .sea  ( -- )
-  cls
+  cr
   sea-map-rows 0 do
     sea-map-cols 0 do
-      invflag @ inverse  j sea-map-cols * i + sea-map @ 2 .r
+      invflag @ inverse
+      j sea-map-cols * i + sea-map @ 2 .r
+      invflag @ 0= invflag !
+    loop  cr
+  loop  0 inverse  ;
+
+: .isl  ( -- )
+  cr
+  island-map-rows 0 do
+    island-map-cols 0 do
+      invflag @ inverse
+      j island-map-cols * i + island-map @ 2 .r
       invflag @ 0= invflag !
     loop  cr
   loop  0 inverse  ;
