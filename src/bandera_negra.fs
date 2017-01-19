@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.26.2-pre.1+201701190125" ;
+: version  ( -- ca len )  s" 0.26.2-pre.2+201701190250" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -143,6 +143,16 @@ sea-map-cols sea-map-rows * constant /sea-map
 
 6 constant island-map-cols
 5 constant island-map-rows
+
+  \     Island grid
+  \
+  \ 4| 29 28 27 26 25 24
+  \ 3| 23 22 21 20 19 18
+  \ 2| 17 16 15 14 13 12
+  \ 1| 11 10 09 08 07 06
+  \ 0| 05 04 03 02 01 00
+  \    _________________
+  \     5  4  3  2  1  0
 
 island-map-cols island-map-rows * constant /island-map
   \ cells of the island map
@@ -1386,17 +1396,28 @@ variable done
 : erase-island  ( -- )
   0 island-map /island-map cells erase  ;
 
-: create-coast  ( -- )
-  coast  0 island-map !  coast  1 island-map !
-  coast  2 island-map !  coast  3 island-map !
-  coast  4 island-map !  coast  5 island-map !
-  coast  6 island-map !  coast 11 island-map !
-  coast 12 island-map !  coast 17 island-map !
-  coast 18 island-map !  coast 23 island-map !
-  coast 24 island-map !  coast 25 island-map !
-  coast 26 island-map !  coast 27 island-map !
-  coast 28 island-map !  coast 29 island-map !  ;
-  \ XXX TODO -- use a byte table and loop
+: is-coast  ( n -- )  coast swap island-map !  ;
+  \ Make cell _n_ of the island map be coast.
+
+: (make-coast)  ( n1 n2 -- )  bounds do  i is-coast  loop  ;
+  \ Make _n2_ cells of the island map, starting from cell_ n1_,
+  \ be coast.
+
+: make-north-coast  ( -- )
+  [ /island-map sea-map-cols - ] literal sea-map-cols
+  (make-coast)  ;
+
+: make-south-coast  ( -- )  0 island-map-cols (make-coast)  ;
+
+: make-east-coast  ( -- )  6 is-coast 12 is-coast 18 is-coast ;
+  \ XXX TODO -- generalize for any size of island
+
+: make-west-coast  ( -- )
+  11 is-coast 17 is-coast 23 is-coast  ;
+  \ XXX TODO -- generalize for any size of island
+
+: make-coast  ( -- )  make-north-coast make-west-coast
+                      make-east-coast make-south-coast  ;
 
 : location-random-type  ( -- n )
   dubloons-found just-3-palms-2 random-range  ;
@@ -1410,7 +1431,7 @@ variable done
   native-supplies  8 11 random-range island-map !  ;
 
 : new-island  ( -- )
-  erase-island create-coast populate
+  erase-island make-coast populate
   8 11 random-range i-pos !  ;
 
   \ ============================================================
