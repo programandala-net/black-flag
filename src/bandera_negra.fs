@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.26.2-pre.3+201701191631" ;
+: version  ( -- ca len )  s" 0.26.2+201701191909" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -136,14 +136,15 @@ game-wordlist  dup >order set-current
   \ ============================================================
   cr .( Constants)  \ {{{1
 
-15 constant sea-map-cols
- 9 constant sea-map-rows
+15 constant sea-length
+ 9 constant sea-breadth
 
-sea-map-cols sea-map-rows * constant /sea-map
+sea-length sea-breadth * constant /sea
   \ cells of the sea map
 
-6 constant island-map-cols
-5 constant island-map-rows
+6 constant island-length
+5 constant island-breadth
+  \ XXX TODO -- set them randomly when a new island is created
 
   \     Island grid
   \
@@ -155,7 +156,7 @@ sea-map-cols sea-map-rows * constant /sea-map
   \    _________________
   \     5  4  3  2  1  0
 
-island-map-cols island-map-rows * constant /island-map
+island-length island-breadth * constant /island
   \ cells of the island map
 
 10 constant men
@@ -281,14 +282,16 @@ variable pace
   \ --------------------------------------------
   cr .(   -Maps)  \ {{{2
 
-/sea-map     avariable sea-map
-/island-map  avariable island-map
-/sea-map     avariable visited    \ flags for islands
+/sea     avariable sea
+/island  avariable island
+/sea     avariable visited    \ flags for islands
+  \ XXX TODO -- character arrays in far memory
 
   \ --------------------------------------------
   cr .(   -Crew)  \ {{{2
 
 men avariable stamina
+  \ XXX TODO -- character array in far memory
 
   \ Crew names are pun funny names in Spanish:
 
@@ -507,6 +510,7 @@ far>sconstants number$  ( n -- ca len )  drop
   \ Physical condition of a crew member
 
 : blank-line$  ( -- ca len )  bl columns ruler  ;
+  \ XXX TODO -- use `emits` instead
 
 : damage$  ( -- ca len )  damage-index damage-level$  ;
   \ Damage description
@@ -653,7 +657,7 @@ variable possible-west           \ flag
   \ XXX TODO use a modified  version of "+"?
 
 : feasible-attack?  ( -- f )
-  ship-pos @ sea-map @ dup >r 13 <
+  ship-pos @ sea @ dup >r 13 <
                            r@ shark = or
                            r> treasure-island = or  0=
   ammo @ 0<> and  ;
@@ -670,17 +674,17 @@ variable possible-west           \ flag
 
 : feasible-disembark?  ( -- f )
   ship-pos @ visited @ 0=
-  ship-pos @ sea-map @ treasure-island =  or  ;
+  ship-pos @ sea @ treasure-island =  or  ;
   \ XXX TODO -- not if an enemy ship is present
 
 : ship-panel-commands  ( -- )
-  home ship-pos ? ship-pos @ sea-map ? .s  \ XXX INFORMER
+  home ship-pos ? ship-pos @ sea ? .s  \ XXX INFORMER
   feasible-disembark? dup >r feasible-disembark !
   16 panel-y 1+ at-xy s" Desembarcar" 0 r> ?>option$ type  ;
   \ XXX TODO -- factor both conditions
 
 : feasible-trade?  ( -- f )
-  i-pos @ island-map @ native-village =  ;
+  i-pos @ island @ native-village =  ;
 
 ' true alias feasible-embark?  ( -- f )
   \ XXX TODO -- only if i-pos is coast
@@ -688,7 +692,7 @@ variable possible-west           \ flag
   \ disembarking position
 
 : island-panel-commands  ( -- )
-  home i-pos ? i-pos @ island-map ? .s  \ XXX INFORMER
+  home i-pos ? i-pos @ island ? .s  \ XXX INFORMER
   feasible-embark? dup >r feasible-embark !
   16 panel-y 1+ at-xy s" emBarcar" 2 r> ?>option$ type
   feasible-trade? dup >r feasible-trade !
@@ -710,17 +714,16 @@ variable possible-west           \ flag
   \ ============================================================
   cr .( Landscape graphics)  \ {{{1
 
-variable cloud0x
-variable cloud1x
-  \ XXX TODO -- rename
+variable west-cloud-x  4 constant /west-cloud
+variable east-cloud-x  3 constant /east-cloud
 
 : sun-and-clouds  ( f -- )
   bright  yellow ink  cyan paper
   graph-font2 set-font
   26 0 at-xy ." AB"  26 1 at-xy ." CD"  white ink
-  1 9 random-range dup cloud0x !
+  1 9 random-range dup west-cloud-x !
   dup 0 at-xy ." EFGH" 1 at-xy ." IJKL"
-  13 21 random-range dup cloud1x !
+  13 21 random-range dup east-cloud-x !
   dup 0 at-xy ." MNO"  1 at-xy ." PQR"
   graph-font1 set-font  0 bright  ;
   \ XXX TODO -- why the parameter, if this word is used only
@@ -861,7 +864,7 @@ variable cloud1x
   0 2 at-xy ." Z123 HI A Z123 HI A Z123 HI Z123"  ;
 
 : .treasure-island  ( -- )
-  graph-font1 set-font  green ink  blue paper
+  get-font >r graph-font1 set-font  green ink  blue paper
   16  7 at-xy ." A A   HI"
   13  8 at-xy .\" F\::\::\::B\::\::\::B\::\::B\::\::\::C"
   12  9 at-xy .\" G\::\::\::\::\::\::\::"
@@ -885,13 +888,14 @@ variable cloud1x
   else
     s" Has encontrado la perdida isla de "
     island-name$ s+ s" ..."
-  then  s+ message  graph-font1 set-font  ;
+  then  s+ message  r> set-font  ;
   \ XXX TODO -- factor
 
 : wipe-island  ( -- )
   [ 3 attr-line ] literal
   [ 3 columns * ] literal
   [ yellow dup papery + ] literal fill  ;
+  \ XXX TODO -- use constants
 
   \ --------------------------------------------
   cr .(   -Reefs)  \ {{{2
@@ -911,16 +915,16 @@ variable cloud1x
   30 4 at-xy ." HI"   28 6 at-xy ." A"
   29 7 at-xy ." WXY"  31 9 at-xy ." A"  ;
 
-: reef?  ( n -- f )  sea-map @ reef =  ;
+: reef?  ( n -- f )  sea @ reef =  ;
   \ Is there a reef at sea map position _n_?
 
 : east-of-ship-pos  ( -- n )  ship-pos @ 1+  ;
 
 : west-of-ship-pos  ( -- n )  ship-pos @ 1-  ;
 
-: north-of-ship-pos  ( -- n )  ship-pos @ sea-map-cols +  ;
+: north-of-ship-pos  ( -- n )  ship-pos @ sea-length +  ;
 
-: south-of-ship-pos  ( -- n )  ship-pos @ sea-map-cols -  ;
+: south-of-ship-pos  ( -- n )  ship-pos @ sea-length -  ;
 
 : .reefs  ( -- )
   north-of-ship-pos  reef? if  .far-islands   then
@@ -1009,7 +1013,7 @@ variable cloud1x
 
 : sea-scenery  ( -- )
   graphic-window graph-font1 set-font
-  sea-and-sky redraw-ship  ship-pos @ sea-map @ sea-picture  ;
+  sea-and-sky redraw-ship  ship-pos @ sea @ sea-picture  ;
 
   \ ============================================================
   cr .( Crew stamina)  \ {{{1
@@ -1210,8 +1214,8 @@ variable done
 : sunk  ( -- )
   .sunk 2 seconds
 
-  \ ship-pos @ sea-map @ 13 >=
-  \ ship-pos @ sea-map @ 16 <= and
+  \ ship-pos @ sea @ 13 >=
+  \ ship-pos @ sea @ 16 <= and
   \ if  1 sunk-ships +!  1000 score +!  done on  then
     \ XXX OLD
 
@@ -1219,11 +1223,11 @@ variable done
     \ XXX TODO -- use constant to increase the score, and in
     \ the score report
 
-  ship-pos @ sea-map @ case
+  ship-pos @ sea @ case
     13 of  10  endof
     14 of   9  endof
     15 of   8  endof
-    16 of   7  endof  dup endcase  ship-pos @ sea-map !  ;
+    16 of   7  endof  dup endcase  ship-pos @ sea !  ;
   \ Sunk the enemy ship
   \
   \ XXX FIXME -- The `case` changes the type of location, what
@@ -1390,7 +1394,7 @@ variable done
   save-screen (ship-battle) restore-screen  ;
 
 : enemy-ship-here?  ( -- f )
-  ship-pos @ sea-map @ 13 16 between  ;
+  ship-pos @ sea @ 13 16 between  ;
 
 : (attack-ship)  ( -- )
   enemy-ship-here? if    ship-battle
@@ -1402,9 +1406,9 @@ variable done
   \ ============================================================
   cr .( Island map)  \ {{{1
 
-: erase-island  ( -- )  0 island-map /island-map cells erase  ;
+: erase-island  ( -- )  0 island /island cells erase  ;
 
-: is-coast  ( n -- )  coast swap island-map !  ;
+: is-coast  ( n -- )  coast swap island !  ;
   \ Make cell _n_ of the island map be coast.
 
 : (make-coast)  ( n1 n2 -- )  bounds do  i is-coast  loop  ;
@@ -1412,10 +1416,10 @@ variable done
   \ be coast.
 
 : make-north-coast  ( -- )
-  [ /island-map island-map-cols - ] literal island-map-cols
+  [ /island island-length - ] literal island-length
   (make-coast)  ;
 
-: make-south-coast  ( -- )  0 island-map-cols (make-coast)  ;
+: make-south-coast  ( -- )  0 island-length (make-coast)  ;
 
 : make-east-coast  ( -- )  6 is-coast 12 is-coast 18 is-coast ;
   \ XXX TODO -- generalize for any size of island
@@ -1430,17 +1434,23 @@ variable done
 : location-random-type  ( -- n )
   dubloons-found just-3-palms-2 random-range  ;
 
-: populate  ( -- )
-  23 7 do  i island-map @ coast <>
-           if  location-random-type i island-map !  then
+: populate-island  ( -- )
+  23 7 do  i island @ coast <>
+           if  location-random-type i island !  then
   loop
-  native-village  20 23 random-range island-map !
-  native-ammo     14 17 random-range island-map !
-  native-supplies  8 11 random-range island-map !  ;
+  native-village  19 22 random-range island !
+  native-ammo     13 16 random-range island !
+  native-supplies  7 10 random-range island !  ;
+  \ XXX TODO -- improve: adapt to any size:
+  \ choose any free non-coast location
+
+: set-island-location  ( -- )
+  8 11 random-range i-pos !  ;
+  \ XXX TODO -- improve: choose a random location on the coast,
+  \ except the village
 
 : new-island  ( -- )
-  erase-island make-coast populate
-  8 11 random-range i-pos !  ;
+  erase-island make-coast populate-island  ;
 
   \ ============================================================
   cr .( On the treasure island)  \ {{{1
@@ -1617,17 +1627,17 @@ variable option
   0 14 at-xy ."  kl     mn  mn    kl    kl kl  m"
              ."     mn      klmn   mn m  mn     "  ;
 
-: island-coast?  ( a -- f )  island-map @ coast =  ;
-  \ Does cell _a_ of the island map is coast?
+: coast?  ( a -- f )  island @ coast =  ;
+  \ Does cell _a_ of the island is coast?
 
 : .west-waves  ( -- )
   16 3 do  0 i at-xy ."   "  loop
   0 6 at-xy ." mn" 0 10 at-xy ." kl" 0 13 at-xy ." k"
   0 4 at-xy ." m" 1 8 at-xy ." l"
   graph-font2 set-font yellow ink
-  2 4 i-pos @ island-map-cols + island-coast? 0= +
+  2 4 i-pos @ island-length + coast? 0= +
   at-xy 'A' emit
-  i-pos @ island-map-cols - island-coast?
+  i-pos @ island-length - coast?
   if  2 13 at-xy 'C' emit  then
   graph-font1 set-font  ;
 
@@ -1636,9 +1646,9 @@ variable option
   30 6 at-xy ." mn" 30 10 at-xy ." kl" 31 13 at-xy ." k"
   30 4 at-xy ." m" 31 8 at-xy ." l"
   yellow ink  graph-font2 set-font
-  i-pos @ island-map-cols + island-coast?
+  i-pos @ island-length + coast?
   if    29  4 at-xy 'B' emit  then
-  29  i-pos @ island-map-cols - island-coast?
+  29  i-pos @ island-length - coast?
   if    13 at-xy 'D'
   else   3 at-xy 'B'
   then  emit  graph-font1 set-font  ;
@@ -1684,19 +1694,20 @@ variable option
   graph-font1 set-font  ;
 
 : .dubloons  ( n -- )
-  graph-font2 set-font  black ink  yellow paper
+  get-font >r graph-font2 set-font  black ink  yellow paper
   12 dup at-xy s" vw vw vw vw vw vw vw vw " drop swap 3 * type
-  graph-font1 set-font  ;
+  r> set-font  ;
+  \ XXX TODO -- use a loop
 
 : island-waves  ( -- )
   graph-font1 set-font white ink  blue paper
-  i-pos @ island-map-cols - island-coast?
+  i-pos @ island-length - coast?
   if  .south-waves   then
-  i-pos @ island-map-cols + island-coast?
+  i-pos @ island-length + coast?
   if  .north-waves  then
-  i-pos @ 1-  island-coast?
+  i-pos @ 1-  coast?
   if  .west-waves     then
-  i-pos @ 1+  island-coast?
+  i-pos @ 1+  coast?
   if  .east-waves    then  ;
 
 : (.island-location)  ( n -- )
@@ -1715,7 +1726,7 @@ variable option
   endcase  ~~ ;
 
 : .island-location  ( -- )
-  i-pos @ island-map @ ~~ (.island-location)  ;
+  i-pos @ island @ ~~ (.island-location)  ;
 
 : island-scenery  ( -- )
   graphic-window graph-font1 set-font
@@ -1774,7 +1785,7 @@ here - cell / constant island-events
   cr .( Enter island location)  \ {{{1
 
 : be-hostile-native  ( -- )
-  hostile-native i-pos @ island-map !  ;
+  hostile-native i-pos @ island !  ;
 
 : (enter-island-location)  ( n -- )
 
@@ -1798,7 +1809,7 @@ here - cell / constant island-events
     r@ cash+!
     r> .dubloons
 
-    just-3-palms-1 i-pos @ island-map !
+    just-3-palms-1 i-pos @ island !
       \ XXX FIXME -- This changes the type of location, what
       \ makes the picture different.  This is a problem of the
       \ original game.  The dubloons must be independent from
@@ -1835,7 +1846,7 @@ here - cell / constant island-events
 : enter-island-location  ( -- )
   wipe-message  \ XXX TODO needed?
   island-scenery
-  i-pos @ island-map @ ~~ (enter-island-location)  ;
+  i-pos @ island @ ~~ (enter-island-location)  ;
 
   \ ============================================================
   cr .( Disembark)  \ {{{1
@@ -1849,10 +1860,16 @@ here - cell / constant island-events
   yellow ink blue paper
   21 0 do  i 11 at-xy ."  <>" 200 ms  loop  ;
 
+: on-treasure-island?  ( -- f )
+  ship-pos @ sea @ treasure-island =  ;
+
+: enter-ordinary-island  ( -- )
+  new-island set-island-location enter-island-location  ;
+
 : enter-island  ( -- )
-  aboard off  ship-pos @ sea-map @ treasure-island =
+  aboard off  on-treasure-island?
   if    enter-treasure-island
-  else  new-island enter-island-location  then  ;
+  else  enter-ordinary-island  then  ;
 
 : disembark  ( -- )
   -2 -1 random-range supplies+!
@@ -1861,27 +1878,38 @@ here - cell / constant island-events
   \ ============================================================
   cr .( Storm)  \ {{{1
 
-: rain-drops  ( c -- )
-  white ink  cyan paper
-  cloud0x @ 2 at-xy dup 4 ruler type
-  cloud1x @ 2 at-xy     3 ruler type  60 ms  ;
+2 constant rain-y
 
-: rain  ( -- )
-  graph-font1 set-font  71 1 do
+: at-rain  ( a -- )  @ rain-y at-xy  ;
+
+: at-west-cloud-rain  ( -- )  west-cloud-x at-rain  ;
+
+: at-east-cloud-rain  ( -- )  east-cloud-x at-rain  ;
+
+: rain-drops  ( c -- )
+  dup  at-west-cloud-rain /west-cloud emits
+       at-east-cloud-rain /east-cloud emits  60 ms  ;
+
+: +rain  ( -- )
+  graph-font1 set-font
+  70 0 do
+    white ink  cyan paper
     ';' rain-drops  ']' rain-drops  '[' rain-drops
     3 random 0= if  redraw-ship  then
   loop  ;
+  \ Make the rain effect.
+  \ XXX TODO -- random duration
 
-: -rain  ( -- )
-  cloud0x @ 2 at-xy ."     " cloud1x @ 2 at-xy ."    "  ;
-  \ XXX FIXME -- wrong color; move color commands fram
-  \ `rain-drops` to `storm`
+: -rain  ( -- )  at-west-cloud-rain /west-cloud spaces
+                 at-east-cloud-rain /east-cloud spaces  ;
+  \ Erase the rain effect.
+  \ XXX FIXME -- wrong color
 
 : storm  ( -- )
   wipe-panel stormy-sky
   s" Se desata una tormenta"
   s"  que causa destrozos en el barco." s+ message
-  rain  10 49 damaged  -rain
+  +rain  10 49 damaged  -rain
   s" Tras la tormenta, el barco está " damage$ s+ s" ." s+
   message  panel  ;
   \ XXX FIXME -- sometimes `damage$` is empty: check the range
@@ -1905,10 +1933,10 @@ here - cell / constant island-events
   \ position.
 
 : ?sea-move-north?  ( -- f )
-  possible-north @ dup 0exit  sea-map-cols sea-move  ;
+  possible-north @ dup 0exit  sea-length sea-move  ;
 
 : ?sea-move-south?  ( -- f )
-  possible-south @ dup 0exit  sea-map-cols negate sea-move  ;
+  possible-south @ dup 0exit  sea-length negate sea-move  ;
 
 : ?sea-move-east?  ( -- f )
   possible-east @ dup 0exit  1 sea-move  ;
@@ -1917,8 +1945,7 @@ here - cell / constant island-events
   possible-west @ dup 0exit  -1 sea-move  ;
 
 : ship-command?  ( c -- f )
-  ?break  \ XXX TMP --  for debugging
-  dup 0exit  case  ( c )
+  dup 0exit  case
   'N' key-up                or-of  ?sea-move-north?    endof
   'S' key-down              or-of  ?sea-move-south?    endof
   'E' key-right             or-of  ?sea-move-west?     endof
@@ -1929,7 +1956,9 @@ here - cell / constant island-events
   'P'                          of  score-report   true endof
   'D' feasible-disembark @ and of  disembark      true endof
   'F'                          of  quit-game on   true endof
-  false swap  ( false c )  endcase  ( false )  ;
+  'Q'                          of  quit                endof
+    \ XXX TMP -- for debugging
+  false swap  endcase  ;
   \ If character _c_ is a valid ship command, execute it and
   \ return true; else return false.
   \
@@ -1961,12 +1990,12 @@ here - cell / constant island-events
 : embark  ( -- )
   ship-pos @ visited on  1 day +!  aboard on  ;
 
-: to-land?  ( n -- f )  i-pos @ + island-map @ coast <>  ;
+: to-land?  ( n -- f )  i-pos @ + island @ coast <>  ;
   \ Does the island movement offset _n_ leads to land?
 
 : island-move  ( n -- )
   dup to-land? if    i-pos +!  enter-island-location
-              else  drop  then  ;
+               else  drop  then  ;
   \ Move on the sea map, using offset _n_ from the current
   \ position, if possible.
   \
@@ -2111,14 +2140,14 @@ variable price  variable offer
   s" Atacas al nativo..." message \ XXX OLD
   2 seconds
 
-  i-pos @ island-map @ 5 = if
+  i-pos @ island @ 5 = if
     \ XXX TODO --  5=snake?
     s" Lo matas, pero la serpiente mata a "
     dead name$ s+ s" ." s+ message
     goto L6897
   then
 
-  i-pos @ island-map @ native-village = if
+  i-pos @ island @ native-village = if
     s" Un poblado entero es un enemigo muy difícil. "
     dead name$ s+ s"  muere en el combate." s+
     message
@@ -2148,7 +2177,7 @@ variable price  variable offer
 
   label L6897
 
-  4 i-pos @ island-map !
+  4 i-pos @ island !
     \ XXX TODO -- constant for 4
 
   label L6898
@@ -2158,18 +2187,26 @@ variable price  variable offer
   \ ============================================================
   cr .( Command dispatcher on the island)  \ {{{1
 
+: island-move-north  ( -- )  island-length island-move  ;
+
 : ?island-move-north?  ( -- f )
-  possible-north @ dup 0exit  island-map-cols island-move  ;
+  possible-north @ dup 0exit  island-move-north  ;
+
+: island-move-south  ( -- )
+  island-length negate island-move  ;
 
 : ?island-move-south?  ( -- f )
-  possible-south @ dup 0exit
-  island-map-cols negate island-move  ;
+  possible-south @ dup 0exit  island-move-south  ;
+
+: island-move-east  ( -- )  1 island-move  ;
 
 : ?island-move-east?  ( -- f )
-  possible-east @ dup 0exit  1 island-move  ;
+  possible-east @ dup 0exit  island-move-east  ;
+
+: island-move-west  ( -- )  -1 island-move  ;
 
 : ?island-move-west?  ( -- f )
-  possible-west @ dup 0exit  -1 island-move  ;
+  possible-west @ dup 0exit  island-move-west  ;
 
 : ?trade?  ( -- f )  feasible-trade @ dup 0exit  trade  ;
 
@@ -2178,8 +2215,7 @@ variable price  variable offer
 : ?attack?  ( -- f )  feasible-attack @ dup 0exit  attack  ;
 
 : island-command?  ( c -- f )
-  ?break  \ XXX TMP --  for debugging
-  case  ( c )
+  case
     'N' key-up    or-of  ?island-move-north? endof
     'S' key-down  or-of  ?island-move-south? endof
     'E' key-right or-of  ?island-move-east?  endof
@@ -2191,56 +2227,56 @@ variable price  variable offer
     'T'              of  crew-report   true  endof
     'P'              of  score-report  true  endof
     'F'              of  quit-game on  true  endof
-  false swap  ( false c )  endcase  ( false )  ;
+    'Q'              of  quit                endof
+      \ XXX TMP -- for debugging
+  false swap  endcase  ;
   \ If character _c_ is a valid command on the island, execute
   \ it and return true; else return false.
 
 : island-command  ( -- )
-  begin  inkey upper island-command?  until  ;
+  begin  key upper island-command?  until  ;
 
   \ ============================================================
   cr .( Setup)  \ {{{1
 
 : init-once  ( -- )  init-screen  ;
 
-: init-sea-row-reefs  ( n1 n0 -- )
-  ?do  reef i sea-map !  loop  ;
+: add-row-reefs  ( n1 n0 -- )  ?do  reef i sea !  loop  ;
 
-: init-sea-north-reefs  ( -- )
-  sea-map-cols 0 init-sea-row-reefs  ;
+: add-north-reefs  ( -- )
+  sea-length 0 add-row-reefs  ;
 
-: init-sea-south-reefs  ( -- )
-  [ sea-map-rows 1- sea-map-cols * dup sea-map-cols + ]
-  literal literal init-sea-row-reefs  ;
+: add-south-reefs  ( -- )
+  [ sea-breadth 1- sea-length * dup sea-length + ]
+  literal literal add-row-reefs  ;
 
-: init-sea-col-reefs  ( n1 n0 -- )
-  ?do  reef i sea-map !  sea-map-cols +loop  ;
+: add-col-reefs  ( n1 n0 -- )
+  ?do  reef i sea !  sea-length +loop  ;
 
-: init-sea-east-reefs  ( -- )
-  [ sea-map-rows 2- sea-map-cols * 1+ ] literal sea-map-cols
-  init-sea-col-reefs  ;
+: add-east-reefs  ( -- )
+  [ sea-breadth 2- sea-length * 1+ ] literal sea-length
+  add-col-reefs  ;
 
-: init-sea-west-reefs  ( -- )
-  [ sea-map-cols 2* 1-  /sea-map sea-map-cols - ]
-  literal literal init-sea-col-reefs  ;
+: add-west-reefs  ( -- )
+  [ sea-length 2* 1-  /sea sea-length - ]
+  literal literal add-col-reefs  ;
 
-: init-sea-reefs  ( -- )
-  init-sea-north-reefs init-sea-south-reefs
-  init-sea-east-reefs init-sea-west-reefs  ;
+: add-reefs  ( -- )  add-north-reefs add-south-reefs
+                     add-east-reefs add-west-reefs  ;
 
-: init-sea-sceneries  ( -- )
-  /sea-map sea-map-cols - sea-map-cols 1+ do
-    i reef? 0= if  2 21 random-range i sea-map !  then
+: populate-sea  ( -- )
+  /sea sea-length - sea-length 1+ do
+    i reef? 0= if  2 21 random-range i sea !  then
   loop
-  treasure-island 94 104 random-range sea-map !  ;
+  treasure-island 94 104 random-range sea !  ;
   \ XXX TODO -- 21 is shark; these are picture types
 
-: empty-sea-map  ( -- )
-  0 sea-map  /sea-map cells erase
-  0 visited /sea-map cells erase  ;
+: -/sea  ( a -- )  0 swap /sea cells erase  ;
+  \ Erase a sea map array _a_.
 
-: init-sea-map  ( -- )
-  empty-sea-map init-sea-reefs init-sea-sceneries  ;
+: empty-sea  ( -- )  sea -/sea  visited -/sea  ;
+
+: new-sea  ( -- )  empty-sea add-reefs populate-sea  ;
 
 : init-ship  ( -- )
   32 42 random-range ship-pos !  9 ship-y !  4 ship-x !
@@ -2264,23 +2300,21 @@ variable price  variable offer
 
 : unused-name  ( -- n )
   0  begin  drop  0 [ stock-names 1- ] literal random-range
-     \ dup . yellow border blue border  \ XXX INFORMER
      dup used-name @ 0= until  ;
   \ Return the random identifier _n_ of an unused name.
 
-: init-crew-name  ( n -- )
-  \ ." init-crew-name " dup .  \ XXX INFORMER
-  unused-name  dup used-name on  stock-name$ rot name 2!  ;
+: new-crew-name  ( n -- )
+  unused-name dup used-name on  stock-name$ rot name 2!  ;
   \ Choose an unused name for crew member _n_.
 
-: init-crew-names  ( -- )  men 0 do  i init-crew-name  loop  ;
+: new-crew-names  ( -- )  men 0 do  i new-crew-name  loop  ;
   \ Choose unused names for the crew members.
 
 : init-crew-stamina  ( -- )
   men 0 do  max-stamina i stamina !  loop  ;
   \ Set the stamina of the crew to its maximum.
 
-: init-crew  ( -- )  init-crew-names init-crew-stamina  ;
+: new-crew  ( -- )  new-crew-names init-crew-stamina  ;
 
 : init  ( -- )
   0 randomize0
@@ -2289,7 +2323,7 @@ variable price  variable offer
     \ XXX TODO -- use constant to define the zone
   white ink  black paper text-font set-font
   0 14 at-xy s" Preparando el viaje..." columns type-center
-  init-sea-map init-ship init-crew init-plot  ;
+  new-sea init-ship new-crew init-plot  ;
 
   \ ============================================================
   cr .( Game over)  \ {{{1
@@ -2350,7 +2384,8 @@ variable price  variable offer
 
 : intro  ( -- )
   white ink black paper cls
-  skull-border intro-window whome get-font text-font set-font
+  skull-border intro-window whome
+  get-font >r text-font set-font
   s" Viejas leyendas hablan del tesoro "
   s" que esconde la perdida isla de " s+
   island-name$ s+ s" ." s+ wtype wcr wcr
@@ -2362,7 +2397,7 @@ variable price  variable offer
   island-name$ s+
   s"  y sigue las pistas hasta el tesoro..." s+ wtype wcr wcr
   0 row 2+ at-xy s" Pulsa una tecla" columns type-center
-  120 ?seconds set-font  ;
+  120 ?seconds r> set-font  ;
 
   \ ============================================================
   cr .( Main)  \ {{{1
@@ -2389,26 +2424,27 @@ variable price  variable offer
   \ ============================================================
   cr .( Debugging tools [2])  \ {{{1
 
-variable invflag
-  \ XXX TMP --
+variable checkered
+
+: +checkered  ( -- )  checkered @ inverse  ;
+
+: -checkered  ( -- )  checkered @ 0= checkered !  ;
 
 : .sea  ( -- )
   cr
-  sea-map-rows 0 do
-    sea-map-cols 0 do
-      invflag @ inverse
-      j sea-map-cols * i + sea-map @ 2 .r
-      invflag @ 0= invflag !
+  sea-breadth 0 do
+    sea-length 0 do
+      +checkered j sea-length * i + sea @ 2 .r
+      -checkered
     loop  cr
   loop  0 inverse  ;
 
 : .isl  ( -- )
   cr
-  island-map-rows 0 do
-    island-map-cols 0 do
-      invflag @ inverse
-      j island-map-cols * i + island-map @ 2 .r
-      invflag @ 0= invflag !
+  island-breadth 0 do
+    island-length 0 do
+      +checkered j island-length * i + island @ 2 .r
+      -checkered
     loop  cr
   loop  0 inverse  ;
 
