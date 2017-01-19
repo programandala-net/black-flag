@@ -17,7 +17,7 @@
 only forth definitions
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.26.1.201701190034" ;
+: version  ( -- ca len )  s" 0.26.2-pre.1+201701190125" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -36,7 +36,7 @@ forth-wordlist set-current
   \ --------------------------------------------
   cr .(   -Debugging tools)  \ {{{2
 
-need ~~  need see  need dump
+need ~~  need see  need dump  need where
 
   \ --------------------------------------------
   cr .(   -Definers)  \ {{{2
@@ -123,7 +123,7 @@ game-wordlist  set-current
 :  ~~h  ( -- )  2 border key drop 1 border  ;
   \ Break point.
 
-'q' ~~quit-key !  ~~resume-key on  22 ~~y !  ~~? off
+'q' ~~quit-key !  ~~resume-key on  22 ~~y !  ~~? on
 
 ' default-font ' ~~app-info defer!
   \ Make sure the debug information compiled by `~~` is printed
@@ -582,11 +582,11 @@ far-banks 3 + c@ cconstant screen-backup-bank
   get-font >r sticks-font set-font native-window wcls wtype
   r> set-font  ;
 
-: new-message  ( -- )
+: wipe-message  ( -- )
   message-window  white ink  black paper  wcls  ;
 
 : message  ( ca len -- )
-  text-font set-font new-message wtype graphic-window ;
+  text-font set-font wipe-message wtype graphic-window ;
 
   \ ============================================================
   cr .( Sound )  \ {{{1
@@ -1671,26 +1671,27 @@ variable option
   if  .east-waves    then  ;
 
 : (.island-location)  ( n -- )
-  case
+  ~~ case
     native-village  of  .village                         endof
     dubloons-found  of  4 8 palm2 14 5 palm2             endof
       \ XXX TODO -- print dubloons here
-    hostile-native  of  14 5 palm2 25 8 palm2 .native    endof
+    hostile-native  of  ~~ 14 5 palm2 25 8 palm2 .native  endof
     just-3-palms-1  of  25 8 palm2  4 8 palm2 16 5 palm2 endof
     snake of
       13 5 palm2 5 6 palm2 18 8 palm2 23 8 palm2 .snake
                                                          endof
     just-3-palms-2  of  23 8 palm2 17 5 palm2 4 8 palm2  endof
-    native-supplies of  .supplies  .native  16 4 palm2   endof
-    native-ammo     of  .ammo-gift .native 20 5 palm2    endof
-  endcase  ;
+    native-supplies of  ~~ .supplies  .native  16 4 palm2 endof
+    native-ammo     of  ~~ .ammo-gift .native 20 5 palm2  endof
+  endcase  ~~ ;
 
 : .island-location  ( -- )
-  i-pos @ island-map @ (.island-location)  ;
+  i-pos @ island-map @ ~~ (.island-location)  ;
 
 : island-scenery  ( -- )
   graphic-window graph-font1 set-font
-  wipe-island-scenery sunny-sky island-waves .island-location  ;
+  wipe-island-scenery sunny-sky island-waves
+  ~~ .island-location  ;
 
   \ ============================================================
   cr .( Events on an island)  \ {{{1
@@ -1750,18 +1751,18 @@ here - cell / constant island-events
 
   case
 
-  snake of
+  snake of  ~~
     s" Una serpiente ha mordido a "
     injured name$ s+ s" ." s+ message
   endof
 
-  hostile-native of
+  hostile-native of  ~~
     s" Un nativo intenta bloquear el paso y hiere a "
     injured dup >r name$ s+ s" , que resulta " s+
     r> condition$ s+ s" ." s+ message
   endof
 
-  dubloons-found of
+  dubloons-found of  ~~
 
     1 2 random-range >r
     s" Encuentras " r@ coins$ s+ s" ." s+ message
@@ -1776,7 +1777,7 @@ here - cell / constant island-events
 
   endof
 
-  native-ammo of
+  native-ammo of  ~~
     s" Un nativo te da algo de munición." message
     1 ammo+!  be-hostile-native
       \ XXX TODO random ammount
@@ -1784,7 +1785,7 @@ here - cell / constant island-events
       \ `.island-location`
   endof
 
-  native-supplies of
+  native-supplies of  ~~
     s" Un nativo te da provisiones." message
     1 supplies+!  be-hostile-native
       \ XXX TODO random ammount
@@ -1792,7 +1793,7 @@ here - cell / constant island-events
       \ `.island-location`
   endof
 
-  native-village of
+  native-village of  ~~
     s" Descubres un poblado nativo." message
   endof
 
@@ -1800,12 +1801,12 @@ here - cell / constant island-events
 
   just-3-palms-2 of  island-event  endof
 
-  endcase  ;
+  ~~ endcase  ;
 
 : enter-island-location  ( -- )
   wipe-message  \ XXX TODO needed?
   island-scenery
-  i-pos @ island-map @ (enter-island-location)  ;
+  i-pos @ island-map @ ~~ (enter-island-location)  ;
 
   \ ============================================================
   cr .( Disembark)  \ {{{1
