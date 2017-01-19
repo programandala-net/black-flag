@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.27.0+201701192206" ;
+: version  ( -- ca len )  s" 0.27.1+201701192226" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -582,13 +582,11 @@ far-banks 3 + c@ cconstant screen-backup-bank
 : save-screen  ( -- )
   screen-backup-bank bank
   screen screen-backup /screen cmove  default-bank  ;
-  \ XXX TODO -- faster, page the bank
 
 : restore-screen  ( -- )
   screen-backup-bank bank
   screen-backup screen /screen cmove  default-bank
   screen-restored on  ;
-  \ XXX TODO -- faster, page the bank
 
   \ ============================================================
   cr .( Text output)  \ {{{1
@@ -1444,8 +1442,8 @@ variable done
   \ XXX TODO -- improve: adapt to any size:
   \ choose any free non-coast location
 
-: set-island-location  ( -- )
-  8 11 random-range crew-loc !  ;
+: set-crew-loc  ( -- )
+  7 10 random-range crew-loc !  ;
   \ XXX TODO -- improve: choose a random location on the coast,
   \ except the village
 
@@ -1726,7 +1724,7 @@ variable option
   endcase  ~~ ;
 
 : .island-location  ( -- )
-  crew-loc @ island @ ~~ (.island-location)  ;
+  crew-loc @ island @ (.island-location)  ;
 
 : island-scenery  ( -- )
   graphic-window graph-font1 set-font
@@ -1789,7 +1787,7 @@ here - cell / constant island-events
 
 : (enter-island-location)  ( n -- )
 
-  case
+  ~~ case
 
   snake of  ~~
     s" Una serpiente ha mordido a "
@@ -1846,7 +1844,7 @@ here - cell / constant island-events
 : enter-island-location  ( -- )
   wipe-message  \ XXX TODO needed?
   island-scenery
-  crew-loc @ island @ ~~ (enter-island-location)  ;
+  crew-loc @ island @ (enter-island-location)  ;
 
   \ ============================================================
   cr .( Disembark)  \ {{{1
@@ -1864,7 +1862,7 @@ here - cell / constant island-events
   ship-loc @ sea @ treasure-island =  ;
 
 : enter-ordinary-island  ( -- )
-  new-island set-island-location enter-island-location  ;
+  new-island set-crew-loc enter-island-location  ;
 
 : enter-island  ( -- )
   aboard off  on-treasure-island?
@@ -2414,8 +2412,8 @@ variable price  variable offer
   cls  screen-restored off
   begin
     screen-restored @ if    screen-restored off
-                     else  scenery
-                     then  command
+                      else  scenery
+                      then  command
   game-over? until  ;
 
 : run  ( -- )
