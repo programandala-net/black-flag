@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.28.1+201701200158" ;
+: version  ( -- ca len )  s" 0.29.0+201701201339" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -197,21 +197,6 @@ island-length island-breadth * constant /island
 13 constant sea-height  \ screen lines
  0 constant sky-top-y
  3 constant sky-height  \ screen lines
-
-  \ --------------------------------------------
-  \ Windows parameters
-                                  0 constant graphic-win-top
-                                  0 constant graphic-win-left
-                                 32 constant graphic-win-width
-                                 16 constant graphic-win-height
-                                  0 constant low-win-left
-                                 32 constant low-win-width
-                                  3 constant low-win-height
-     low-win-width low-win-height * constant low-win-chars
-                                 17 constant message-win-top
-                                  1 constant message-win-left
-                                 30 constant message-win-width
-                                  3 constant message-win-height
 
   \ ============================================================
   cr .( Variables)  \ {{{1
@@ -544,31 +529,27 @@ esc-udg-chars-wordlist 3 set-esc-order
   \ ============================================================
   cr .( Windows)  \ {{{1
 
-window graphic-window
-graphic-win-left graphic-win-top
-graphic-win-width graphic-win-height
-set-window
-  \ XXX TODO -- remove, useless
+0 0 32 16 window graphic-window
+  \ XXX TODO -- remove, useless?
 
-window intro-window  2 3 28 19 set-window
+2 3 28 19 window intro-window
 
-window message-window
-message-win-left message-win-top
-message-win-width message-win-height
-set-window
+1 17 30 3 window message-window
 
-window native-window 16 6 11 4 set-window
+0 21 32 3 window panel-window
 
-window sailor-window  12 6 12 6 set-window
+16 6 11 4 window native-window
 
-window the-end-window  5 3 22 20 set-window
+12 6 12 6 window sailor-window
+
+5 3 22 20 window the-end-window
 
   \ ============================================================
   cr .( Screen)  \ {{{1
 
 : init-screen  ( -- )
   default-colors white ink blue paper black border cls
-  graphic-window graph-font1 set-font  ;
+  graphic-window set-window graph-font1 set-font  ;
 
 16384 constant screen  6912 constant /screen
   \ Address and size of the screen.
@@ -590,14 +571,16 @@ far-banks 3 + c@ cconstant screen-backup-bank
   cr .( Text output)  \ {{{1
 
 : native-says  ( ca len -- )
-  get-font >r sticks-font set-font native-window wcls wtype
+  get-font >r sticks-font set-font
+  native-window set-window wcls wtype
   r> set-font  ;
 
 : wipe-message  ( -- )
-  message-window  white ink  black paper  wcls  ;
+  message-window set-window white ink  black paper  wcls  ;
 
 : message  ( ca len -- )
-  text-font set-font wipe-message wtype graphic-window ;
+  text-font set-font wipe-message wtype
+  graphic-window set-window  ;
 
   \ ============================================================
   cr .( Sound )  \ {{{1
@@ -695,8 +678,8 @@ variable possible-west           \ flag
   16 panel-y 2+ at-xy s" Comerciar" 0 r> ?>option$ type  ;
 
 : wipe-panel  ( -- )
-  black paper 0 21 at-xy low-win-chars spaces  ;
-  \ XXX TODO -- use window
+  black paper 0 21 at-xy [ 32 3 * ] literal spaces  ;
+  \ XXX TODO -- use `panel-window`
 
 : panel  ( -- )
   text-font set-font  white ink
@@ -737,8 +720,8 @@ variable east-cloud-x  3 constant /east-cloud
 
 : sea-wave-coords  ( -- x y )
   1 28 random-range
-  4 [ graphic-win-top graphic-win-height + 1- ] literal
-  random-range  ;
+  4 [ graphic-window ~wy0   c@
+      graphic-window ~wrows c@ + 1- ] literal random-range  ;
   \ Return random coordinates _x y_ for a sea wave.
 
 : at-sea-wave-coords  ( -- )  sea-wave-coords  at-xy  ;
@@ -763,7 +746,7 @@ variable east-cloud-x  3 constant /east-cloud
 : wipe-sea  ( -- )  [ blue dup papery + ] literal color-sea  ;
 
 : sea-and-sky  ( -- )
-  graphic-window graph-font1 set-font
+  graphic-window set-window graph-font1 set-font
   wipe-sea sea-waves sunny-sky  ;
   \ XXX TMP -- `graphic-window` is needed, because of the
   \ `wipe-panel` before the calling
@@ -1008,7 +991,7 @@ variable east-cloud-x  3 constant /east-cloud
   \ XXX TODO -- simpler, use an execution table
 
 : sea-scenery  ( -- )
-  graphic-window graph-font1 set-font
+  graphic-window set-window graph-font1 set-font
   sea-and-sky redraw-ship  ship-loc @ sea @ sea-picture  ;
 
   \ ============================================================
@@ -1472,7 +1455,8 @@ variable done
              ."  wu" 28 at-x ." tu"
   sailor-speech-balloon captain-speech-balloon  ;
 
-: sailor-says  ( ca len -- )  sailor-window wcls wtype  ;
+: sailor-says  ( ca len -- )
+  sailor-window set-window wcls wtype  ;
 
 : trees  ( -- )
   wipe-island  black ink  yellow paper
@@ -1729,7 +1713,7 @@ variable option
   crew-loc @ island @ (.island-location)  ;
 
 : island-scenery  ( -- )
-  graphic-window graph-font1 set-font
+  graphic-window set-window graph-font1 set-font
   wipe-island-scenery sunny-sky island-waves
   ~~ .island-location  ;
 
@@ -2342,7 +2326,7 @@ variable price  variable offer
 : sad-end  ( -- )
   text-font set-font  white ink  red paper
   0 1 at-xy s" FIN DEL JUEGO" columns type-center
-  the-end-window  black ink  yellow paper
+  the-end-window set-window  black ink  yellow paper
   supplies @ 0= if
     s" - Las provisiones se han agotado." wtype wcr  then
   morale @ 0= if
@@ -2385,7 +2369,7 @@ variable price  variable offer
 
 : intro  ( -- )
   white ink black paper cls
-  skull-border intro-window whome
+  skull-border intro-window set-window whome
   get-font >r text-font set-font
   s" Viejas leyendas hablan del tesoro "
   s" que esconde la perdida isla de " s+

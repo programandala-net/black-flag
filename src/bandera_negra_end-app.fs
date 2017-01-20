@@ -3,11 +3,13 @@
 
   \ Copyright (C) 2011,2014,2015,2016,2017 Marcos Cruz (programandala.net)
 
-cr cr .( Bandera Negra)
-   cr version type
-   cr .( Ready)
-   cr .unused
-   cr .( Type RUN to start) cr
+cls .( Bandera Negra)
+cr version type
+cr .( Loaded)
+
+cr cr greeting
+
+cr cr .( Type RUN to start) cr
 
 end-app
 
