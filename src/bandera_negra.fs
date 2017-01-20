@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.28.0+201701200116" ;
+: version  ( -- ca len )  s" 0.28.1+201701200158" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -124,7 +124,7 @@ game-wordlist  dup >order set-current
 :  ~~h  ( -- )  2 border key drop 1 border  ;
   \ Break point.
 
-'q' ~~quit-key !  ~~resume-key on  22 ~~y !  ~~? on
+'q' ~~quit-key !  ~~resume-key on  22 ~~y !  ~~? off
 
 ' default-font ' ~~app-info defer!
   \ Make sure the debug information compiled by `~~` is printed
@@ -505,7 +505,7 @@ far>sconstants number$  ( n -- ca len )  drop
 : game-over?  ( -- f )  failure? success? quit-game @ or or  ;
   \ Game over?
 
-: condition$  ( n -- ca len )  stamina @ stamina$ 2@  ;
+: condition$  ( n -- ca len )  stamina @ stamina$  ;
   \ Physical condition of a crew member
 
 : blank-line$  ( -- ca len )  bl columns ruler  ;
@@ -1114,12 +1114,16 @@ white black papery + constant report-color#
 20 cconstant status-x
   \ x coordinate of the crew member status in the crew report
 
+: set-condition-color  ( n -- )
+  stamina @ stamina-attr c@ color!  ;
+  \ Set the proper color for the condition of man _n_.
+
 : .crew-member-data  ( n -- )
   >r white color!
   name-x r@ 6 + at-xy r@ name$ type
-  r@ stamina @ stamina-attr c@ color!
+  r@ set-condition-color
   status-x r@ 6 + at-xy
-  r> stamina @ stamina$ 2dup uppers1 type  ;
+  r> condition$ 2dup uppers1 type  ;
 
 : .crew-report-header  ( -- )
   0 1 at-xy s" Estado de la tripulación" columns type-center
@@ -1790,6 +1794,7 @@ here - cell / constant island-events
   snake of  ~~
     s" Una serpiente ha mordido a "
     injured name$ s+ s" ." s+ message
+    \ XXX TODO -- inform if the man is dead
   endof
 
   hostile-native of  ~~
