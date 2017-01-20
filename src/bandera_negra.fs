@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.27.1+201701192226" ;
+: version  ( -- ca len )  s" 0.28.0+201701200116" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -217,7 +217,6 @@ island-length island-breadth * constant /island
   cr .( Variables)  \ {{{1
 
 variable quit-game         \ flag
-variable screen-restored   \ flag  \ XXX TODO -- what for?
 
   \ --------------------------------------------
   cr .(   -Plot)  \ {{{2
@@ -579,14 +578,13 @@ farlimit @ /screen - dup constant screen-backup
 
 far-banks 3 + c@ cconstant screen-backup-bank
 
+: move-screen  ( ca1 ca2 -- )  /screen cmove  default-bank  ;
+
 : save-screen  ( -- )
-  screen-backup-bank bank
-  screen screen-backup /screen cmove  default-bank  ;
+  screen-backup-bank bank screen screen-backup move-screen  ;
 
 : restore-screen  ( -- )
-  screen-backup-bank bank
-  screen-backup screen /screen cmove  default-bank
-  screen-restored on  ;
+  screen-backup-bank bank screen-backup screen move-screen  ;
 
   \ ============================================================
   cr .( Text output)  \ {{{1
@@ -2402,19 +2400,13 @@ variable price  variable offer
 
 : scenery  ( -- )
   aboard @ if    sea-scenery
-           else  island-scenery
-           then  panel  ;
+           else  island-scenery  then  panel  ;
 
 : command  ( -- )
   aboard @ if  ship-command  else  island-command  then  ;
 
 : game  ( -- )
-  cls  screen-restored off
-  begin
-    screen-restored @ if    screen-restored off
-                      else  scenery
-                      then  command
-  game-over? until  ;
+  cls scenery  begin  command game-over?  until  ;
 
 : run  ( -- )
   init-once  begin  intro init game the-end  again  ;
