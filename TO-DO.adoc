@@ -1,27 +1,39 @@
 = To-Do list of Bandera Negra
 :author: Marcos Cruz (programandala.net)
-:revdate: 2017-01-18
+:revdate: 2017-01-21
 
 == New notes about the conversion to Forth
 
-- Review variables and constants.
-- Convert `beep`.
-- Convert `goto` and `label`.
-- Wait for the space key after the reports, to prevent the key to
-  activate a command after returning to the panel.
+.2017-01-21:
+
+Move the `name` double-cell array to far memory.
+
+.2017-01-21:
+
+Use more clear names like `walk-north?`, `sail-north?`, etc.
+
+
+.2017-01-21:
+
+Add 128K sound effects.
+
+.2017-01-21:
+
+Convert `beep`.
+
+.2017-01-21:
+
+Wait for the space key after the reports, to prevent the key to
+activate a command after returning to the panel.
+
+.2017-01-21:
+
+Fix: the enemy ship appears for a moment after being sunk.
 
 .2017-01-18:
 
 Write `use-text-font`, `use-graph-font1`, `use-graph-font2`,
 `use-native-text-font`?
-
-.2017-01-12, 2017-01-18:
-
-Bug: names of the crew members are corrupted after the first actions.
-
-The reason is the strings chosen from `stock-name$` to be stored in
-`name` are in the circular string buffer. Their original address in
-far memory has to be stored instead.
 
 .2017-01-12:
 
@@ -85,11 +97,27 @@ memory.
 
 Remove `graphic-window`.
 
-.2017-01-08:
+.2017-01-08, 2017-01-21:
 
 Convert `possible-north` flag and family to calculations.
 
-== Old notes (in Spanish) from the abandoned Master BASIC version
+
+
+----
+: +sea-north  ( n1 -- n2 )  sea-length +  ;
+: +sea-south  ( n1 -- n2 )  sea-length -  ;
+: +sea-east   ( n1 -- n2 )  1+  ;
+: +sea-weast  ( n1 -- n2 )  1-  ;
+
+: sea-to-north?  ( -- f )
+  sea-loc @ sea-length + 
+
+: island-to-north?  ( -- f
+
+== Old notes (in Spanish)
+
+NOTE: The following notes from the abandoned Master BASIC version are
+still useful for the Forth version.
 
 Desligar los valores en `seaMap` e `islandMap` de los objetos que
 contienen (monedas, tiburón, barco enemigo, nativo...). Guardarlos en
@@ -97,12 +125,6 @@ una matriz independiente. Esto hará más claros los algoritmos y
 evitará el problema de que la pantalla se redibuja cuando desaparece
 un objeto (p.e., las monedas) tan solo porque ha cambiado el valor de
 esa celda del mapa.
-
-Condiciones para los comandos del panel:
-
-- Comerciar: `islandMap(iPos)=nativeVillage`
-- Matar: `not(islandMap(iPos)=2 or islandMap(iPos)=4 or
-  islandMap(iPos)=6)`
 
 Tabla de mejores puntuaciones.
 

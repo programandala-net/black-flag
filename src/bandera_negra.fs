@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.29.0+201701201339" ;
+: version  ( -- ca len )  s" 0.30.0+201701211257" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -28,7 +28,7 @@ cr cr .( Bandera Negra) cr version type cr
 only forth definitions
 
   \ --------------------------------------------
-  cr .(   -Assembler)  \ {{{2
+  \ cr .(   -Assembler)  \ {{{2
 
   \ need transient
   \ 2000 2000 transient  need assembler  end-transient
@@ -47,7 +47,7 @@ need alias
   \ --------------------------------------------
   cr .(   -Control structures)  \ {{{2
 
-need case  need or-of  need j  need 0exit
+need case  need or-of  need j  need 0exit  need default-of
 
   \ --------------------------------------------
   cr .(   -Stack manipulation)  \ {{{2
@@ -133,6 +133,8 @@ game-wordlist  dup >order set-current
 : ?break  ( -- )
   break-key? if  cr ." Aborted!" cr quit  then  ;
 
+defer check  ( -- )
+
   \ ============================================================
   cr .( Constants)  \ {{{1
 
@@ -147,6 +149,8 @@ sea-length sea-breadth * constant /sea
   \ XXX TODO -- set them randomly when a new island is created
 
   \     Island grid
+
+  \ XXX OLD -- wrong
   \
   \ 4| 29 28 27 26 25 24
   \ 3| 23 22 21 20 19 18
@@ -155,6 +159,18 @@ sea-length sea-breadth * constant /sea
   \ 0| 05 04 03 02 01 00
   \    _________________
   \     5  4  3  2  1  0
+  \
+ 
+  \ XXX NEW -- fixed
+  \ XXX TODO -- adapt the code
+  \
+  \ 4| 24 25 26 27 28 29
+  \ 3| 18 19 20 21 22 23
+  \ 2| 12 13 14 15 16 17
+  \ 1| 06 07 08 09 10 11
+  \ 0| 00 01 02 03 04 05
+  \    _________________
+  \     0  1  2  3  4  5
 
 island-length island-breadth * constant /island
   \ cells of the island map
@@ -657,7 +673,7 @@ variable possible-west           \ flag
   \ XXX TODO -- not if an enemy ship is present
 
 : ship-panel-commands  ( -- )
-  home ship-loc ? ship-loc @ sea ? .s  \ XXX INFORMER
+  check  \ XXX INFORMER
   feasible-disembark? dup >r feasible-disembark !
   16 panel-y 1+ at-xy s" Desembarcar" 0 r> ?>option$ type  ;
   \ XXX TODO -- factor both conditions
@@ -671,7 +687,7 @@ variable possible-west           \ flag
   \ disembarking position
 
 : island-panel-commands  ( -- )
-  home crew-loc ? crew-loc @ island ? .s  \ XXX INFORMER
+  check  \ XXX INFORMER
   feasible-embark? dup >r feasible-embark !
   16 panel-y 1+ at-xy s" emBarcar" 2 r> ?>option$ type
   feasible-trade? dup >r feasible-trade !
@@ -1773,6 +1789,8 @@ here - cell / constant island-events
 
 : (enter-island-location)  ( n -- )
 
+  check
+
   ~~ case
 
   snake of  ~~
@@ -1826,7 +1844,9 @@ here - cell / constant island-events
 
   just-3-palms-2 of  island-event  endof
 
-  ~~ endcase  ;
+  ~~ endcase
+  check  \ XXX INFORMER
+  ;
 
 : enter-island-location  ( -- )
   wipe-message  \ XXX TODO needed?
@@ -1942,7 +1962,7 @@ here - cell / constant island-events
   'D' feasible-disembark @ and of  disembark      true endof
   'F'                          of  quit-game on   true endof
   'Q'                          of  quit                endof
-    \ XXX TMP -- for debugging
+    \ XXX TMP -- 'Q' option for debugging
   false swap  endcase  ;
   \ If character _c_ is a valid ship command, execute it and
   \ return true; else return false.
@@ -2104,69 +2124,61 @@ variable price  variable offer
   \ ============================================================
   cr .( Attack)  \ {{{1
 
-: label  ( "name" -- )  parse-name 2drop  ; immediate
-  \ XXX TMP --
-: goto   ( "name" -- )  parse-name 2drop  ; immediate
-  \ XXX TMP --
-
 : impossible  ( -- )
   s" Lo siento, capitán, no puede hacer eso." message
   2 seconds  ;
   \ XXX not used yet
 
-: attack  ( -- )
+: hard-to-kill-native  ( -- )
+  s" El nativo muere, pero antes mata a "
+  dead @ name$ s+ s" ." s+ message  ;
 
-  \ XXX OLD -- commented out in the original
-  \ if island-map(i-pos)=2 or island-map(i-pos)=4 or island-map(i-pos)=6 then \
-  \   gosub @impossible
-  \   gosub @island-panel
-  \   exit proc
+: dead-native-has-supplies  ( -- )
+  s" El nativo tiene provisiones "
+  s" escondidas en su taparrabos." s+ message  1 supplies+!  ;
 
-  s" Atacas al nativo..." message \ XXX OLD
-  2 seconds
+: dead-native-has-dubloons  ( -- )
+  2 3 random-range r>
+  s" Encuentras " r@ coins$ s+
+  s"  en el cuerpo del nativo muerto." s+ message r> cash+!  ;
 
-  crew-loc @ island @ 5 = if
-    \ XXX TODO --  5=snake?
-    s" Lo matas, pero la serpiente mata a "
-    dead name$ s+ s" ." s+ message
-    goto L6897
-  then
+: attack-native-anyway  ( -- )
+  5 random case          0 of  hard-to-kill-native       endof
+                         1 of  dead-native-has-supplies  endof
+                   default-of  dead-native-has-dubloons  endof
+  endcase  ;
 
-  crew-loc @ island @ native-village = if
-    s" Un poblado entero es un enemigo muy difícil. "
-    dead name$ s+ s"  muere en el combate." s+
-    message
-    goto L6898
-  then
-
-  1 5 random-range case
-  1 of  s" El nativo muere, pero antes mata a "
-        dead @ name$ s+ s" ." s+ message              endof
-  2 of  s" El nativo tiene provisiones"
-        s"  escondidas en su taparrabos." s+ message
-        1 supplies+!                                 endof
-
-    2 3 random-range r>
-    s" Encuentras " r@ coins$ s+
-    s"  en el cuerpo del nativo muerto." s+ message
-    r> cash+!
-
-  endcase
-
-  graph-font2 set-font  black ink  yellow paper yellow
+: .black-flag  ( -- )
+  get-font >r graph-font2 set-font  black ink  yellow paper
   14 10 do  8 i at-xy ." t   "  loop
-  black ink  yellow paper  8  9 at-xy ." u"
+                           8  9 at-xy ." u"
   white ink  black  paper  9 10 at-xy ." nop"
                            9 11 at-xy ." qrs"
-  graph-font1 set-font
+  r> set-font  ;
+  \ XXX TODO -- faster: no loop, use "tnop" and "tqrs"
 
-  label L6897
+: -native  ( -- )
+  just-3-palms-1 crew-loc @ island !  .black-flag  ;
+  \ XXX TODO -- improve -- don't change the scenery:
+  \ first, make natives, animals and things independent from
+  \ the location
 
-  4 crew-loc @ island !
-    \ XXX TODO -- constant for 4
+: attack-native-but-snake-kills  ( -- )
+  s" Matas al nativo, pero la serpiente mata a "
+  dead name$ s+ s" ." s+ message -native  ;
 
-  label L6898
+: attack-native-village  ( -- )
+  s" Un poblado entero es un enemigo muy difícil. "
+  dead name$ s+ s"  muere en el combate." s+ message  ;
 
+: attack-native-there  ( n -- )
+  case  snake          of  attack-native-but-snake-kills  endof
+        native-village of  attack-native-village          endof
+               default-of  attack-native-anyway           endof
+  endcase  ;
+
+: attack-native  ( -- )
+  2 seconds  crew-loc @ island @ attack-native-there
   3 seconds  ;
 
   \ ============================================================
@@ -2197,7 +2209,8 @@ variable price  variable offer
 
 : ?embark?  ( -- f )  feasible-embark @ dup 0exit  embark  ;
 
-: ?attack?  ( -- f )  feasible-attack @ dup 0exit  attack  ;
+: ?attack-native?  ( -- f )
+  feasible-attack @ dup 0exit  attack-native  ;
 
 : island-command?  ( c -- f )
   case
@@ -2208,12 +2221,12 @@ variable price  variable offer
     'C'              of  ?trade?             endof
     'B'              of  ?embark?            endof
     'I'              of  main-report   true  endof
-    'M'              of  ?attack?            endof
+    'M'              of  ?attack-native?     endof
     'T'              of  crew-report   true  endof
     'P'              of  score-report  true  endof
     'F'              of  quit-game on  true  endof
     'Q'              of  quit                endof
-      \ XXX TMP -- for debugging
+      \ XXX TMP -- 'Q' option for debugging
   false swap  endcase  ;
   \ If character _c_ is a valid command on the island, execute
   \ it and return true; else return false.
@@ -2403,28 +2416,44 @@ variable price  variable offer
   \ ============================================================
   cr .( Debugging tools [2])  \ {{{1
 
+: (check)  ( -- )
+  get-font >r text-font set-font
+  home aboard @ if    ship-loc ? ship-loc @ sea ?
+                else  crew-loc ? crew-loc @ island ?
+                then  .s  r> set-font  ;
+
+' (check) ' check defer!
+
 variable checkered
 
-: +checkered  ( -- )  checkered @ inverse  ;
+: checkered@  ( -- )  checkered @  ;
 
-: -checkered  ( -- )  checkered @ 0= checkered !  ;
+: +checkered  ( -- )  checkered@ inverse  ;
+
+: checkered!  ( f -- )  0= checkered !  ;
+
+: -checkered  ( -- )  checkered @ checkered!  ;
 
 : .sea  ( -- )
   cr
   sea-breadth 0 do
+    checkered@
     sea-length 0 do
       +checkered j sea-length * i + sea @ 2 .r
       -checkered
     loop  cr
+    checkered!
   loop  0 inverse  ;
 
 : .isl  ( -- )
   cr
   island-breadth 0 do
+    checkered@
     island-length 0 do
       +checkered j island-length * i + island @ 2 .r
       -checkered
     loop  cr
+    checkered!
   loop  0 inverse  ;
 
 : .chars  ( c1 c0 -- )  do  i emit  loop  ;
