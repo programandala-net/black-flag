@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.30.0+201701211257" ;
+: version  ( -- ca len )  s" 0.31.0+201701211607" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -50,9 +50,9 @@ need alias
 need case  need or-of  need j  need 0exit  need default-of
 
   \ --------------------------------------------
-  cr .(   -Stack manipulation)  \ {{{2
+  \ cr .(   -Stack manipulation)  \ {{{2
 
-need pick
+  \ need pick
 
   \ --------------------------------------------
   cr .(   -Math)  \ {{{2
@@ -61,9 +61,7 @@ need >=  need <=  need under+  need between
 need random-range  need randomize0  need -1..1  need d<>
 
   \ --------------------------------------------
-  cr .(   -Memory)  \ {{{2
-
-need move>far  need move<far
+  \ cr .(   -Memory)  \ {{{2
 
   \ --------------------------------------------
   cr .(   -Time)  \ {{{2
@@ -94,10 +92,10 @@ need tab  need type-center  need at-x  need row
 need columns  need last-column  need inverse  need tabulate
 need set-udg  need rom-font  need set-font  need get-font
 
-need black  need blue  need red  need green
-need cyan  need yellow  need white
-need color!  need permcolor!
-need papery  need brighty
+need black   need blue    need red  need green
+need cyan    need yellow  need white
+
+need color!  need permcolor!  need papery  need brighty
 
 need rdraw176 ' rdraw176 alias rdraw
 need plot176  ' plot176 alias plot
@@ -133,7 +131,7 @@ game-wordlist  dup >order set-current
 : ?break  ( -- )
   break-key? if  cr ." Aborted!" cr quit  then  ;
 
-defer check  ( -- )
+defer .debug-info  ( -- )
 
   \ ============================================================
   cr .( Constants)  \ {{{1
@@ -150,20 +148,6 @@ sea-length sea-breadth * constant /sea
 
   \     Island grid
 
-  \ XXX OLD -- wrong
-  \
-  \ 4| 29 28 27 26 25 24
-  \ 3| 23 22 21 20 19 18
-  \ 2| 17 16 15 14 13 12
-  \ 1| 11 10 09 08 07 06
-  \ 0| 05 04 03 02 01 00
-  \    _________________
-  \     5  4  3  2  1  0
-  \
- 
-  \ XXX NEW -- fixed
-  \ XXX TODO -- adapt the code
-  \
   \ 4| 24 25 26 27 28 29
   \ 3| 18 19 20 21 22 23
   \ 2| 12 13 14 15 16 17
@@ -234,6 +218,8 @@ variable score            \ counter
 variable sunk-ships       \ counter
 variable supplies         \ counter
 variable trades           \ counter
+
+: aboard?  ( -- f )  aboard @  ;
 
 : ammo+!  ( n -- )  ammo @ + 0 max ammo !  ;
   \ Add _n_ to `ammo`, making sure the minimum result is
@@ -626,26 +612,60 @@ variable feasible-embark         \ flag
 variable feasible-attack         \ flag
 variable feasible-trade          \ flag
 
-variable possible-north          \ flag
-variable possible-south          \ flag
-variable possible-east           \ flag
-variable possible-west           \ flag
+: reef?  ( n -- f )  sea @ reef =  ;
+  \ Is there a reef at sea map position _n_?
+
+: sail-to?  ( n -- f ) ship-loc @ + reef? 0=  ;
+  \ Is it possible to sail to offset location _n_?
+
+: to-north  ( -- n )
+  aboard? if  sea-length  else  island-length  then  ;
+
+: to-south  ( -- n )  to-north negate  ;
+
+ 1 constant to-east
+-1 constant to-west
+
+: sail-north?  ( -- f )  to-north sail-to?  ;
+: sail-south?  ( -- f )  to-south sail-to?  ;
+: sail-east?   ( -- f )   to-east sail-to?  ;
+: sail-west?   ( -- f )   to-west sail-to?  ;
+
+: coast?  ( n -- f )  island @ coast =  ;
+  \ Does cell _n_ of the island is coast?
+
+: walk-to?  ( n -- f ) crew-loc @ + coast? 0=  ;
+  \ Is it possible to walk to offset location _n_?
+
+: walk-north?  ( -- f )  to-north walk-to?  ;
+: walk-south?  ( -- f )  to-south walk-to?  ;
+: walk-east?   ( -- f )   to-east walk-to?  ;
+: walk-west?   ( -- f )   to-west walk-to?  ;
+
+: north?  ( -- f )
+  aboard? if  sail-north?  else  walk-north?  then  ;
+
+: south?  ( -- f )
+  aboard? if  sail-south?  else  walk-south?  then  ;
+
+: east?  ( -- f )
+  aboard? if  sail-east?  else  walk-east?  then  ;
+
+: west?  ( -- f )
+  aboard? if  sail-west?  else  walk-west?  then  ;
+
+  \ XXX TODO -- use an execution table instead, accessible with
+  \ a combination of words
 
 : .direction  ( c col row f -- )
   inverse at-xy emit 0 inverse  ;
 
 : directions-menu  ( -- )
-  possible-north on
-  possible-south on
-  possible-east on
-  possible-west on
-    \ XXX TMP --
-    \ XXX TODO -- use conditions
   white ink  black paper
-  'N' 30 panel-y    possible-north @ .direction
-  'O' 29 panel-y 1+ possible-west  @ .direction
-  'E' 31 panel-y 1+ possible-east  @ .direction
-  'S' 30 panel-y 2+ possible-south @ .direction
+  'N' 30 panel-y    north?  .direction
+  'O' 29 panel-y 1+ west?   .direction
+  'E' 31 panel-y 1+ east?   .direction
+  'S' 30 panel-y 2+ south?  .direction
   '+' 30 panel-y 1+ at-xy emit  ;
   \ Print the directions menu.
   \
@@ -673,7 +693,7 @@ variable possible-west           \ flag
   \ XXX TODO -- not if an enemy ship is present
 
 : ship-panel-commands  ( -- )
-  check  \ XXX INFORMER
+  .debug-info  \ XXX INFORMER
   feasible-disembark? dup >r feasible-disembark !
   16 panel-y 1+ at-xy s" Desembarcar" 0 r> ?>option$ type  ;
   \ XXX TODO -- factor both conditions
@@ -687,7 +707,7 @@ variable possible-west           \ flag
   \ disembarking position
 
 : island-panel-commands  ( -- )
-  check  \ XXX INFORMER
+  .debug-info  \ XXX INFORMER
   feasible-embark? dup >r feasible-embark !
   16 panel-y 1+ at-xy s" emBarcar" 2 r> ?>option$ type
   feasible-trade? dup >r feasible-trade !
@@ -700,9 +720,9 @@ variable possible-west           \ flag
 : panel  ( -- )
   text-font set-font  white ink
   wipe-panel common-panel-commands
-  aboard @ if    ship-panel-commands
-           else  island-panel-commands
-           then  directions-menu  ;
+  aboard? if    ship-panel-commands
+          else  island-panel-commands
+          then  directions-menu  ;
   \ XXX TODO check condition -- what about the enemy ship?
   \ XXX TODO several commands: attack ship/island/shark?
 
@@ -910,22 +930,11 @@ variable east-cloud-x  3 constant /east-cloud
   30 4 at-xy ." HI"   28 6 at-xy ." A"
   29 7 at-xy ." WXY"  31 9 at-xy ." A"  ;
 
-: reef?  ( n -- f )  sea @ reef =  ;
-  \ Is there a reef at sea map position _n_?
-
-: east-of-ship-loc  ( -- n )  ship-loc @ 1+  ;
-
-: west-of-ship-loc  ( -- n )  ship-loc @ 1-  ;
-
-: north-of-ship-loc  ( -- n )  ship-loc @ sea-length +  ;
-
-: south-of-ship-loc  ( -- n )  ship-loc @ sea-length -  ;
-
 : .reefs  ( -- )
-  north-of-ship-loc  reef? if  .far-islands   then
-  south-of-ship-loc  reef? if  .south-reef   then
-  west-of-ship-loc   reef? if  .east-reef     then
-  east-of-ship-loc   reef? if  .west-reef    then  ;
+  sail-north? 0= if  .far-islands  then
+  sail-south? 0= if  .south-reef   then
+   sail-east? 0= if  .east-reef    then
+   sail-west? 0= if  .west-reef    then  ;
 
   \ --------------------------------------------
   cr .(   -Ships)  \ {{{2
@@ -1627,31 +1636,27 @@ variable option
   0 14 at-xy ."  kl     mn  mn    kl    kl kl  m"
              ."     mn      klmn   mn m  mn     "  ;
 
-: coast?  ( a -- f )  island @ coast =  ;
-  \ Does cell _a_ of the island is coast?
-
 : .west-waves  ( -- )
   16 3 do  0 i at-xy ."   "  loop
   0 6 at-xy ." mn" 0 10 at-xy ." kl" 0 13 at-xy ." k"
   0 4 at-xy ." m" 1 8 at-xy ." l"
   graph-font2 set-font yellow ink
-  2 4 crew-loc @ island-length + coast? 0= +
-  at-xy 'A' emit
-  crew-loc @ island-length - coast?
-  if  2 13 at-xy 'C' emit  then
+  2 4 walk-north? + at-xy 'A' emit \ XXX TODO -- check this!
+  walk-south? 0= if  2 13 at-xy 'C' emit  then
   graph-font1 set-font  ;
+  \ XXX TODO -- factor, review
 
 : .east-waves  ( -- )
   16 3 do  30 i at-xy ."   "  loop
   30 6 at-xy ." mn" 30 10 at-xy ." kl" 31 13 at-xy ." k"
   30 4 at-xy ." m" 31 8 at-xy ." l"
   yellow ink  graph-font2 set-font
-  crew-loc @ island-length + coast?
-  if    29  4 at-xy 'B' emit  then
-  29  crew-loc @ island-length - coast?
+  walk-north? 0= if    29  4 at-xy 'B' emit  then
+  29  walk-south? 0=
   if    13 at-xy 'D'
   else   3 at-xy 'B'
   then  emit  graph-font1 set-font  ;
+  \ XXX TODO -- factor, review
 
 : .village  ( -- )
   graph-font2 set-font  green ink  yellow paper
@@ -1672,6 +1677,7 @@ variable option
   10  6 at-xy ." XYZ"
   17  6 at-xy ." YX"
   26  6 at-xy ." Z"  graph-font1 set-font  ;
+  \ XXX TODO -- factor
 
 : .native  ( -- )
   black ink  yellow paper  8 10 at-xy ."  _ `"
@@ -1701,14 +1707,10 @@ variable option
 
 : island-waves  ( -- )
   graph-font1 set-font white ink  blue paper
-  crew-loc @ island-length - coast?
-  if  .south-waves   then
-  crew-loc @ island-length + coast?
-  if  .north-waves  then
-  crew-loc @ 1-  coast?
-  if  .west-waves     then
-  crew-loc @ 1+  coast?
-  if  .east-waves    then  ;
+  walk-south? 0= if  .south-waves  then
+  walk-north? 0= if  .north-waves  then
+   walk-east? 0= if  .east-waves   then
+   walk-west? 0= if  .west-waves   then  ;
 
 : (.island-location)  ( n -- )
   ~~ case
@@ -1789,7 +1791,7 @@ here - cell / constant island-events
 
 : (enter-island-location)  ( n -- )
 
-  check
+  .debug-info
 
   ~~ case
 
@@ -1845,7 +1847,7 @@ here - cell / constant island-events
   just-3-palms-2 of  island-event  endof
 
   ~~ endcase
-  check  \ XXX INFORMER
+  .debug-info  \ XXX INFORMER
   ;
 
 : enter-island-location  ( -- )
@@ -1931,30 +1933,28 @@ here - cell / constant island-events
 : to-reef?  ( n -- f )  ship-loc @ + reef?  ;
   \ Does the sea movement offset _n_ leads to a reef?
 
-: sea-move  ( n -- )
+: sail  ( n -- )
   dup to-reef? if    drop run-aground
               else  ship-loc +!  then  ;
   \ Move on the sea map, using offset _n_ from the current
   \ position.
 
-: ?sea-move-north?  ( -- f )
-  possible-north @ dup 0exit  sea-length sea-move  ;
+: sail-north  ( -- )  sea-length        sail  ;
+: sail-south  ( -- )  sea-length negate sail  ;
+: sail-east   ( -- )                  1 sail  ;
+: sail-west   ( -- )                 -1 sail  ;
 
-: ?sea-move-south?  ( -- f )
-  possible-south @ dup 0exit  sea-length negate sea-move  ;
-
-: ?sea-move-east?  ( -- f )
-  possible-east @ dup 0exit  1 sea-move  ;
-
-: ?sea-move-west?  ( -- f )
-  possible-west @ dup 0exit  -1 sea-move  ;
+: ?sail-north?  ( -- f )  north? dup 0exit  sail-north  ;
+: ?sail-south?  ( -- f )  south? dup 0exit  sail-south  ;
+: ?sail-east?   ( -- f )  east?  dup 0exit  sail-east   ;
+: ?sail-west?   ( -- f )  west?  dup 0exit  sail-west   ;
 
 : ship-command?  ( c -- f )
   dup 0exit  case
-  'N' key-up                or-of  ?sea-move-north?    endof
-  'S' key-down              or-of  ?sea-move-south?    endof
-  'E' key-right             or-of  ?sea-move-west?     endof
-  'O' key-left              or-of  ?sea-move-west?     endof
+  'N' key-up                or-of  ?sail-north?        endof
+  'S' key-down              or-of  ?sail-south?        endof
+  'E' key-right             or-of  ?sail-west?         endof
+  'O' key-left              or-of  ?sail-west?         endof
   'I'                          of  main-report    true endof
   'A' feasible-attack @ and    of  attack-ship    true endof
   'T'                          of  crew-report    true endof
@@ -1998,7 +1998,7 @@ here - cell / constant island-events
 : to-land?  ( n -- f )  crew-loc @ + island @ coast <>  ;
   \ Does the island movement offset _n_ leads to land?
 
-: island-move  ( n -- )
+: walk  ( n -- )
   dup to-land? if    crew-loc +!  enter-island-location
                else  drop  then  ;
   \ Move on the sea map, using offset _n_ from the current
@@ -2184,26 +2184,15 @@ variable price  variable offer
   \ ============================================================
   cr .( Command dispatcher on the island)  \ {{{1
 
-: island-move-north  ( -- )  island-length island-move  ;
+: walk-north  ( -- )  to-north walk  ;
+: walk-south  ( -- )  to-south walk  ;
+: walk-east   ( -- )   to-east walk  ;
+: walk-west   ( -- )   to-west walk  ;
 
-: ?island-move-north?  ( -- f )
-  possible-north @ dup 0exit  island-move-north  ;
-
-: island-move-south  ( -- )
-  island-length negate island-move  ;
-
-: ?island-move-south?  ( -- f )
-  possible-south @ dup 0exit  island-move-south  ;
-
-: island-move-east  ( -- )  1 island-move  ;
-
-: ?island-move-east?  ( -- f )
-  possible-east @ dup 0exit  island-move-east  ;
-
-: island-move-west  ( -- )  -1 island-move  ;
-
-: ?island-move-west?  ( -- f )
-  possible-west @ dup 0exit  island-move-west  ;
+: ?walk-north?  ( -- f )  north? dup 0exit  walk-north  ;
+: ?walk-south?  ( -- f )  south? dup 0exit  walk-south  ;
+: ?walk-east?   ( -- f )  east?  dup 0exit  walk-east   ;
+: ?walk-west?   ( -- f )  west?  dup 0exit  walk-west   ;
 
 : ?trade?  ( -- f )  feasible-trade @ dup 0exit  trade  ;
 
@@ -2214,18 +2203,18 @@ variable price  variable offer
 
 : island-command?  ( c -- f )
   case
-    'N' key-up    or-of  ?island-move-north? endof
-    'S' key-down  or-of  ?island-move-south? endof
-    'E' key-right or-of  ?island-move-east?  endof
-    'O' key-left  or-of  ?island-move-west?  endof
-    'C'              of  ?trade?             endof
-    'B'              of  ?embark?            endof
-    'I'              of  main-report   true  endof
-    'M'              of  ?attack-native?     endof
-    'T'              of  crew-report   true  endof
-    'P'              of  score-report  true  endof
-    'F'              of  quit-game on  true  endof
-    'Q'              of  quit                endof
+    'N' key-up    or-of  ?walk-north?            endof
+    'S' key-down  or-of  ?walk-south?            endof
+    'E' key-right or-of  ?walk-east?             endof
+    'O' key-left  or-of  ?walk-west?             endof
+    'C'              of  ?trade?                 endof
+    'B'              of  ?embark?                endof
+    'I'              of  main-report      true   endof
+    'M'              of  ?attack-native?         endof
+    'T'              of  crew-report      true   endof
+    'P'              of  score-report     true   endof
+    'F'              of  quit-game on     true   endof
+    'Q'              of  quit                    endof
       \ XXX TMP -- 'Q' option for debugging
   false swap  endcase  ;
   \ If character _c_ is a valid command on the island, execute
@@ -2401,11 +2390,11 @@ variable price  variable offer
   cr .( Main)  \ {{{1
 
 : scenery  ( -- )
-  aboard @ if    sea-scenery
-           else  island-scenery  then  panel  ;
+  aboard? if    sea-scenery
+          else  island-scenery  then  panel  ;
 
 : command  ( -- )
-  aboard @ if  ship-command  else  island-command  then  ;
+  aboard? if  ship-command  else  island-command  then  ;
 
 : game  ( -- )
   cls scenery  begin  command game-over?  until  ;
@@ -2416,13 +2405,13 @@ variable price  variable offer
   \ ============================================================
   cr .( Debugging tools [2])  \ {{{1
 
-: (check)  ( -- )
+: (.debug-info)  ( -- )
   get-font >r text-font set-font
-  home aboard @ if    ship-loc ? ship-loc @ sea ?
-                else  crew-loc ? crew-loc @ island ?
-                then  .s  r> set-font  ;
+  home aboard? if    ship-loc ? ship-loc @ sea
+               else  crew-loc ? crew-loc @ island
+               then  ? .s  r> set-font  ;
 
-' (check) ' check defer!
+' (.debug-info) ' .debug-info defer!
 
 variable checkered
 
@@ -2434,27 +2423,34 @@ variable checkered
 
 : -checkered  ( -- )  checkered @ checkered!  ;
 
+: ship-here?  ( col row -- f )  sea-length * + ship-loc @ =  ;
+
+: loc-color  ( f -- ) if  red  else  white  then  ink  ;
+
 : .sea  ( -- )
-  cr
-  sea-breadth 0 do
+  black paper cr
+  0 sea-breadth 1- do
     checkered@
     sea-length 0 do
+      i j ship-here? loc-color
       +checkered j sea-length * i + sea @ 2 .r
       -checkered
-    loop  cr
-    checkered!
-  loop  0 inverse  ;
+    loop  cr checkered!
+  -1 +loop  default-colors  ;
+
+: crew-here?  ( col row -- f )
+  island-length * + crew-loc @ =  ;
 
 : .isl  ( -- )
-  cr
-  island-breadth 0 do
+  black paper cr
+  0 island-breadth 1- do
     checkered@
     island-length 0 do
+      i j crew-here? loc-color
       +checkered j island-length * i + island @ 2 .r
       -checkered
-    loop  cr
-    checkered!
-  loop  0 inverse  ;
+    loop  cr checkered!
+  -1 +loop  default-colors  ;
 
 : .chars  ( c1 c0 -- )  do  i emit  loop  ;
 
