@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.31.0+201701211607" ;
+: version  ( -- ca len )  s" 0.31.1+201701211925" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -743,6 +743,7 @@ variable east-cloud-x  3 constant /east-cloud
   graph-font1 set-font  0 bright  ;
   \ XXX TODO -- why the parameter, if this word is used only
   \ once?
+  \ XXX TODO -- factor the sun and clouds parts
 
 : color-sky  ( c -- )
   [ sky-top-y attr-line ] literal
@@ -753,6 +754,7 @@ variable east-cloud-x  3 constant /east-cloud
   [ cyan dup papery + ] literal color-sky
   false sun-and-clouds  ;
   \ Make the sky stormy.
+  \ XXX TODO -- hide the sun
 
 : sea-wave-coords  ( -- x y )
   1 28 random-range
@@ -1852,7 +1854,7 @@ here - cell / constant island-events
 
 : enter-island-location  ( -- )
   wipe-message  \ XXX TODO needed?
-  island-scenery
+  island-scenery panel
   crew-loc @ island @ (enter-island-location)  ;
 
   \ ============================================================
@@ -1935,14 +1937,14 @@ here - cell / constant island-events
 
 : sail  ( n -- )
   dup to-reef? if    drop run-aground
-              else  ship-loc +!  then  ;
+               else  ship-loc +! sea-scenery panel  then  ;
   \ Move on the sea map, using offset _n_ from the current
   \ position.
 
-: sail-north  ( -- )  sea-length        sail  ;
-: sail-south  ( -- )  sea-length negate sail  ;
-: sail-east   ( -- )                  1 sail  ;
-: sail-west   ( -- )                 -1 sail  ;
+: sail-north  ( -- )  to-north sail  ;
+: sail-south  ( -- )  to-south sail  ;
+: sail-east   ( -- )   to-east sail  ;
+: sail-west   ( -- )   to-west sail  ;
 
 : ?sail-north?  ( -- f )  north? dup 0exit  sail-north  ;
 : ?sail-south?  ( -- f )  south? dup 0exit  sail-south  ;
@@ -1995,7 +1997,7 @@ here - cell / constant island-events
 : embark  ( -- )
   ship-loc @ visited on  1 day +!  aboard on  ;
 
-: to-land?  ( n -- f )  crew-loc @ + island @ coast <>  ;
+: to-land?  ( n -- f )  crew-loc @ + coast? 0=  ;
   \ Does the island movement offset _n_ leads to land?
 
 : walk  ( n -- )
