@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.31.1+201701211925" ;
+: version  ( -- ca len )  s" 0.31.2+201701212118" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -660,7 +660,7 @@ variable feasible-trade          \ flag
 : .direction  ( c col row f -- )
   inverse at-xy emit 0 inverse  ;
 
-: directions-menu  ( -- )
+: compass  ( -- )
   white ink  black paper
   'N' 30 panel-y    north?  .direction
   'O' 29 panel-y 1+ west?   .direction
@@ -680,7 +680,7 @@ variable feasible-trade          \ flag
   \ now is associated with certain locations but should be
   \ independent
 
-: common-panel-commands  ( -- )
+: common-commands  ( -- )
   0 panel-y at-xy s" Información" 0 >option$ type cr
                   s" Tripulación" 0 >option$ type cr
                   s" Puntuación"  0 >option$ type
@@ -692,7 +692,7 @@ variable feasible-trade          \ flag
   ship-loc @ sea @ treasure-island =  or  ;
   \ XXX TODO -- not if an enemy ship is present
 
-: ship-panel-commands  ( -- )
+: ship-commands  ( -- )
   .debug-info  \ XXX INFORMER
   feasible-disembark? dup >r feasible-disembark !
   16 panel-y 1+ at-xy s" Desembarcar" 0 r> ?>option$ type  ;
@@ -706,7 +706,7 @@ variable feasible-trade          \ flag
   \ XXX TODO -- better yet, only if crew-loc is the
   \ disembarking position
 
-: island-panel-commands  ( -- )
+: island-commands  ( -- )
   .debug-info  \ XXX INFORMER
   feasible-embark? dup >r feasible-embark !
   16 panel-y 1+ at-xy s" emBarcar" 2 r> ?>option$ type
@@ -715,14 +715,14 @@ variable feasible-trade          \ flag
 
 : wipe-panel  ( -- )
   black paper 0 21 at-xy [ 32 3 * ] literal spaces  ;
-  \ XXX TODO -- use `panel-window`
+  \ XXX TODO -- use `panel-window`; or much faster: erase the
+  \ attributes zone
 
 : panel  ( -- )
-  text-font set-font  white ink
-  wipe-panel common-panel-commands
-  aboard? if    ship-panel-commands
-          else  island-panel-commands
-          then  directions-menu  ;
+  text-font set-font  white ink wipe-panel
+  common-commands aboard? if    ship-commands
+                          else  island-commands
+                          then  compass  ;
   \ XXX TODO check condition -- what about the enemy ship?
   \ XXX TODO several commands: attack ship/island/shark?
 
@@ -922,12 +922,12 @@ variable east-cloud-x  3 constant /east-cloud
   2 14 at-xy ."  A  HI   HI       HI  HI  A"
   0 15 at-xy .\" WXY  :\::\::\x7F     Z123     :\::\::\x7F"  ;
 
-: .east-reef  ( -- )
+: .west-reef  ( -- )
   black ink  blue paper
    0 4 at-xy ." A"   1 6 at-xy ." HI"  0 8 at-xy ." WXY"
   1 11 at-xy ." A"  0 13 at-xy ." HI"  ;
 
-: .west-reef  ( -- )
+: .east-reef  ( -- )
   black ink  blue paper
   30 4 at-xy ." HI"   28 6 at-xy ." A"
   29 7 at-xy ." WXY"  31 9 at-xy ." A"  ;
@@ -1955,7 +1955,7 @@ here - cell / constant island-events
   dup 0exit  case
   'N' key-up                or-of  ?sail-north?        endof
   'S' key-down              or-of  ?sail-south?        endof
-  'E' key-right             or-of  ?sail-west?         endof
+  'E' key-right             or-of  ?sail-east?         endof
   'O' key-left              or-of  ?sail-west?         endof
   'I'                          of  main-report    true endof
   'A' feasible-attack @ and    of  attack-ship    true endof
