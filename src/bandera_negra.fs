@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.31.2+201701212118" ;
+: version  ( -- ca len )  s" 0.31.3+201701212300" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -732,29 +732,26 @@ variable feasible-trade          \ flag
 variable west-cloud-x  4 constant /west-cloud
 variable east-cloud-x  3 constant /east-cloud
 
-: sun-and-clouds  ( f -- )
-  bright  yellow ink  cyan paper
-  graph-font2 set-font
-  26 0 at-xy ." AB"  26 1 at-xy ." CD"  white ink
-  1 9 random-range dup west-cloud-x !
-  dup 0 at-xy ." EFGH" 1 at-xy ." IJKL"
-  13 21 random-range dup east-cloud-x !
-  dup 0 at-xy ." MNO"  1 at-xy ." PQR"
-  graph-font1 set-font  0 bright  ;
-  \ XXX TODO -- why the parameter, if this word is used only
-  \ once?
-  \ XXX TODO -- factor the sun and clouds parts
+: new-clouds  ( -- )
+   1  9 random-range west-cloud-x !
+  13 21 random-range east-cloud-x !  ;
+
+: sun  ( -- )
+  26 dup 0 at-xy ." AB"  1 at-xy ." CD"  ;
+
+: clouds  ( -- )
+  west-cloud-x @ dup 0 at-xy ." EFGH" 1 at-xy ." IJKL"
+  east-cloud-x @ dup 0 at-xy ." MNO"  1 at-xy ." PQR"  ;
+
+: sun-and-clouds  ( -- )
+  graph-font2 set-font  cyan paper
+  yellow ink sun  white ink clouds
+  graph-font1 set-font  ;
 
 : color-sky  ( c -- )
-  [ sky-top-y attr-line ] literal
+  [ sky-top-y attr-line  ] literal
   [ sky-height columns * ] literal rot fill  ;
   \ Color the sky with attribute _c_.
-
-: stormy-sky  ( -- )
-  [ cyan dup papery + ] literal color-sky
-  false sun-and-clouds  ;
-  \ Make the sky stormy.
-  \ XXX TODO -- hide the sun
 
 : sea-wave-coords  ( -- x y )
   1 28 random-range
@@ -770,11 +767,11 @@ variable east-cloud-x  3 constant /east-cloud
   15 0 do  at-sea-wave-coords ." kl"  at-sea-wave-coords ." mn"
   loop  ;
 
-: sunny-sky  ( -- )
-  [ cyan dup papery + brighty ] literal color-sky  ;
+cyan dup papery + brighty constant sunny-sky-attr
+
+: sunny-sky  ( -- )  sunny-sky-attr color-sky
+                     1 bright sun-and-clouds 0 bright  ;
   \ Make the sky sunny.
-  \ XXX FIXME -- why `sun-and-clouds` is not called here,
-  \ like in `stormy-sky`?
 
 : color-sea  ( c -- )
   [ sea-top-y attr-line ] literal
@@ -785,7 +782,7 @@ variable east-cloud-x  3 constant /east-cloud
 
 : sea-and-sky  ( -- )
   graphic-window set-window graph-font1 set-font
-  wipe-sea sea-waves sunny-sky  ;
+  wipe-sea sea-waves new-clouds sunny-sky  ;
   \ XXX TMP -- `graphic-window` is needed, because of the
   \ `wipe-panel` before the calling
 
@@ -1088,10 +1085,10 @@ variable east-cloud-x  3 constant /east-cloud
   \ ============================================================
   cr .( Reports)  \ {{{1
 
-white black papery + constant report-color#
+white black papery + constant report-attr
 
 : set-report-color  ( -- )
-  report-color# color! permanent-colors  ;
+  report-attr color! permanent-colors  ;
 
 : begin-report  ( -- )
   save-screen set-report-color cls text-font set-font  ;
@@ -1347,7 +1344,6 @@ variable done
     i gun-muzzle-y at-xy ."  j"
     i sunk? if  sunk unloop exit  then
   loop  -cannon-ball  ;
-  \ XXX FIXME -- the system crashes after `sunk`.
 
 : no-ammo-left  ( -- )
   feasible-attack off  panel
@@ -1891,28 +1887,38 @@ here - cell / constant island-events
 
 : at-rain  ( a -- )  @ rain-y at-xy  ;
 
-: at-west-cloud-rain  ( -- )  west-cloud-x at-rain  ;
+: at-west-rain  ( -- )  west-cloud-x at-rain  ;
 
-: at-east-cloud-rain  ( -- )  east-cloud-x at-rain  ;
+: at-east-rain  ( -- )  east-cloud-x at-rain  ;
 
 : rain-drops  ( c -- )
-  dup  at-west-cloud-rain /west-cloud emits
-       at-east-cloud-rain /east-cloud emits  60 ms  ;
+  dup  at-west-rain /west-cloud emits
+       at-east-rain /east-cloud emits  60 ms  ;
 
 : +rain  ( -- )
   graph-font1 set-font
-  70 0 do
-    white ink  cyan paper
-    ';' rain-drops  ']' rain-drops  '[' rain-drops
-    3 random 0= if  redraw-ship  then
+  70 0 do  white ink  cyan paper
+           ';' rain-drops  ']' rain-drops  '[' rain-drops
+           3 random 0= if  redraw-ship  then
   loop  ;
   \ Make the rain effect.
   \ XXX TODO -- random duration
+  \ XXX TODO -- sound effects
+  \ XXX TODO -- lightnings
 
-: -rain  ( -- )  at-west-cloud-rain /west-cloud spaces
-                 at-east-cloud-rain /east-cloud spaces  ;
+cyan dup papery + constant stormy-sky-attr
+
+: -rain  ( -- )  stormy-sky-attr color!
+                 at-west-rain /west-cloud spaces
+                 at-east-rain /east-cloud spaces  ;
   \ Erase the rain effect.
-  \ XXX FIXME -- wrong color
+  \ Note the sky keeps the stormy color.
+  \ XXX TODO -- improve: make the sky sunny after some time
+
+: stormy-sky  ( -- )  stormy-sky-attr color-sky
+                      sun-and-clouds  ;
+  \ Make the sky stormy.
+  \ XXX TODO -- hide the sun
 
 : storm  ( -- )
   wipe-panel stormy-sky
@@ -1924,7 +1930,6 @@ here - cell / constant island-events
   \ XXX FIXME -- sometimes `damage$` is empty: check the range
   \ of the damage percentage.
   \
-  \ XXX TODO bright sky!
   \ XXX TODO -- sound
   \ XXX TODO make the enemy ship to move, if present
   \ (use the same graphic of the player ship)

@@ -6,6 +6,11 @@
 
 .2017-01-21:
 
+Replace `paper`, `ink`, etc., with attributes and `color!`.
+It's faster.
+
+.2017-01-21:
+
 Move the `name` double-cell array to far memory.
 
 .2017-01-21:
