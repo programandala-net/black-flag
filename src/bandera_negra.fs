@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.31.3+201701212300" ;
+: version  ( -- ca len )  s" 0.31.4+201701220059" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -606,6 +606,7 @@ far-banks 3 + c@ cconstant screen-backup-bank
   cr .( Command panel)  \ {{{1
 
 21 constant panel-y
+ 3 constant panel-rows
 
 variable feasible-disembark      \ flag
 variable feasible-embark         \ flag
@@ -661,13 +662,12 @@ variable feasible-trade          \ flag
   inverse at-xy emit 0 inverse  ;
 
 : compass  ( -- )
-  white ink  black paper
-  'N' 30 panel-y    north?  .direction
-  'O' 29 panel-y 1+ west?   .direction
-  'E' 31 panel-y 1+ east?   .direction
-  'S' 30 panel-y 2+ south?  .direction
-  '+' 30 panel-y 1+ at-xy emit  ;
-  \ Print the directions menu.
+  'N' 30   panel-y               north?  .direction
+  'O' 29 [ panel-y 1+ ] cliteral west?   .direction
+  'E' 31 [ panel-y 1+ ] cliteral east?   .direction
+  'S' 30 [ panel-y 2+ ] cliteral south?  .direction
+  '+' 30 [ panel-y 1+ ] cliteral at-xy emit  ;
+  \ Print the compass of the panel.
   \
   \ XXX TODO use a modified  version of "+"?
 
@@ -695,36 +695,39 @@ variable feasible-trade          \ flag
 : ship-commands  ( -- )
   .debug-info  \ XXX INFORMER
   feasible-disembark? dup >r feasible-disembark !
-  16 panel-y 1+ at-xy s" Desembarcar" 0 r> ?>option$ type  ;
+  16 [ panel-y 1+ ] cliteral at-xy
+  s" Desembarcar" 0 r> ?>option$ type  ;
   \ XXX TODO -- factor both conditions
 
 : feasible-trade?  ( -- f )
   crew-loc @ island @ native-village =  ;
 
 ' true alias feasible-embark?  ( -- f )
-  \ XXX TODO -- only if crew-loc is coast
-  \ XXX TODO -- better yet, only if crew-loc is the
+  \ XXX TODO -- only if `crew-loc` is the
   \ disembarking position
 
 : island-commands  ( -- )
   .debug-info  \ XXX INFORMER
   feasible-embark? dup >r feasible-embark !
-  16 panel-y 1+ at-xy s" emBarcar" 2 r> ?>option$ type
+  16 [ panel-y 1+ ] cliteral at-xy
+  s" emBarcar" 2 r> ?>option$ type
   feasible-trade? dup >r feasible-trade !
-  16 panel-y 2+ at-xy s" Comerciar" 0 r> ?>option$ type  ;
+  16 [ panel-y 2+ ] cliteral at-xy
+  s" Comerciar" 0 r> ?>option$ type  ;
 
 : wipe-panel  ( -- )
-  black paper 0 21 at-xy [ 32 3 * ] literal spaces  ;
-  \ XXX TODO -- use `panel-window`; or much faster: erase the
-  \ attributes zone
+  [ panel-y attr-line    ] literal
+  [ panel-rows columns * ] literal erase  ;
 
-: panel  ( -- )
-  text-font set-font  white ink wipe-panel
+white black papery + constant panel-attr
+
+: panel-commands  ( -- )
+  text-font set-font panel-attr color!
   common-commands aboard? if    ship-commands
                           else  island-commands
                           then  compass  ;
-  \ XXX TODO check condition -- what about the enemy ship?
-  \ XXX TODO several commands: attack ship/island/shark?
+
+: panel  ( -- )  wipe-panel panel-commands  ;
 
   \ ============================================================
   cr .( Landscape graphics)  \ {{{1
@@ -780,11 +783,10 @@ cyan dup papery + brighty constant sunny-sky-attr
 
 : wipe-sea  ( -- )  [ blue dup papery + ] literal color-sea  ;
 
-: sea-and-sky  ( -- )
-  graphic-window set-window graph-font1 set-font
+: (sea-and-sky)  ( -- )
   wipe-sea sea-waves new-clouds sunny-sky  ;
-  \ XXX TMP -- `graphic-window` is needed, because of the
-  \ `wipe-panel` before the calling
+
+: sea-and-sky  ( -- )  graph-font1 set-font (sea-and-sky)  ;
 
   \ ============================================================
   cr .( Sea graphics)  \ {{{1
@@ -1346,7 +1348,7 @@ variable done
   loop  -cannon-ball  ;
 
 : no-ammo-left  ( -- )
-  feasible-attack off  panel
+  feasible-attack off  panel-commands
   s" Te quedaste sin munición." message  4 seconds  ;
   \ XXX TODO the enemy wins; our ship sinks,
   \ or the money and part of the crew are captured
@@ -1856,14 +1858,19 @@ here - cell / constant island-events
   \ ============================================================
   cr .( Disembark)  \ {{{1
 
-: disembarking-scene  ( -- )
-  graph-font1 set-font  green ink  blue paper
+: target-island  ( -- )
   31  8 at-xy ." :"
   27  9 at-xy .\" HI :\::"
   25 10 at-xy .\" F\::\::\::\::\::\::"
-  23 11 at-xy .\" JK\::\::\::\::\::\::\::"
-  yellow ink blue paper
+  23 11 at-xy .\" JK\::\::\::\::\::\::\::"  ;
+
+: disembarking-boat  ( -- )
   21 0 do  i 11 at-xy ."  <>" 200 ms  loop  ;
+
+: disembarking-scene  ( -- )
+  graph-font1 set-font  (sea-and-sky)
+  blue paper  green ink  target-island
+             yellow ink  disembarking-boat  ;
 
 : on-treasure-island?  ( -- f )
   ship-loc @ sea @ treasure-island =  ;
@@ -1878,7 +1885,8 @@ here - cell / constant island-events
 
 : disembark  ( -- )
   -2 -1 random-range supplies+!
-  wipe-message sea-and-sky disembarking-scene enter-island  ;
+  wipe-message wipe-panel
+  disembarking-scene enter-island  ;
 
   \ ============================================================
   cr .( Storm)  \ {{{1
@@ -1926,7 +1934,7 @@ cyan dup papery + constant stormy-sky-attr
   s"  que causa destrozos en el barco." s+ message
   +rain  10 49 damaged  -rain
   s" Tras la tormenta, el barco está " damage$ s+ s" ." s+
-  message  panel  ;
+  message  ;
   \ XXX FIXME -- sometimes `damage$` is empty: check the range
   \ of the damage percentage.
   \
@@ -1940,9 +1948,10 @@ cyan dup papery + constant stormy-sky-attr
 : to-reef?  ( n -- f )  ship-loc @ + reef?  ;
   \ Does the sea movement offset _n_ leads to a reef?
 
+: (sail)  ( n -- )  ship-loc +! sea-scenery panel-commands  ;
+
 : sail  ( n -- )
-  dup to-reef? if    drop run-aground
-               else  ship-loc +! sea-scenery panel  then  ;
+  dup to-reef? if  drop run-aground  else  (sail)  then  ;
   \ Move on the sea map, using offset _n_ from the current
   \ position.
 
@@ -2000,7 +2009,11 @@ cyan dup papery + constant stormy-sky-attr
   cr .( Misc commands on the island)  \ {{{1
 
 : embark  ( -- )
-  ship-loc @ visited on  1 day +!  aboard on  ;
+  ship-loc @ visited on  1 day +!  aboard on
+  sea-scenery panel  ;
+  \ XXX TODO -- Improve transition with a blackout, instead of
+  \ clearing the scenery and the panel apart. There are other
+  \ similar cases.
 
 : to-land?  ( n -- f )  crew-loc @ + coast? 0=  ;
   \ Does the island movement offset _n_ leads to land?
