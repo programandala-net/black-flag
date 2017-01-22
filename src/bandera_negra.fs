@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.31.4+201701220059" ;
+: version  ( -- ca len )  s" 0.31.5+201701221129" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -1217,7 +1217,7 @@ white black papery + constant report-attr
                                 2dup .sunk-step-1 sunk-delay
                                      .sunk-step-2  ;
 
-variable done
+variable victory
   \ XXX TODO -- remove; use the stack instead
 
 : sunk  ( -- )
@@ -1225,10 +1225,10 @@ variable done
 
   \ ship-loc @ sea @ 13 >=
   \ ship-loc @ sea @ 16 <= and
-  \ if  1 sunk-ships +!  1000 score +!  done on  then
+  \ if  1 sunk-ships +!  1000 score +!  victory on  then
     \ XXX OLD
 
-  1 sunk-ships +!  1000 score +!  done on
+  1 sunk-ships +!  1000 score +!  victory on
     \ XXX TODO -- use constant to increase the score, and in
     \ the score report
 
@@ -1329,12 +1329,13 @@ variable done
   \ coordinate _row_.
 
 : gun>label-y  ( n -- row )  7 * 2+  ;
-  \ Convert gun number _n_ (0..2) to its label _row_.
+  \ Convert gun number _n_ (0..2) to its gun label _row_.
 
 : gun>muzzle-y  ( n -- row )  gun>label-y 1+  ;
-  \ Convert gun number _n_ (0..2) to its fire _row_.
+  \ Convert gun number _n_ (0..2) to its gun muzzle _row_.
 
 : -cannon-ball  ( -- )  last-column gun-muzzle-y at-xy space  ;
+  \ Erase the cannon ball at the end of its trajectory.
 
 : fire  ( n -- )
   graph-font1 set-font  blue paper
@@ -1391,12 +1392,13 @@ variable done
   inkey case  '1' of  0 fire  endof
               '2' of  1 fire  endof
               '3' of  2 fire  endof  endcase  ;
-          \ XXX TODO -- use a table instead?
+
+: end-of-battle?  ( -- f )  victory @ ammo @ 0= or  ;
 
 : (ship-battle)  ( -- )
-  battle-scenery  done off
-  begin  trigger move-enemy-ship done @ ammo @ 0= or until
-  ammo @ ?exit no-ammo-left ;
+  battle-scenery  victory off
+  begin  move-enemy-ship trigger end-of-battle?  until
+  ammo @ ?exit no-ammo-left  ;
 
 : ship-battle  ( -- )
   save-screen (ship-battle) restore-screen  ;

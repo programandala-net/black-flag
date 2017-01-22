@@ -1,8 +1,36 @@
 = To-Do list of Bandera Negra
 :author: Marcos Cruz (programandala.net)
-:revdate: 2017-01-21
+:revdate: 2017-01-22
 
-== New notes about the conversion to Forth
+== Conversion to Forth
+
+.2017-01-22:
+
+Fix: The disembarking command is available is location that have no
+island.
+
+.2017-01-22:
+
+Fix: Erase the panel before the disembarking scene.
+
+.2017-01-22:
+
+Fix: remove the pause after the message at the end of the storm.
+
+.2017-01-22:
+
+Fix: The logic of the ship battle seems buggy. Check everything.
+
+.2017-01-22:
+
+Fix: When ammo is finished during the ship battle, the message is
+shown as a pop-up.
+
+Solution 1: Restore the previous screen first (the sea scenery).
+
+Solution 2: Redesign the screen of the ship battle and reserve a
+window for messages. This window can be used for other new messages as
+well.
 
 .2017-01-21:
 
@@ -12,11 +40,6 @@ It's faster.
 .2017-01-21:
 
 Move the `name` double-cell array to far memory.
-
-.2017-01-21:
-
-Use more clear names like `walk-north?`, `sail-north?`, etc.
-
 
 .2017-01-21:
 
@@ -102,24 +125,13 @@ memory.
 
 Remove `graphic-window`.
 
-.2017-01-08, 2017-01-21:
+== Future improvements
 
-Convert `possible-north` flag and family to calculations.
+.2017-01-22:
 
+Improve: Access all reports (a menu) with one key in the panel.
 
-
-----
-: +sea-north  ( n1 -- n2 )  sea-length +  ;
-: +sea-south  ( n1 -- n2 )  sea-length -  ;
-: +sea-east   ( n1 -- n2 )  1+  ;
-: +sea-weast  ( n1 -- n2 )  1-  ;
-
-: sea-to-north?  ( -- f )
-  sea-loc @ sea-length + 
-
-: island-to-north?  ( -- f
-
-== Old notes (in Spanish)
+== Old notes about the abandaned conversion to Master BASIC
 
 NOTE: The following notes from the abandoned Master BASIC version are
 still useful for the Forth version.
