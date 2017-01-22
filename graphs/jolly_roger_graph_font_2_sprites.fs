@@ -357,9 +357,14 @@
 00000000
 
 \ character 65 ('A')
+
 \ Sun:
 \ AB
 \ CD
+\
+\ Also, the individual characters are used as corners of the
+\ island.
+
 0000001111000000
 0000111111110000
 0011111111111100

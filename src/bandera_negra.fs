@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.31.5+201701221129" ;
+: version  ( -- ca len )  s" 0.31.6+201701221331" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -193,10 +193,13 @@ island-length island-breadth * constant /island
 
 9 constant max-offer
 
- 3 constant sea-top-y
-13 constant sea-height  \ screen lines
- 0 constant sky-top-y
- 3 constant sky-height  \ screen lines
+                          0 constant sky-top-y
+                          3 constant sky-rows
+                          3 constant sea-top-y
+                         15 constant sea-bottom-y
+sea-bottom-y sea-top-y - 1+ constant sea-rows
+                          3 constant island-top-y
+                          5 constant island-rows
 
   \ ============================================================
   cr .( Variables)  \ {{{1
@@ -717,7 +720,7 @@ variable feasible-trade          \ flag
 
 : wipe-panel  ( -- )
   [ panel-y attr-line    ] literal
-  [ panel-rows columns * ] literal erase  ;
+  [ panel-rows columns * ] 1literal erase  ;
 
 white black papery + constant panel-attr
 
@@ -753,13 +756,13 @@ variable east-cloud-x  3 constant /east-cloud
 
 : color-sky  ( c -- )
   [ sky-top-y attr-line  ] literal
-  [ sky-height columns * ] literal rot fill  ;
+  [ sky-rows columns *   ] cliteral rot fill  ;
   \ Color the sky with attribute _c_.
 
 : sea-wave-coords  ( -- x y )
   1 28 random-range
   4 [ graphic-window ~wy0   c@
-      graphic-window ~wrows c@ + 1- ] literal random-range  ;
+      graphic-window ~wrows c@ + 1- ] cliteral random-range  ;
   \ Return random coordinates _x y_ for a sea wave.
 
 : at-sea-wave-coords  ( -- )  sea-wave-coords  at-xy  ;
@@ -778,10 +781,10 @@ cyan dup papery + brighty constant sunny-sky-attr
 
 : color-sea  ( c -- )
   [ sea-top-y attr-line ] literal
-  [ sea-height columns * ] literal rot fill  ;
+  [ sea-rows columns *  ] 1literal rot fill  ;
   \ Color the sea with attribute _c_.
 
-: wipe-sea  ( -- )  [ blue dup papery + ] literal color-sea  ;
+: wipe-sea  ( -- )  [ blue dup papery + ] cliteral color-sea  ;
 
 : (sea-and-sky)  ( -- )
   wipe-sea sea-waves new-clouds sunny-sky  ;
@@ -908,10 +911,10 @@ cyan dup papery + brighty constant sunny-sky-attr
   \ XXX TODO -- factor
 
 : wipe-island  ( -- )
-  [ 3 attr-line ] literal
-  [ 3 columns * ] literal
-  [ yellow dup papery + ] literal fill  ;
-  \ XXX TODO -- use constants
+  [ island-top-y attr-line ] literal
+  [ island-rows columns *  ] 1literal
+  [ yellow dup papery +    ] cliteral fill  ;
+  \ XXX TODO -- check
 
   \ --------------------------------------------
   cr .(   -Reefs)  \ {{{2
@@ -1426,7 +1429,7 @@ variable victory
   \ be coast.
 
 : make-north-coast  ( -- )
-  [ /island island-length - ] literal island-length
+  [ /island island-length - ] 1literal island-length
   (make-coast)  ;
 
 : make-south-coast  ( -- )  0 island-length (make-coast)  ;
@@ -1491,11 +1494,12 @@ variable victory
   graph-font1 set-font  27 2 do  i 3 palm2  8 +loop  ;
 
 : treasure-found  ( -- )
-  [ 0 attr-line ] literal [ 3 columns * ] literal
-  [ cyan dup papery + brighty ] literal fill
-  [ 4 attr-line ] literal [ 18 columns * ] literal
+  [ 0 attr-line ] literal [ 3 columns * ] 1literal
+  [ cyan dup papery + brighty ] cliteral fill
+  [ 4 attr-line ] literal [ 18 columns * ] 1literal
   [ yellow dup papery + ] literal fill
     \ XXX TODO -- factor the coloring
+    \ XXX TODO -- use constants
   sunny-sky
 
   23 7 do  i 5 palm2  5 +loop  3 7 palm2  26 7 palm2
@@ -1628,37 +1632,61 @@ variable option
   cr .( Island graphics)  \ {{{1
 
 : wipe-island-scenery  ( -- )
-  [ yellow dup papery + ] literal color-sea  ;
-  \ XXX TODO -- print spaces instead
+  [ yellow dup papery + ] cliteral color-sea  ;
+  \ XXX TODO -- Color only the block occupied by the island.
+  \ This will save drawing the blue borders before drawing the
+  \ waves.
 
-: .north-waves  ( -- )
-  0 3 at-xy ."  kl  mn     nm    klk   nm nm n "  ;
+: north-waves  ( -- )
+  0 sea-top-y at-xy ."  kl  mn     nm    klk   nm nm n "  ;
+  \ XXX TODO -- show random waves every time, using a random
+  \ 32-chars substring from a main one
 
-: .south-waves  ( -- )
-  0 14 at-xy ."  kl     mn  mn    kl    kl kl  m"
-             ."     mn      klmn   mn m  mn     "  ;
+: south-waves  ( -- )
+  0 [ sea-bottom-y 1- ] cliteral at-xy
+  ."  kl     mn  mn    kl    kl kl  m"
+  ."     mn      klmn   mn m  mn     "  ;
+  \ XXX TODO -- show random waves every time, using a random
+  \ 64-chars substring from a main one
 
-: .west-waves  ( -- )
-  16 3 do  0 i at-xy ."   "  loop
-  0 6 at-xy ." mn" 0 10 at-xy ." kl" 0 13 at-xy ." k"
-  0 4 at-xy ." m" 1 8 at-xy ." l"
-  graph-font2 set-font yellow ink
-  2 4 walk-north? + at-xy 'A' emit \ XXX TODO -- check this!
+: west-waves  ( -- )
+  [ sea-top-y sea-rows bounds ] 2literal
+  do  0 i at-xy ."   "  loop
+  0  4 at-xy ." m"
+  0  6 at-xy ." mn"
+  1  8 at-xy  ." l"
+  0 10 at-xy ." kl"
+  0 13 at-xy ." k"
+  graph-font2 set-font  yellow ink
+  walk-north? 0= if  2  4 at-xy 'A' emit  then
   walk-south? 0= if  2 13 at-xy 'C' emit  then
   graph-font1 set-font  ;
-  \ XXX TODO -- factor, review
+  \ XXX TODO -- factor
+  \ XXX TODO -- random waves
+  \ XXX TODO -- use constants for the base coordinates
 
-: .east-waves  ( -- )
-  16 3 do  30 i at-xy ."   "  loop
-  30 6 at-xy ." mn" 30 10 at-xy ." kl" 31 13 at-xy ." k"
-  30 4 at-xy ." m" 31 8 at-xy ." l"
+: east-waves  ( -- )
+  [ sea-top-y sea-rows bounds ] 2literal
+  do  30 i at-xy ."   "  loop
+  30  4 at-xy ." m"
+  30  6 at-xy ." mn"
+  31  8 at-xy  ." l"
+  30 10 at-xy ." kl"
+  31 13 at-xy  ." k"
   yellow ink  graph-font2 set-font
-  walk-north? 0= if    29  4 at-xy 'B' emit  then
-  29  walk-south? 0=
-  if    13 at-xy 'D'
-  else   3 at-xy 'B'
-  then  emit  graph-font1 set-font  ;
-  \ XXX TODO -- factor, review
+  walk-north? 0= if  29  4 at-xy 'B' emit  then
+  walk-south? 0= if  29 13 at-xy 'D' emit  then
+  graph-font1 set-font  ;
+  \ XXX TODO -- factor
+  \ XXX TODO -- random waves
+  \ XXX TODO -- use constants for the base coordinates
+
+: island-waves  ( -- )
+  graph-font1 set-font  white ink  blue paper
+  walk-south? 0= if  south-waves  then
+  walk-north? 0= if  north-waves  then
+   walk-east? 0= if  east-waves   then
+   walk-west? 0= if  west-waves   then  ;
 
 : .village  ( -- )
   graph-font2 set-font  green ink  yellow paper
@@ -1707,35 +1735,28 @@ variable option
   r> set-font  ;
   \ XXX TODO -- use a loop
 
-: island-waves  ( -- )
-  graph-font1 set-font white ink  blue paper
-  walk-south? 0= if  .south-waves  then
-  walk-north? 0= if  .north-waves  then
-   walk-east? 0= if  .east-waves   then
-   walk-west? 0= if  .west-waves   then  ;
-
-: (.island-location)  ( n -- )
+: island-location  ( n -- )
   ~~ case
-    native-village  of  .village                         endof
-    dubloons-found  of  4 8 palm2 14 5 palm2             endof
+    native-village  of  .village                          endof
+    dubloons-found  of  4 8 palm2 14 5 palm2              endof
       \ XXX TODO -- print dubloons here
     hostile-native  of  ~~ 14 5 palm2 25 8 palm2 .native  endof
-    just-3-palms-1  of  25 8 palm2  4 8 palm2 16 5 palm2 endof
+    just-3-palms-1  of  25 8 palm2  4 8 palm2 16 5 palm2  endof
     snake of
       13 5 palm2 5 6 palm2 18 8 palm2 23 8 palm2 .snake
-                                                         endof
-    just-3-palms-2  of  23 8 palm2 17 5 palm2 4 8 palm2  endof
+                                                          endof
+    just-3-palms-2  of  23 8 palm2 17 5 palm2 4 8 palm2   endof
     native-supplies of  ~~ .supplies  .native  16 4 palm2 endof
     native-ammo     of  ~~ .ammo-gift .native 20 5 palm2  endof
   endcase  ~~ ;
 
-: .island-location  ( -- )
-  crew-loc @ island @ (.island-location)  ;
+: current-island-location  ( -- )
+  crew-loc @ island @ island-location  ;
 
 : island-scenery  ( -- )
   graphic-window set-window graph-font1 set-font
   wipe-island-scenery sunny-sky island-waves
-  ~~ .island-location  ;
+  ~~ current-island-location  ;
 
   \ ============================================================
   cr .( Events on an island)  \ {{{1
@@ -1829,7 +1850,7 @@ here - cell / constant island-events
     1 ammo+!  be-hostile-native
       \ XXX TODO random ammount
       \ XXX TODO -- choose it in advance and draw it in
-      \ `.island-location`
+      \ `island-location`
   endof
 
   native-supplies of  ~~
@@ -1837,7 +1858,7 @@ here - cell / constant island-events
     1 supplies+!  be-hostile-native
       \ XXX TODO random ammount
       \ XXX TODO -- choose it in advance and draw it in
-      \ `.island-location`
+      \ `island-location`
   endof
 
   native-village of  ~~
@@ -2257,18 +2278,18 @@ variable price  variable offer
 
 : add-south-reefs  ( -- )
   [ sea-breadth 1- sea-length * dup sea-length + ]
-  literal literal add-row-reefs  ;
+  1literal 1literal add-row-reefs  ;
 
 : add-col-reefs  ( n1 n0 -- )
   ?do  reef i sea !  sea-length +loop  ;
 
 : add-east-reefs  ( -- )
-  [ sea-breadth 2- sea-length * 1+ ] literal sea-length
+  [ sea-breadth 2- sea-length * 1+ ] 1literal sea-length
   add-col-reefs  ;
 
 : add-west-reefs  ( -- )
   [ sea-length 2* 1-  /sea sea-length - ]
-  literal literal add-col-reefs  ;
+  1literal 1literal add-col-reefs  ;
 
 : add-reefs  ( -- )  add-north-reefs add-south-reefs
                      add-east-reefs add-west-reefs  ;
@@ -2308,7 +2329,7 @@ variable price  variable offer
   score off  sunk-ships off  trades off  ;
 
 : unused-name  ( -- n )
-  0  begin  drop  0 [ stock-names 1- ] literal random-range
+  0  begin  drop  0 [ stock-names 1- ] 1literal random-range
      dup used-name @ 0= until  ;
   \ Return the random identifier _n_ of an unused name.
 
@@ -2327,7 +2348,7 @@ variable price  variable offer
 
 : init  ( -- )
   0 randomize0
-  [ 2 attr-line ] literal [ 20 columns * ] literal erase
+  [ 2 attr-line ] literal [ 20 columns * ] 1literal erase
     \ XXX TODO -- check if needed
     \ XXX TODO -- use constant to define the zone
   white ink  black paper text-font set-font

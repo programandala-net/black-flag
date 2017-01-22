@@ -11,10 +11,6 @@ island.
 
 .2017-01-22:
 
-Fix: Erase the panel before the disembarking scene.
-
-.2017-01-22:
-
 Fix: remove the pause after the message at the end of the storm.
 
 .2017-01-22:
