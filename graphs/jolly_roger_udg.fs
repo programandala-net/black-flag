@@ -1,3 +1,29 @@
+\ jolly_roger_udg.fs
+
+\ This file is part of Bandera Negra
+\ http://programandala.net/
+
+\ XXX UNDER DEVELOPMENT
+
+\ Last modified: 201701221528
+
+\ Credit:
+\
+\ This is the UDG set included in the original game "Jolly Roger",
+\ written by Barry Jones and published by Video Vault ltd. in 1984.
+
+\ Description:
+\
+\ This file was created by FantomoUDG
+\ (http://programandala.net/en.program.fantomoudg.html) from a
+\ TAP file extracted from the original game and then manually
+\ edited to combine the original graphic characters into blocks
+\ and sprites.  The final goal is to create a single source of
+\ graphics, easy to edit as text and to convert automatically to
+\ Forth source.
+
+\ ==============================================================
+
 \ UDG position 0 = UDG 144 in a UDG set = character 32 (' ') in a font
 00001000
 00000100
@@ -189,22 +215,14 @@
 11111111
 
 \ UDG position 19 = UDG 163 in a UDG set = character 51 ('3') in a font
-00001111
-00011110
-00111111
-00100000
-00111111
-00111111
-00111111
-00111111
-
-\ UDG position 20 = UDG 164 in a UDG set = character 52 ('4') in a font
-11110000
-01111000
-11111100
-00000100
-11111100
-11111100
-11111100
-11111100
+\
+\ "TU" = the treasure
+0000111111110000
+0001111001111000
+0011111111111100
+0010000000000100
+0011111111111100
+0011111111111100
+0011111111111100
+0011111111111100
 

@@ -5,7 +5,7 @@
 
 \ XXX UNDER DEVELOPMENT
 
-\ Last modified: 201701181353
+\ Last modified: 201701221954
 
 \ Credit:
 \
@@ -22,7 +22,6 @@
 \ and sprites.  The final goal is to create a single source of
 \ graphics, easy to edit as text and to convert automatically to
 \ Forth source.
-
 
 \ ==============================================================
 
@@ -227,6 +226,7 @@
 01110111
 
 \ character 52 ('4')
+\ Small hut
 00111100
 01111110
 11111111
@@ -257,6 +257,7 @@
 01100110
 
 \ character 55 ('7')
+\ Left part of the door of the middle huts
 00111111
 00111111
 00111111
@@ -267,6 +268,7 @@
 00111100
 
 \ character 56 ('8')
+\ Right part of the door of the middle huts
 11111100
 11111100
 11111100
@@ -425,7 +427,7 @@
 001110000111000000001100
 
 \ character 83 ('S')
-\ Part of the village
+\ Left roof of the big and middle huts
 00000001
 00000011
 00000111
@@ -436,7 +438,7 @@
 11111111
 
 \ character 84 ('T')
-\ Part of the village
+\ Right roof of the big and middle huts
 10000000
 11000000
 11100000
@@ -447,7 +449,7 @@
 11111111
 
 \ character 85 ('U')
-\ Part of the village
+\ Door of the big huts
 11111111
 11111111
 11111111
@@ -458,7 +460,7 @@
 11000011
 
 \ character 86 ('V')
-\ Part of the village
+\ Left window of the big huts
 00011111
 00011111
 00011001
@@ -469,7 +471,7 @@
 00011111
 
 \ character 87 ('W')
-\ Part of the village
+\ Right window of the big huts
 11111000
 11111000
 10011000
@@ -480,7 +482,7 @@
 11111000
 
 \ character 88 ('X')
-\ Part of the village
+\ Native villager with vertical lance
 00000010
 00110010
 00110010
@@ -491,7 +493,7 @@
 01001010
 
 \ character 89 ('Y')
-\ Part of the village
+\ Native villager with diagonal lance
 00001000
 00110100
 00110010
@@ -502,7 +504,7 @@
 01001000
 
 \ character 90 ('Z')
-\ Part of the village
+\ Native villager without lance
 00000000
 00011000
 00011000
@@ -513,6 +515,7 @@
 00100100
 
 \ character 91 ('[')
+\ XXX REMARK -- not used
 00000000
 00001110
 00001000
@@ -523,6 +526,7 @@
 00000000
 
 \ character 92 ('\')
+\ XXX REMARK -- not used
 00000000
 00000000
 01000000
@@ -533,6 +537,7 @@
 00000000
 
 \ character 93 (']')
+\ XXX REMARK -- not used
 00000000
 01110000
 00010000
@@ -543,6 +548,7 @@
 00000000
 
 \ character 94 ('^')
+\ XXX REMARK -- not used
 00000000
 00010000
 00111000
@@ -553,6 +559,7 @@
 00000000
 
 \ character 95 ('_')
+\ XXX REMARK -- not used
 00000000
 00000000
 00000000
@@ -562,7 +569,8 @@
 00000000
 11111111
 
-\ character 96 ('`')
+\ character 96 ('`') (GPB sign in ZX Spectrum)
+\ XXX REMARK -- not used
 00000000
 00011100
 00100010
@@ -862,7 +870,8 @@
 00000000
 00000000
 
-\ character 127
+\ character 127 (Copyright sign in ZX Spectrum)
+\ XXX REMARK -- not used
 00111100
 01000010
 10011001

@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.31.7+201701221448" ;
+: version  ( -- ca len )  s" 0.32.0+201701221520" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -95,7 +95,7 @@ need set-udg  need rom-font  need set-font  need get-font
 need black   need blue    need red  need green
 need cyan    need yellow  need white
 
-need color!  need permcolor!  need papery  need brighty
+need color!  need papery  need brighty
 
 need rdraw176 ' rdraw176 alias rdraw
 need plot176  ' plot176 alias plot
@@ -894,11 +894,10 @@ cyan dup papery + brighty constant sunny-sky-attr
               .\" \::\::\::\::\::\::\::\::\::\::C"
    8 12 at-xy .\" F\::\::\::\::\::\::\::\::\::\::"
               .\" \::\::\::\::\::\::\::\::\::\::\::\::D"
+  31 13 at-xy ." E"
   blue ink  green paper
    8 13 at-xy ."  HI Z123  HI A  A A  A "
   20 14 at-xy .\" B\::\::\::\::B"
-  green ink  blue paper
-  31 13 at-xy ." E"
   19 4 palm1  24 4 palm1  14 4 palm1
   black ink  green paper
   22 9 at-xy .\" \T\U"  \ the treasure
@@ -1688,26 +1687,35 @@ variable option
    walk-east? 0= if  east-waves   then
    walk-west? 0= if  west-waves   then  ;
 
-: .village  ( -- )
-  graph-font2 set-font  green ink  yellow paper
+: .huts  ( -- )
+  green ink
   6  5 at-xy .\"  S\::T    ST   S\::T"
   6  6 at-xy .\"  VUW    78   VUW   4"
   4  8 at-xy .\" S\::T   S\::T    S\::T S\::T  S\::T "
   4  9 at-xy ." VUW   VUW  4 VUW VUW  VUW"
   4 11 at-xy .\" S\::T    S\::T ST  S\::T S\::T"
-  4 12 at-xy ." VUW  4 VUW 78  VUW VUW"
-  black ink  yellow paper
-   7 12 at-xy ." X"
-  17 12 at-xy ." Y"
-  22 12 at-xy ." Z"
-  26 12 at-xy ." XY"
+  4 12 at-xy ." VUW  4 VUW 78  VUW VUW"  ;
+  \ XXX TODO -- Random, but specific for every island: Choose a
+  \ random number and use its groups of 4 bits as identifiers
+  \ of what must be drawn: 3 types of hut and nothing.
+
+: .villagers  ( -- )
+  black ink
+  10  6 at-xy ." XYZ"
+  17  6 at-xy ." YX"
+  26  6 at-xy ." Z"
    8  9 at-xy ." ZZ"
   13  9 at-xy ." Y"
   24  9 at-xy ." ZX"
-  10  6 at-xy ." XYZ"
-  17  6 at-xy ." YX"
-  26  6 at-xy ." Z"  graph-font1 set-font  ;
-  \ XXX TODO -- factor
+   7 12 at-xy ." X"
+  17 12 at-xy ." Y"
+  22 12 at-xy ." Z"
+  26 12 at-xy ." XY"  ;
+  \ XXX TODO -- random
+
+: .village  ( -- )
+  graph-font2 set-font  yellow paper .huts .villagers
+  graph-font1 set-font  ;
 
 : .native  ( -- )
   black ink  yellow paper  8 10 at-xy ."  _ `"
@@ -1863,6 +1871,7 @@ here - cell / constant island-events
 
   native-village of  ~~
     s" Descubres un poblado nativo." message
+    \ XXX TODO -- Change the message if the village is visited.
   endof
 
   just-3-palms-1 of  island-event  endof
