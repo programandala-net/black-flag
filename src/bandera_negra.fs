@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.31.6+201701221331" ;
+: version  ( -- ca len )  s" 0.31.7+201701221448" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -1812,7 +1812,7 @@ here - cell / constant island-events
 : be-hostile-native  ( -- )
   hostile-native crew-loc @ island !  ;
 
-: (enter-island-location)  ( n -- )
+: enter-this-island-location  ( n -- )
 
   .debug-info
 
@@ -1874,9 +1874,8 @@ here - cell / constant island-events
   ;
 
 : enter-island-location  ( -- )
-  wipe-message  \ XXX TODO needed?
-  island-scenery panel
-  crew-loc @ island @ (enter-island-location)  ;
+  wipe-message island-scenery panel-commands
+  crew-loc @ island @ enter-this-island-location  ;
 
   \ ============================================================
   cr .( Disembark)  \ {{{1
@@ -1899,7 +1898,7 @@ here - cell / constant island-events
   ship-loc @ sea @ treasure-island =  ;
 
 : enter-ordinary-island  ( -- )
-  new-island set-crew-loc enter-island-location  ;
+  new-island set-crew-loc wipe-panel enter-island-location  ;
 
 : enter-island  ( -- )
   aboard off  on-treasure-island?
