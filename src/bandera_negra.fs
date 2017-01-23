@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.33.0+201701230045" ;
+: version  ( -- ca len )  s" 0.34.0+201701230154" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -1770,44 +1770,50 @@ variable option
   \ ============================================================
   cr .( Events on an island)  \ {{{1
 
-: event1  ( -- )
+: marsh  ( -- )
   dead name$ s"  se hunde en arenas movedizas." s+ message  ;
 
-: event2  ( -- )
+: swamp  ( -- )
   dead name$ s"  se hunde en un pantano." s+ message  ;
 
-: event3  ( -- )
+: spider  ( -- )
   s" A " injured name$ s+
   s"  le muerde una araña." s+ message  ;
 
-: event4  ( -- )
+: scorpion  ( -- )
   s" A " injured name$ s+ s"  le pica un escorpión." s+
   message  ;
 
-: event5  ( -- )
+: hunger  ( -- )
   s" La tripulación está hambrienta." message
   -1 morale+!  ;
   \ XXX TODO -- only if supplies are not enough
 
-: event6  ( -- )
+: thirst  ( -- )
   s" La tripulación está sedienta." message
   -1 morale+!  ;
   \ XXX TODO -- only if supplies are not enough
 
-: event7  ( -- )
+: money  ( -- )
   2 5 random-range dup .dubloons dup cash+!
   s" Encuentras " rot coins$ s+ s" ." s+ message  ;
+  \ XXX TODO -- factor: repeated in `enter-this-island-location`
 
-: event8  ( -- )
+: no-problem  ( -- )
   s" Sin novedad, capitán." message  ;
+  \ XXX TODO -- improve message
+  \ XXX TODO -- rename
 
-: event9  ( -- )
-  s" La costa está despejada, capitán." message  ;
+: no-danger  ( -- )
+  s" La zona está despejada, capitán." message  ;
+  \ XXX TODO -- improve message, depending on the location,
+  \ e.g. "no hay moros en la costa"
+  \ XXX TODO -- rename
 
 create island-events-table  ( -- a )  here
 
-] event1 event2 event3 event4 event5 event6
-  event7 event8 event8 event9 event9 noop noop [
+] marsh swamp spider scorpion hunger thirst money
+  no-problem no-problem no-danger no-danger noop noop [
 
 here - cell / constant island-events
 
@@ -1844,6 +1850,7 @@ here - cell / constant island-events
     s" Encuentras " r@ coins$ s+ s" ." s+ message
     r@ cash+!
     r> .dubloons
+    \ XXX TODO -- factor: repeated in `money`
 
     just-3-palms-1 crew-loc @ island !
       \ XXX FIXME -- This changes the type of location, what
@@ -1934,7 +1941,7 @@ here - cell / constant island-events
   dup  at-west-rain /west-cloud emits
        at-east-rain /east-cloud emits  60 ms  ;
 
-: +rain  ( -- )
+: +storm  ( -- )
   graph-font1 set-font
   70 0 do  white ink  cyan paper
            ';' rain-drops  ']' rain-drops  '[' rain-drops
@@ -1950,7 +1957,7 @@ here - cell / constant island-events
 
 cyan dup papery + constant stormy-sky-attr
 
-: -rain  ( -- )  stormy-sky-attr color!
+: -storm  ( -- )  stormy-sky-attr color!
                  at-west-rain /west-cloud spaces
                  at-east-rain /east-cloud spaces  ;
   \ Erase the rain effect.
@@ -1975,9 +1982,8 @@ cyan dup papery + constant stormy-sky-attr
   \ XXX FIXME -- sometimes `damage$` is empty: check the range
   \ of the damage percentage.
 
-: storm  ( -- )
-  stormy-sky storm-warning
-  +rain damages -rain storm-report  ;
+: storm  ( -- )  stormy-sky storm-warning
+                 +storm damages -storm storm-report  ;
 
   \ ============================================================
   cr .( Ship command)  \ {{{1

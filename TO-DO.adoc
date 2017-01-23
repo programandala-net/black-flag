@@ -8,10 +8,6 @@
 
 Print the ships in two colors.
 
-.2017-01-23:
-
-Rename `event1` and family.
-
 .2017-01-22:
 
 Fix: The disembarking command is available is location that have no
