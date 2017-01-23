@@ -1,17 +1,21 @@
 = To-Do list of Bandera Negra
 :author: Marcos Cruz (programandala.net)
-:revdate: 2017-01-22
+:revdate: 2017-01-23
 
 == Conversion to Forth
+
+.2017-01-23:
+
+Print the ships in two colors.
+
+.2017-01-23:
+
+Rename `event1` and family.
 
 .2017-01-22:
 
 Fix: The disembarking command is available is location that have no
 island.
-
-.2017-01-22:
-
-Fix: remove the pause after the message at the end of the storm.
 
 .2017-01-22:
 

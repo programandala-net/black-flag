@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.32.0+201701221520" ;
+: version  ( -- ca len )  s" 0.33.0+201701230045" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -89,7 +89,8 @@ need window  need set-window  need wcls  need wtype
 need whome
 
 need tab  need type-center  need at-x  need row
-need columns  need last-column  need inverse  need tabulate
+need rows  need columns  need last-column
+need inverse  need tabulate
 need set-udg  need rom-font  need set-font  need get-font
 
 need black   need blue    need red  need green
@@ -98,7 +99,7 @@ need cyan    need yellow  need white
 need color!  need papery  need brighty
 
 need rdraw176 ' rdraw176 alias rdraw
-need plot176  ' plot176 alias plot
+need plot176  ' plot176  alias plot
   \ XXX TMP --
 
   \ --------------------------------------------
@@ -167,7 +168,7 @@ island-length island-breadth * constant /island
   \ XXX TODO -- not used yet
 
   \ Sea location types
-  \ XXX TODO complete
+  \ XXX TODO -- complete
  1 constant reef
    \ 7 constant
    \ 8 constant
@@ -672,7 +673,7 @@ variable feasible-trade          \ flag
   '+' 30 [ panel-y 1+ ] cliteral at-xy emit  ;
   \ Print the compass of the panel.
   \
-  \ XXX TODO use a modified  version of "+"?
+  \ XXX TODO -- use a modified  version of "+"?
 
 : feasible-attack?  ( -- f )
   ship-loc @ sea @ dup >r 13 <
@@ -700,7 +701,6 @@ variable feasible-trade          \ flag
   feasible-disembark? dup >r feasible-disembark !
   16 [ panel-y 1+ ] cliteral at-xy
   s" Desembarcar" 0 r> ?>option$ type  ;
-  \ XXX TODO -- factor both conditions
 
 : feasible-trade?  ( -- f )
   crew-loc @ island @ native-village =  ;
@@ -797,26 +797,24 @@ cyan dup papery + brighty constant sunny-sky-attr
   \ --------------------------------------------
   cr .(   -Palms)  \ {{{2
 
-: palm1  ( x y -- )
-  green ink  blue paper  2dup    at-xy ." OPQR"
-                         2dup 1+ at-xy ." S TU"  yellow ink
-  1 under+  \ increment x
+: palm-top  ( x y -- x' y' )
+  2dup    at-xy ." OPQR"
+  2dup 1+ at-xy ." S TU" ;
+
+: palm-trunk  ( x y -- x' y' )
   1+ 2dup at-xy ." N"
   1+ 2dup at-xy ." M"
-  1+      at-xy ." L"  ;
+  1+ 2dup at-xy ." L"  ;
+
+: palm1  ( x y -- )
+  green ink  blue paper  palm-top  yellow ink
+  1 under+  palm-trunk 2drop  ;
   \ Print palm model 1 at characters coordinates _x y_.
-  \ XXX TODO -- factor the code common to `palm2`
 
 : palm2  ( x y -- )
-  green ink  yellow paper  2dup    at-xy ." OPQR"
-                           2dup 1+ at-xy ." S TU"  black ink
-  1 under+  \ increment x
-  1+ 2dup at-xy ." N"
-  1+ 2dup at-xy ." M"
-  1+ 2dup at-xy ." L"
-  1+      at-xy ." V"  ;
+  green ink  yellow paper  palm-top  black ink
+  1 under+  palm-trunk 1+ at-xy ." V"  ;
   \ Print palm model 2 at characters coordinates _x y_.
-  \ XXX TODO -- factor the code common to `palm1`
 
   \ --------------------------------------------
   cr .(   -Islands)  \ {{{2
@@ -1073,17 +1071,17 @@ cyan dup papery + brighty constant sunny-sky-attr
   -4 -1 random-range morale+!  ;
 
 : run-aground  ( -- )
-  wipe-message  \ XXX TODO remove?
+  wipe-message  \ XXX TODO -- remove?
   graph-font1 set-font
   wipe-sea .far-islands .south-reef .east-reef .west-reef
   white ink 14 8 .ship-up .run-aground-reefs
   run-aground-damages run-aground-message
   3 seconds  ;
 
-  \ XXX TODO improve message, depending on the damage, e.g.
+  \ XXX TODO -- improve message, depending on the damage, e.g.
   \ "Por suerte, ..."
   \
-  \ XXX TODO choose more men, depending on the damage, and
+  \ XXX TODO -- choose more men, depending on the damage, and
   \ inform about them
 
   \ ============================================================
@@ -1170,34 +1168,34 @@ white black papery + constant report-attr
   \ ============================================================
   cr .( Ship battle)  \ {{{1
 
-: miss-own-boat  ( -- )
+: miss-boat  ( -- )
   s" Por suerte el disparo no ha dado en el blanco." message  ;
 
-: hit-own-boat  ( -- )
+: hit-boat  ( -- )
   s" La bala alcanza su objetivo. "
   s" Esto desmoraliza a la tripulación." s+ message
   -2 morale+!
   3 4 random-range 1 ?do  injured drop  loop  ;
-  \ XXX TODO inform about how many injured?
+  \ XXX TODO -- inform about how many injured?
 
-: do-attack-own-boat  ( -- )
+: do-attack-boat  ( -- )
   -1 ammo+!
   s" Disparas por error a uno de tus propios botes..." message
   2 seconds
-  3 random if    miss-own-boat
-           else  hit-own-boat
+  3 random if    miss-boat
+           else  hit-boat
            then  5 seconds wipe-message  ;
 
-: almost-attack-own-boat  ( -- )
+: almost-attack-boat  ( -- )
   s" Por suerte no hay munición para disparar..." message
   2 seconds
   s" Pues enseguida te das cuenta de que ibas a hundir "
   s" uno de tus botes." s+ message
   5 seconds wipe-message  ;
 
-: attack-own-boat  ( -- )
-  ammo @ if     do-attack-own-boat
-         else   almost-attack-own-boat  then  ;
+: attack-boat  ( -- )
+  ammo @ if     do-attack-boat
+         else   almost-attack-boat  then  ;
 
 : .sunk-step-0  ( col row -- )
   2dup    at-xy ."    "
@@ -1276,7 +1274,6 @@ variable victory
                                    2dup  1-  at-xy ."    "
                                          3 + at-xy ."    "
   enemy-ship-move @ 5 = if  .wave  then  ;
-  \ XXX UNDER DEVELOPMENT
   \ XXX TODO -- factor
 
 : move-enemy-ship  ( -- )
@@ -1285,10 +1282,9 @@ variable victory
   \ 2dup 2dup -1..1 + swap -1..1 + swap 2 d<>
   \ if  (move-enemy-ship)  then
 
-  (move-enemy-ship) \ XXX TMP --
-
+  (move-enemy-ship)
   ;
-  \ XXX UNDER DEVELOPMENT
+  \ XXX TMP --
 
 : .ammo  ( -- )  ammo @ 1 .r  ;
 
@@ -1353,7 +1349,7 @@ variable victory
 : no-ammo-left  ( -- )
   feasible-attack off  panel-commands
   s" Te quedaste sin munición." message  4 seconds  ;
-  \ XXX TODO the enemy wins; our ship sinks,
+  \ XXX TODO -- the enemy wins; our ship sinks,
   \ or the money and part of the crew are captured
 
 : .gun  ( col row -- )
@@ -1373,9 +1369,12 @@ variable victory
   \  11 30 random-range enemy-ship-y ! ;
   \ XXX TODO --
 
-: clear-for-action  ( -- )
-  text-font set-font black ink yellow paper
-  22 0 do  0 i at-xy  ." ________ "  loop
+: deck  ( -- )
+  text-font set-font
+  22 0 do  0 i at-xy  ." ________ "  loop  ;
+  \ XXX TODO -- faster
+
+: guns  ( -- )
   3 0 do
     i gun>label-y
     white paper text-font set-font 0 over at-xy i 1+ 1 .r
@@ -1385,6 +1384,8 @@ variable victory
                              1 swap 1+ at-xy ." hi"  \ ammo
   loop  ;
   \ XXX TODO -- factor
+
+: clear-for-action  ( -- )  black ink yellow paper deck guns  ;
 
 : battle-scenery  ( -- )
   blue paper cls 31 1 do  .wave  loop
@@ -1410,7 +1411,7 @@ variable victory
 
 : (attack-ship)  ( -- )
   enemy-ship-here? if    ship-battle
-                   else  attack-own-boat  then  ;
+                   else  attack-boat  then  ;
 
 : attack-ship  ( -- )
   ammo @ if  (attack-ship)  else  no-ammo-left  then  ;
@@ -1509,20 +1510,18 @@ variable victory
   .\" \T\U    wu"
   28 11 palm2  0 11 palm2
   graph-font2 set-font  blue ink  yellow paper
+    \ XXX TODO -- remove paper
   13 17 at-xy .\" l\::m"
     \ XXX TODO -- factor the treasure
 
   s" ¡Capitán, somos ricos!" message
   4 seconds  graph-font1 set-font  ;
-  \ XXX TODO use this proc instead of happy-end?
+  \ XXX TODO -- use this proc instead of happy-end?
   \ XXX TODO -- factor
 
 variable option
 
 : enter-treasure-island  ( -- )
-
-  \ XXX TODO finish the new interface
-
   cls sunny-sky wipe-island
   graph-font2 set-font green ink  yellow paper
   0 3 at-xy ."  5     6       45     6       5"
@@ -1538,12 +1537,12 @@ variable option
 
   white ink  black paper
   22 8 do  0 i at-xy blank-line$ type  loop
-    \ XXX TODO improve with `fill`
+    \ XXX TODO -- improve with `fill`
 
   sailor-and-captain
 
   s" ¿Qué camino, capitán?" sailor-says
-  23 15 at-xy ." ?" \ XXX TODO better, in all cases
+  23 15 at-xy ." ?" \ XXX TODO -- better, in all cases
   9 get-digit option !
   black paper
   23 15 at-xy option ?
@@ -1565,7 +1564,7 @@ variable option
   7 14 at-xy ." Izquierda Derecha"
   8 16 at-xy ." I=1  D=2 "
   23 15 at-xy ." ? " 9 get-digit option !
-    \ XXX TODO use letters instead of digits
+    \ XXX TODO -- use letters instead of digits
   text-font set-font
   23 15 at-xy option ?
   beep .2,30
@@ -1624,6 +1623,7 @@ variable option
     at-xy ." equivocado"
     at-xy ." capitán!"
   then  2 seconds  graph-font1 set-font  ;
+  \ XXX TODO -- finish the new interface
   \ XXX TODO -- use a window for messages
   \ XXX TODO -- factor
 
@@ -1724,13 +1724,13 @@ variable option
 
 : .ammo-gift  ( -- )
   black ink  yellow paper  14 12 at-xy ." hi"  ;
-  \ XXX TODO draw graphics depending on the actual ammount
+  \ XXX TODO -- draw graphics depending on the actual ammount
 
 : .supplies  ( -- )
   graph-font2 set-font
   black ink  yellow paper 14 12 at-xy ." 90  9099 0009"
   graph-font1 set-font  ;
-  \ XXX TODO draw graphics depending on the actual ammount
+  \ XXX TODO -- draw graphics depending on the actual ammount
 
 : .snake  ( -- )
   graph-font2 set-font
@@ -1742,6 +1742,7 @@ variable option
   12 dup at-xy s" vw vw vw vw vw vw vw vw " drop swap 3 * type
   r> set-font  ;
   \ XXX TODO -- use a loop
+  \ XXX TODO -- other option: print at random empty places
 
 : island-location  ( n -- )
   ~~ case
@@ -1786,17 +1787,16 @@ variable option
 : event5  ( -- )
   s" La tripulación está hambrienta." message
   -1 morale+!  ;
-  \ XXX TODO only if supplies are not enough
+  \ XXX TODO -- only if supplies are not enough
 
 : event6  ( -- )
   s" La tripulación está sedienta." message
   -1 morale+!  ;
-  \ XXX TODO only if supplies are not enough
+  \ XXX TODO -- only if supplies are not enough
 
 : event7  ( -- )
-  2 5 random-range >r
-  s" Encuentras " r@ coins$ s+ s" ." s+ message
-  r@ cash+!  r> .dubloons  ;
+  2 5 random-range dup .dubloons dup cash+!
+  s" Encuentras " rot coins$ s+ s" ." s+ message  ;
 
 : event8  ( -- )
   s" Sin novedad, capitán." message  ;
@@ -1856,7 +1856,7 @@ here - cell / constant island-events
   native-ammo of  ~~
     s" Un nativo te da algo de munición." message
     1 ammo+!  be-hostile-native
-      \ XXX TODO random ammount
+      \ XXX TODO -- random ammount
       \ XXX TODO -- choose it in advance and draw it in
       \ `island-location`
   endof
@@ -1864,7 +1864,7 @@ here - cell / constant island-events
   native-supplies of  ~~
     s" Un nativo te da provisiones." message
     1 supplies+!  be-hostile-native
-      \ XXX TODO random ammount
+      \ XXX TODO -- random ammount
       \ XXX TODO -- choose it in advance and draw it in
       \ `island-location`
   endof
@@ -1944,6 +1944,9 @@ here - cell / constant island-events
   \ XXX TODO -- random duration
   \ XXX TODO -- sound effects
   \ XXX TODO -- lightnings
+  \ XXX TODO -- make the enemy ship to move, if present
+  \ (use the same graphic of the player ship)
+  \ XXX TODO -- move the waves
 
 cyan dup papery + constant stormy-sky-attr
 
@@ -1959,19 +1962,22 @@ cyan dup papery + constant stormy-sky-attr
   \ Make the sky stormy.
   \ XXX TODO -- hide the sun
 
-: storm  ( -- )
-  wipe-panel stormy-sky
-  s" Se desata una tormenta"
-  s"  que causa destrozos en el barco." s+ message
-  +rain  10 49 damaged  -rain
-  s" Tras la tormenta, el barco está " damage$ s+ s" ." s+
+: damages  ( -- )  10 49 damaged  ;
+
+: storm-warning  ( -- )
+  wipe-panel
+  s" De pronto se desata una fuerte tormenta..." message  ;
+
+: storm-report  ( -- )
+  s" Cuando la mar y el cielo se calman, "
+  s" compruebas el estado del barco: " s+ damage$ s+ s" ." s+
   message  ;
   \ XXX FIXME -- sometimes `damage$` is empty: check the range
   \ of the damage percentage.
-  \
-  \ XXX TODO -- sound
-  \ XXX TODO make the enemy ship to move, if present
-  \ (use the same graphic of the player ship)
+
+: storm  ( -- )
+  stormy-sky storm-warning
+  +rain damages -rain storm-report  ;
 
   \ ============================================================
   cr .( Ship command)  \ {{{1
@@ -2028,7 +2034,7 @@ cyan dup papery + constant stormy-sky-attr
 : ?redraw-ship  ( -- )  redraw-ship? if  redraw-ship  then  ;
 
 : storm?  ( -- f )  8912 random 0=  ;
-  \ XXX TODO increase the probability of storm every day?
+  \ XXX TODO -- increase the probability of storm every day?
 
 : ?storm  ( -- )  storm? if  storm  then  ;
 
@@ -2148,7 +2154,7 @@ variable price  variable offer
 : init-trade  ( -- )
   graph-font1 set-font  black ink  yellow paper
   16 3 do  0 i at-xy blank-line$ type  loop
-    \ XXX TODO improve with `fill`
+    \ XXX TODO -- improve with `fill`
   4 4 palm2  .native native-speech-balloon
   s" Un comerciante nativo te sale al encuentro." message  ;
 
@@ -2156,7 +2162,7 @@ variable price  variable offer
   init-trade  s" Yo vender pista de tesoro a tú." native-says
   5 9 random-range price !
   s" Precio ser " price @ coins$ s+ s" ." s+ native-says
-  \ XXX TODO pause or join:
+  \ XXX TODO -- pause or join:
   1 seconds  s" ¿Qué dar tú, blanco?" native-says  make-offer
   offer @ price @ 1-  >= if  accepted-offer exit  then
     \ One dubloon less is accepted.
@@ -2356,11 +2362,9 @@ variable price  variable offer
 
 : init  ( -- )
   0 randomize0
-  [ 2 attr-line ] literal [ 20 columns * ] 1literal erase
-    \ XXX TODO -- check if needed
-    \ XXX TODO -- use constant to define the zone
-  white ink  black paper text-font set-font
-  0 14 at-xy s" Preparando el viaje..." columns type-center
+  text-font set-font  white ink  black paper  cls
+  0 [ rows 2 / ] cliteral at-xy
+  s" Preparando el viaje..." columns type-center
   new-sea init-ship new-crew init-plot  ;
 
   \ ============================================================
@@ -2404,7 +2408,7 @@ variable price  variable offer
   success? if  happy-end  else  sad-end  then
   s" Pulsa una tecla para ver tus puntos" message
   key drop beep .2,30 score-report  ;
-  \ XXX TODO new graphic, based on the cause of the end
+  \ XXX TODO -- new graphic, based on the cause of the end
 
   \ ============================================================
   cr .( Intro)  \ {{{1
@@ -2503,6 +2507,12 @@ variable checkered
     loop  cr checkered!
   -1 +loop  default-colors  ;
 
+: x  ( -- )  aboard? if  .sea  else  .isl  then  ;
+: n  ( -- )  aboard? if  sail-north  else  walk-north  then  ;
+: s  ( -- )  aboard? if  sail-south  else  walk-south  then  ;
+: e  ( -- )  aboard? if  sail-east   else  walk-east   then  ;
+: o  ( -- )  aboard? if  sail-west   else  walk-west   then  ;
+
 : .chars  ( c1 c0 -- )  do  i emit  loop  ;
 
 : .ascii  ( -- )  cr 128  32 .chars  ;
@@ -2519,7 +2529,7 @@ variable checkered
   cls graph-font1 .font graph-font2 .font .udg  ;
 
 : .damages  ( -- )
-  max-damage 1+ 0 do
+  max-damage 1+ 0 ?do
     cr i . damage-index . damage$ type  key drop
   loop  ;
 
