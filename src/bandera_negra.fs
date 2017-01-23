@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.35.1+201701231508" ;
+: version  ( -- ca len )  s" 0.36.0+201701231625" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -369,7 +369,6 @@ yellow black papery +         3 stamina-attr c!
   hp@ far," gravemente dañado"
   hp@ far," muy dañado"
   hp@ far," algo dañado"
-  hp@ far," muy poco dañado"
   hp@ far," casi como nuevo"
   hp@ far," impecable"            \ best: perfect
 far>sconstants damage-level$  ( n -- ca len )
@@ -535,9 +534,6 @@ esc-udg-chars-wordlist 3 set-esc-order
   \ ============================================================
   cr .( Windows)  \ {{{1
 
-0 0 32 16 window graphic-window
-  \ XXX TODO -- remove, useless?
-
 2 3 28 19 window intro-window
 
 1 17 30 3 window message-window
@@ -555,7 +551,7 @@ esc-udg-chars-wordlist 3 set-esc-order
 
 : init-screen  ( -- )
   default-colors white ink blue paper black border cls
-  graphic-window set-window graph-font1 set-font  ;
+  graph-font1 set-font  ;
 
 16384 constant screen  6912 constant /screen
   \ Address and size of the screen.
@@ -585,8 +581,7 @@ far-banks 3 + c@ cconstant screen-backup-bank
   message-window set-window white ink  black paper  wcls  ;
 
 : message  ( ca len -- )
-  text-font set-font wipe-message wtype
-  graphic-window set-window  ;
+  text-font set-font wipe-message wtype  ;
 
   \ ============================================================
   cr .( Sound )  \ {{{1
@@ -759,18 +754,21 @@ variable east-cloud-x  3 constant /east-cloud
   [ sky-rows columns *   ] cliteral rot fill  ;
   \ Color the sky with attribute _c_.
 
-: sea-wave-coords  ( -- x y )
-  1 28 random-range
-  4 [ graphic-window ~wy0   c@
-      graphic-window ~wrows c@ + 1- ] cliteral random-range  ;
+2 cconstant /wave
+  \ Max chars of a wave.
+
+: wave-coords  ( -- x y )
+  [ columns /wave - ] cliteral random
+  [ sea-top-y       ] cliteral
+  [ sea-bottom-y    ] cliteral random-range  ;
   \ Return random coordinates _x y_ for a sea wave.
 
-: at-sea-wave-coords  ( -- )  sea-wave-coords  at-xy  ;
+: at-wave-coords  ( -- )  wave-coords  at-xy  ;
   \ Set the cursor at random coordinates for a sea wave.
 
-: sea-waves  ( -- )
+: waves  ( -- )
   graph-font1 set-font cyan ink  blue paper
-  15 0 do  at-sea-wave-coords ." kl"  at-sea-wave-coords ." mn"
+  15 0 do  at-wave-coords ." kl"  at-wave-coords ." mn"
   loop  ;
 
 cyan dup papery + brighty constant sunny-sky-attr
@@ -787,7 +785,7 @@ cyan dup papery + brighty constant sunny-sky-attr
 : wipe-sea  ( -- )  [ blue dup papery + ] cliteral color-sea  ;
 
 : (sea-and-sky)  ( -- )
-  wipe-sea sea-waves new-clouds sunny-sky  ;
+  wipe-sea waves new-clouds sunny-sky  ;
 
 : sea-and-sky  ( -- )  graph-font1 set-font (sea-and-sky)  ;
 
@@ -1020,7 +1018,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   \ XXX TODO -- simpler, use an execution table
 
 : sea-scenery  ( -- )
-  graphic-window set-window graph-font1 set-font
+  graph-font1 set-font
   sea-and-sky redraw-ship  ship-loc @ sea @ sea-picture  ;
 
   \ ============================================================
@@ -1772,7 +1770,7 @@ variable option
   crew-loc @ island @ island-location  ;
 
 : island-scenery  ( -- )
-  graphic-window set-window graph-font1 set-font
+  graph-font1 set-font
   wipe-island-scenery sunny-sky island-waves
   ~~ current-island-location  ;
 
@@ -2545,7 +2543,7 @@ variable checkered
 
 : .damages  ( -- )
   max-damage 1+ 0 ?do
-    cr i . damage-index . damage$ type  key drop
+    cr i . i damage ! damage-index . damage$ type  key drop
   loop  ;
 
 : ini  ( -- )  init-once init  ;

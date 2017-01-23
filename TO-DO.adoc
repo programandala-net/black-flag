@@ -6,7 +6,7 @@
 
 .2017-01-23:
 
-Print the ships in two colors.
+Print the ship in two colors.
 
 .2017-01-22:
 
@@ -49,10 +49,6 @@ Convert `beep`.
 
 Wait for the space key after the reports, to prevent the key to
 activate a command after returning to the panel.
-
-.2017-01-21:
-
-Fix: the enemy ship appears for a moment after being sunk.
 
 .2017-01-18:
 
@@ -116,10 +112,6 @@ range.
 
 Convert `used-name`, `stamina` and maps to a character array, to save
 memory.
-
-.2017-01-08:
-
-Remove `graphic-window`.
 
 == Future improvements
 
