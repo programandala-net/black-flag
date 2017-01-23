@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.36.0+201701231625" ;
+: version  ( -- ca len )  s" 0.37.0+201701231626" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -109,6 +109,11 @@ need key-left  need key-right  need key-down  need key-up
 
 need get-inkey ' get-inkey alias inkey
   \ XXX TMP --
+
+  \ --------------------------------------------
+  cr .(   -Sound)  \ {{{2
+
+need beep
 
   \ --------------------------------------------
 
@@ -584,18 +589,14 @@ far-banks 3 + c@ cconstant screen-backup-bank
   text-font set-font wipe-message wtype  ;
 
   \ ============================================================
-  cr .( Sound )  \ {{{1
-
-: beep  ( "name" -- )  parse-name 2drop  ; immediate
-  \ XXX TMP --
-  \ XXX TODO --
+  \ cr .( Sound )  \ {{{1
 
   \ ============================================================
   cr .( User input)  \ {{{1
 
 : get-digit  ( n1 -- n2 )
   begin  dup key '0' - dup >r
-         1 < over r@ < or  while  r> drop beep .1,10
+         1 < over r@ < or  while  r> drop 100 10 beep
   repeat  drop r>  ;
   \ Wait for a digit to be pressed by the player, until its
   \ value is greater than 0 and less than _n1_, then return it
@@ -1553,7 +1554,7 @@ variable option
   9 get-digit option !
   black paper
   23 15 at-xy option ?
-  beep .2,30
+  200 30 beep
   2 seconds
   option @ path @ = abs found-clues +!
 
@@ -1561,7 +1562,7 @@ variable option
   23 15 at-xy ." ? "
   9 get-digit option !
   text-font set-font
-  black paper  23 15 at-xy option ?  beep .2,30
+  black paper  23 15 at-xy option ?  200 30 beep
     \ XXX TODO -- factor out
   trees
   2 seconds
@@ -1574,7 +1575,7 @@ variable option
     \ XXX TODO -- use letters instead of digits
   text-font set-font
   23 15 at-xy option ?
-  beep .2,30
+  200 30 beep
   2 seconds
   option @ turn @ = abs found-clues +!
 
@@ -1594,7 +1595,7 @@ variable option
   8 16 at-xy ."  capitán." 23 15 at-xy ." ? "
   9 get-digit option !
   23 15 at-xy option  \ XXX TODO --
-  beep .2,30
+  200 30 beep
   2 seconds
   option village @ = if  1 found-clues +!  then  \ XXX TODO --
 
@@ -1604,7 +1605,7 @@ variable option
   23 15 at-xy ." ? " 9 get-digit option !
     \ XXX TODO -- use letters instead of digits
   23 15 at-xy option . \ XXX TODO -- adapt
-  beep .2,30
+  200 30 beep
   2 seconds
   option direction @ = if  1 found-clues +!  then
     \ XXX TODO --
@@ -1615,7 +1616,7 @@ variable option
   23 15 at-xy ." ? "
   9 get-digit option !
   23 15 at-xy option . \ XXX TODO -- adapt
-  beep .2,30
+  200 30 beep
   2 seconds
   option pace = if  1 found-clues +!  then  \ XXX TODO --
 
@@ -2128,7 +2129,7 @@ variable price  variable offer
   s" . ¿Qué oferta le haces? (1-" s+ r@ u>str s+ ." )" s+
   message
   r> get-digit offer !
-  beep .2,10
+  200 10 beep
   s" Le ofreces " offer @ coins$ s+ s" ." s+ message  ;
   \ Ask the player for an offer.
   \ XXX TODO -- check the note about the allowed range
@@ -2420,7 +2421,7 @@ variable price  variable offer
   graph-font1 set-font  16 1 do  27 i palm2  1 i palm2  7 +loop
   success? if  happy-end  else  sad-end  then
   s" Pulsa una tecla para ver tus puntos" message
-  key drop beep .2,30 score-report  ;
+  key drop 200 30 beep score-report  ;
   \ XXX TODO -- new graphic, based on the cause of the end
 
   \ ============================================================

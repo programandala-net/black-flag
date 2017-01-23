@@ -1,6 +1,6 @@
 = To-Do list of Bandera Negra
 :author: Marcos Cruz (programandala.net)
-:revdate: 2017-01-23
+:revdate: 2017-01-24
 
 == Conversion to Forth
 
@@ -12,10 +12,6 @@ Print the ship in two colors.
 
 Fix: The disembarking command is available is location that have no
 island.
-
-.2017-01-22:
-
-Fix: The logic of the ship battle seems buggy. Check everything.
 
 .2017-01-22:
 
@@ -40,10 +36,6 @@ Move the `name` double-cell array to far memory.
 .2017-01-21:
 
 Add 128K sound effects.
-
-.2017-01-21:
-
-Convert `beep`.
 
 .2017-01-21:
 
@@ -74,8 +66,9 @@ Combine all graphics into one single UDG set:
 - 21 UDG
 - 16 block chars (perhaps not all of them are used)
 - -1 useless empty block char
+- -7 not used chars in graph font 2
 
-Total: 225 characters
+Total: 218 characters
 
 Then add the characters needed for Spanish and Esperanto:
 
@@ -90,10 +83,10 @@ Then add the characters needed for Spanish and Esperanto:
 | 128              | *not used*
 | 129..143         | block chars
 | 144..164         | UDG set
-| 165..226         | graph font 2
-| 227..242         | Spanish characters
-| 243..254         | Esperanto characters
-| 255              | *not used*
+| 165..219         | graph font 2
+| 227..235         | Spanish characters
+| 236..247         | Esperanto characters
+| 248..255         | *not used*
 |===
 
 Only the strings printed with graph font 2 must be adapted.
