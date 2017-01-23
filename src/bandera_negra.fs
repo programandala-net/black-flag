@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.34.0+201701230154" ;
+: version  ( -- ca len )  s" 0.35.0+201701230155" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -952,14 +952,14 @@ cyan dup papery + brighty constant sunny-sky-attr
 
 : redraw-ship  ( -- )
   white ink blue paper  ship-x @ ship-y @
-  ship-up @ if   .ship-down  ship-up off
-           else  .ship-up    ship-up on   then  ;
+  ship-up @ if    .ship-down  ship-up off
+            else  .ship-up    ship-up on   then  ;
 
 : .enemy-ship  ( -- )
-  yellow ink  blue paper
+  white ink  blue paper
   enemy-ship-x @ enemy-ship-y @ 2dup    at-xy ."  ab"
                                 2dup 1+ at-xy ."  90"
-                                     2+ at-xy ." 678"  ;
+  yellow ink                         2+ at-xy ." 678"  ;
   \ XXX TODO -- receive coordinates as parameters and reuse
 
 : wipe-enemy-ship  ( -- )
@@ -971,10 +971,13 @@ cyan dup papery + brighty constant sunny-sky-attr
 
 : .boat  ( -- )
   yellow ink  blue paper  11 7 at-xy ." <>"  ;
+  \ XXX TODO -- random coords at empty space
 
 : .shark  ( -- )
   white ink  blue paper  18 13 at-xy .\" \S"  ;
   \ XXX TODO -- `emit-udg` is faster
+  \ XXX TODO -- random coords at empty space
+  \ XXX TODO -- more of them
 
 : scenery-init-enemy-ship  ( -- )
   11 enemy-ship-x ! 4 enemy-ship-y !  ;
@@ -1099,7 +1102,7 @@ white black papery + constant report-attr
 : end-report  ( -- )
   set-report-color
   0 row 2+ at-xy s" Pulsa una tecla" columns type-center
-  discard-key key drop  restore-screen  ;
+  key drop  restore-screen  ;
   \ Common task at the end of all reports.
 
 : .datum  ( a -- )  tabulate @ 2 .r cr cr  ;
