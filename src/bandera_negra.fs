@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.35.0+201701230155" ;
+: version  ( -- ca len )  s" 0.35.1+201701231508" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -1273,11 +1273,17 @@ variable victory
   white ink  blue paper
   enemy-ship-x @    enemy-ship-y @ 2dup 2dup at-xy  ."  ab "
                                    1+        at-xy  ."  90 "
+  yellow ink
   enemy-ship-x @ 1- enemy-ship-y @ 2+        at-xy ."  678 "
                                    2dup  1-  at-xy ."    "
                                          3 + at-xy ."    "
   enemy-ship-move @ 5 = if  .wave  then  ;
   \ XXX TODO -- factor
+  \
+  \ XXX TODO -- reuse `.enemy-ship` and erase only the minimum
+  \ part of the sea, depending on the movement direction
+  \
+  \ XXX TODO -- redraw waves only around the ship
 
 : move-enemy-ship  ( -- )
 
