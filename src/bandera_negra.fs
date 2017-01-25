@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.37.0+201701231626" ;
+: version  ( -- ca len )  s" 0.38.0+20170125004:" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -96,7 +96,7 @@ need set-udg  need rom-font  need set-font  need get-font
 need black   need blue    need red  need green
 need cyan    need yellow  need white
 
-need color!  need papery  need brighty
+need attr!  need papery  need brighty
 
 need rdraw176 ' rdraw176 alias rdraw
 need plot176  ' plot176  alias plot
@@ -721,7 +721,7 @@ variable feasible-trade          \ flag
 white black papery + constant panel-attr
 
 : panel-commands  ( -- )
-  text-font set-font panel-attr color!
+  text-font set-font panel-attr attr!
   common-commands aboard? if    ship-commands
                           else  island-commands
                           then  compass  ;
@@ -1092,7 +1092,7 @@ cyan dup papery + brighty constant sunny-sky-attr
 white black papery + constant report-attr
 
 : set-report-color  ( -- )
-  report-attr color! permanent-colors  ;
+  report-attr attr! permanent-colors  ;
 
 : begin-report  ( -- )
   save-screen set-report-color cls text-font set-font  ;
@@ -1126,11 +1126,11 @@ white black papery + constant report-attr
   \ x coordinate of the crew member status in the crew report
 
 : set-condition-color  ( n -- )
-  stamina @ stamina-attr c@ color!  ;
+  stamina @ stamina-attr c@ attr!  ;
   \ Set the proper color for the condition of man _n_.
 
 : .crew-member-data  ( n -- )
-  >r white color!
+  >r white attr!
   name-x r@ 6 + at-xy r@ name$ type
   r@ set-condition-color
   status-x r@ 6 + at-xy
@@ -1965,7 +1965,7 @@ here - cell / constant island-events
 
 cyan dup papery + constant stormy-sky-attr
 
-: -storm  ( -- )  stormy-sky-attr color!
+: -storm  ( -- )  stormy-sky-attr attr!
                  at-west-rain /west-cloud spaces
                  at-east-rain /east-cloud spaces  ;
   \ Erase the rain effect.
