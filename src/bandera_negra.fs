@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.38.0+20170125004:" ;
+: version  ( -- ca len )  s" 0.39.0+201701261955" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -142,14 +142,14 @@ defer .debug-info  ( -- )
   \ ============================================================
   cr .( Constants)  \ {{{1
 
-15 constant sea-length
- 9 constant sea-breadth
+15 cconstant sea-length
+ 9 cconstant sea-breadth
 
 sea-length sea-breadth * constant /sea
   \ cells of the sea map
 
-6 constant island-length
-5 constant island-breadth
+6 cconstant island-length
+5 cconstant island-breadth
   \ XXX TODO -- set them randomly when a new island is created
 
   \     Island grid
@@ -162,10 +162,10 @@ sea-length sea-breadth * constant /sea
   \    _________________
   \     0  1  2  3  4  5
 
-island-length island-breadth * constant /island
+island-length island-breadth * cconstant /island
   \ cells of the island map
 
-10 constant men
+10 cconstant men
 
 : island-name$  ( -- ca len )  s" Calavera"  ;
 
@@ -174,38 +174,39 @@ island-length island-breadth * constant /island
 
   \ Sea location types
   \ XXX TODO -- complete
- 1 constant reef
-   \ 7 constant
-   \ 8 constant
-   \ 9 constant
-  \ 10 constant
-  \ 13 constant
-  \ 14 constant
-  \ 15 constant
-  \ 16 constant
-21 constant shark
-22 constant treasure-island
+ 1 cconstant reef
+   \ 7 cconstant
+   \ 8 cconstant
+   \ 9 cconstant
+  \ 10 cconstant
+  \ 13 cconstant
+  \ 14 cconstant
+  \ 15 cconstant
+  \ 16 cconstant
+21 cconstant shark
+22 cconstant treasure-island
 
   \ Island location types
-1 constant coast
-2 constant dubloons-found
-3 constant hostile-native
-4 constant just-3-palms-1
-5 constant snake
-6 constant just-3-palms-2
-7 constant native-supplies
-8 constant native-ammo
-9 constant native-village
+1 cconstant coast
+2 cconstant dubloons-found
+3 cconstant hostile-native
+4 cconstant just-3-palms-1
+5 cconstant snake
+6 cconstant just-3-palms-2
+7 cconstant native-supplies
+8 cconstant native-ammo
+9 cconstant native-village
 
-9 constant max-offer
+9 cconstant max-offer
 
-                          0 constant sky-top-y
-                          3 constant sky-rows
-                          3 constant sea-top-y
-                         15 constant sea-bottom-y
-sea-bottom-y sea-top-y - 1+ constant sea-rows
-                          3 constant island-top-y
-                          5 constant island-rows
+                          0 cconstant sky-top-y
+                          3 cconstant sky-rows
+                          3 cconstant sea-top-y
+                         15 cconstant sea-bottom-y
+sea-bottom-y sea-top-y - 1+ cconstant sea-rows
+
+                          3 cconstant treasure-island-top-y
+                          5 cconstant treasure-island-rows
 
   \ ============================================================
   cr .( Variables)  \ {{{1
@@ -547,7 +548,7 @@ esc-udg-chars-wordlist 3 set-esc-order
 
 16 6 11 4 window native-window
 
-12 6 12 6 window sailor-window
+7 12 10 7 window sailor-window
 
 5 3 22 20 window the-end-window
 
@@ -595,8 +596,8 @@ far-banks 3 + c@ cconstant screen-backup-bank
   cr .( User input)  \ {{{1
 
 : get-digit  ( n1 -- n2 )
-  begin  dup key '0' - dup >r
-         1 < over r@ < or  while  r> drop 100 10 beep
+  begin   key '0' - dup >r over 0 swap between 0=
+  while   rdrop 100 10 beep
   repeat  drop r>  ;
   \ Wait for a digit to be pressed by the player, until its
   \ value is greater than 0 and less than _n1_, then return it
@@ -905,12 +906,6 @@ cyan dup papery + brighty constant sunny-sky-attr
     island-name$ s+ s" ..."
   then  s+ message  r> set-font  ;
   \ XXX TODO -- factor
-
-: wipe-island  ( -- )
-  [ island-top-y attr-line ] literal
-  [ island-rows columns *  ] 1literal
-  [ yellow dup papery +    ] cliteral fill  ;
-  \ XXX TODO -- check
 
   \ --------------------------------------------
   cr .(   -Reefs)  \ {{{2
@@ -1494,12 +1489,8 @@ variable victory
   sailor-speech-balloon captain-speech-balloon  ;
 
 : sailor-says  ( ca len -- )
+  text-font set-font  black paper  white ink
   sailor-window set-window wcls wtype  ;
-
-: trees  ( -- )
-  wipe-island  black ink  yellow paper
-  0 7 at-xy ."  1       2       3       4"
-  graph-font1 set-font  27 2 do  i 3 palm2  8 +loop  ;
 
 : treasure-found  ( -- )
   [ 0 attr-line ] literal [ 3 columns * ] 1literal
@@ -1527,13 +1518,27 @@ variable victory
   \ XXX TODO -- use this proc instead of happy-end?
   \ XXX TODO -- factor
 
-variable option
+: clue-tried  ( x a -- )
+  200 30 beep  wcls  1 seconds  @ = abs found-clues +!  ;
+  \ Update the clues found with the given answer _x_ for
+  \ clue hold in _a_.
 
-: enter-treasure-island  ( -- )
-  cls sunny-sky wipe-island
+: at-clue  ( -- )  23 15 at-xy  ;
+
+: .clue-prompt  ( -- )  at-clue '?' emit  ;
+
+: .clue  ( n -- )  black paper  at-clue .  ;
+
+: wipe-treasure-island  ( -- )
+  [ treasure-island-top-y attr-line ] literal
+  [ treasure-island-rows columns *  ] 1literal
+  [ yellow dup papery +             ] cliteral fill  ;
+
+: paths-to-choose  ( -- )
+  wipe-treasure-island
   graph-font2 set-font green ink  yellow paper
   0 3 at-xy ."  5     6       45     6       5"
-  black ink
+  graph-font1 set-font black ink
   25 0 do
     i 3 + 3 at-xy .\" :\x7F"
     i 2+  4 at-xy .\" :\::\::\x7F"
@@ -1541,45 +1546,36 @@ variable option
     i     6 at-xy .\" :\::\::\::\::\::\::\x7F"
   8 +loop
   text-font set-font  white ink  red paper
-  0 7 at-xy ."    1       2       3       4    "
+  0 7 at-xy ."    1       2       3       4    "  ;
 
-  white ink  black paper
-  22 8 do  0 i at-xy blank-line$ type  loop
-    \ XXX TODO -- improve with `fill`
+: try-path  ( -- )
+  paths-to-choose
+  s" ¿Qué camino tomamos, capitán?" sailor-says
+  .clue-prompt 9 get-digit
+  dup .clue path clue-tried  ;
 
-  sailor-and-captain
+: trees-to-choose  ( -- )
+  wipe-treasure-island  black ink  yellow paper
+  0 7 at-xy ."  1       2       3       4"
+  graph-font1 set-font  27 2 do  i 3 palm2  8 +loop  ;
+  \ XXX TODO -- remove the loop
 
-  s" ¿Qué camino, capitán?" sailor-says
-  23 15 at-xy ." ?" \ XXX TODO -- better, in all cases
-  9 get-digit option !
-  black paper
-  23 15 at-xy option ?
-  200 30 beep
-  2 seconds
-  option @ path @ = abs found-clues +!
+: try-tree  ( -- )
+  trees-to-choose
+  s" ¿En qué árbol paramos, capitán?" sailor-says
+  .clue-prompt 9 get-digit
+  dup .clue tree clue-tried  ;
 
-  s" ¿Qué árbol, capitán?" sailor-says
-  23 15 at-xy ." ? "
-  9 get-digit option !
-  text-font set-font
-  black paper  23 15 at-xy option ?  200 30 beep
-    \ XXX TODO -- factor out
-  trees
-  2 seconds
-  option @ tree @ = abs found-clues +!
+: try-way  ( -- )
+  \ XXX TODO -- draw tree
+  s" ¿Vamos a la izquierda (1) o a la derecha (2), capitán?"
+  sailor-says
+  .clue-prompt 9 get-digit
+  dup .clue turn clue-tried  ;
+  \ XXX TODO -- use letters instead of digits
 
-  black paper
-  7 14 at-xy ." Izquierda Derecha"
-  8 16 at-xy ." I=1  D=2 "
-  23 15 at-xy ." ? " 9 get-digit option !
-    \ XXX TODO -- use letters instead of digits
-  text-font set-font
-  23 15 at-xy option ?
-  200 30 beep
-  2 seconds
-  option @ turn @ = abs found-clues +!
-
-  wipe-island
+: villages-to-choose  ( -- )
+  wipe-treasure-island
   black ink  yellow paper
   6 2 do
     1  i 1+ at-xy i 2-  dup . ."   " village$ type
@@ -1587,53 +1583,44 @@ variable option
   loop
   12 7 at-xy ." 0  " villages 1- village$ type
   graph-font2 set-font
-  green ink  27 5 at-xy .\" S\::T" 27 6 at-xy ." VUW"
+  green ink  27 5 at-xy .\" S\::T" 27 6 at-xy ." VUW"  ;
 
-  text-font set-font
-  black paper
-  7 14 at-xy ."  Poblado  " 7 13 at-xy ." ¿Cuál"
-  8 16 at-xy ."  capitán." 23 15 at-xy ." ? "
-  9 get-digit option !
-  23 15 at-xy option  \ XXX TODO --
-  200 30 beep
-  2 seconds
-  option village @ = if  1 found-clues +!  then  \ XXX TODO --
+: try-village  ( -- )
+  villages-to-choose
+  s" ¿Qué poblado atravesamos, capitán?" sailor-says
+  .clue-prompt 9 get-digit
+  dup .clue village clue-tried  ;
 
-  7 13 at-xy ." ¿Qué camino"
-  7 14 at-xy ." capitán?"
-  7 16 at-xy ." 1N 2S 3E 4O"
-  23 15 at-xy ." ? " 9 get-digit option !
-    \ XXX TODO -- use letters instead of digits
-  23 15 at-xy option . \ XXX TODO -- adapt
-  200 30 beep
-  2 seconds
-  option direction @ = if  1 found-clues +!  then
-    \ XXX TODO --
+: try-direction  ( -- )
+  wipe-treasure-island  \ XXX TODO -- draw something instead
+  s" ¿En qué dirección vamos, capitán? (1N 2S 3E 4O)"
+  sailor-says
+  .clue-prompt 9 get-digit
+  dup .clue direction clue-tried  ;
+  \ XXX TODO -- use letters instead of digits
 
-  7 13 at-xy ." ¿Cuántos"
-  7 14 at-xy ." pasos,"
-  7 16 at-xy ." capitán?"
-  23 15 at-xy ." ? "
-  9 get-digit option !
-  23 15 at-xy option . \ XXX TODO -- adapt
-  200 30 beep
-  2 seconds
-  option pace = if  1 found-clues +!  then  \ XXX TODO --
+: try-steps  ( -- )
+  wipe-treasure-island  \ XXX TODO -- draw something instead
+  s" ¿Cuántos pasos damos, capitán?" sailor-says
+  .clue-prompt 9 get-digit
+  dup .clue pace clue-tried  ;
 
-  black paper
-  7 16  7 14  7 13
-  success? if
-    at-xy ." ¡Hemos encontrado"
-    at-xy ." el oro,"
-    at-xy ." capitán!"  treasure-found
-  else
-    at-xy ." ¡Nos hemos"
-    at-xy ." equivocado"
-    at-xy ." capitán!"
-  then  2 seconds  graph-font1 set-font  ;
-  \ XXX TODO -- finish the new interface
-  \ XXX TODO -- use a window for messages
-  \ XXX TODO -- factor
+: clear-for-quest  ( -- )
+  [ 8 attr-line ] literal [ 14 columns * ] 1literal erase  ;
+
+: quest  ( -- )
+  clear-for-quest
+  sailor-and-captain try-path    try-tree      try-way
+                     try-village try-direction try-steps  ;
+
+: enter-treasure-island  ( -- )
+  black paper cls wipe-treasure-island sunny-sky
+  quest success?
+  if    s" ¡Hemos encontrado el oro, capitán!"
+  else  s" Aquí no hay tesoro alguno, capitán."
+  then  sailor-says 2 seconds  ;
+  \ XXX TODO -- factor the two results, add longer texts and
+  \ draw pictures.
 
   \ ============================================================
   cr .( Island graphics)  \ {{{1
@@ -2549,8 +2536,9 @@ variable checkered
 
 : ini  ( -- )  init-once init  ;
 
-: f  ( -- )  rom-font set-font  ;
-  \ XXX TMP for debugging after an error
+: f1  ( -- )  graph-font1 set-font  ;
+: f2  ( -- )  graph-font2 set-font  ;
+: f   ( -- )  rom-font    set-font  ;
 
   \ ============================================================
   cr .( Graphics)  \ {{{1
