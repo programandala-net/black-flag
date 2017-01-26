@@ -5,7 +5,7 @@
 
 \ XXX UNDER DEVELOPMENT
 
-\ Last modified: 201701221954
+\ Last modified: 201701270037
 
 \ Credit:
 \
@@ -36,6 +36,7 @@
 00000000
 
 \ character 33 ('!')
+\ XXX REMARK -- not used
 00000000
 00010000
 00010000
@@ -46,6 +47,7 @@
 00000000
 
 \ character 34 ('"')
+\ XXX REMARK -- not used
 00000000
 00100100
 00100100
@@ -56,6 +58,7 @@
 00000000
 
 \ character 35 ('#')
+\ XXX REMARK -- not used
 00000000
 00100100
 01111110
@@ -66,6 +69,7 @@
 00000000
 
 \ character 36 ('$')
+\ XXX REMARK -- not used
 00000000
 00001000
 00111110
@@ -76,6 +80,7 @@
 00001000
 
 \ character 37 ('%')
+\ XXX REMARK -- not used
 00000000
 01100010
 01100100
@@ -86,6 +91,7 @@
 00000000
 
 \ character 38 ('&')
+\ XXX REMARK -- not used
 00000000
 00010000
 00101000
@@ -96,6 +102,7 @@
 00000000
 
 \ character 39 (''')
+\ XXX REMARK -- not used
 00000000
 00001000
 00010000
@@ -106,6 +113,7 @@
 00000000
 
 \ character 40 ('(')
+\ XXX REMARK -- not used
 00000000
 00000100
 00001000
@@ -116,6 +124,7 @@
 00000000
 
 \ character 41 (')')
+\ XXX REMARK -- not used
 00000000
 00100000
 00010000
@@ -126,6 +135,7 @@
 00000000
 
 \ character 42 ('*')
+\ XXX REMARK -- not used
 00000000
 00000000
 00010100
@@ -136,6 +146,7 @@
 00000000
 
 \ character 43 ('+')
+\ XXX REMARK -- not used
 00000000
 00000000
 00001000
@@ -146,6 +157,7 @@
 00000000
 
 \ character 44 (',')
+\ XXX REMARK -- not used
 00000000
 00000000
 00000000
@@ -156,6 +168,7 @@
 00010000
 
 \ character 45 ('-')
+\ XXX REMARK -- not used
 00000000
 00000000
 00000000
@@ -166,6 +179,7 @@
 00000000
 
 \ character 46 ('.')
+\ XXX REMARK -- not used
 00000000
 00000000
 00000000
@@ -176,6 +190,7 @@
 00000000
 
 \ character 47 ('/')
+\ XXX REMARK -- not used
 00000000
 00000000
 00000010
@@ -339,6 +354,7 @@
 00000000
 
 \ character 63 ('?')
+\ XXX REMARK -- not used
 00000000
 00111100
 01000010
@@ -349,6 +365,7 @@
 00000000
 
 \ character 64 ('@')
+\ XXX REMARK -- not used
 00000000
 00111100
 01001010
@@ -831,6 +848,7 @@
 00110000
 
 \ character 123 ('{')
+\ XXX REMARK -- not used
 00000000
 00001110
 00001000
@@ -841,6 +859,7 @@
 00000000
 
 \ character 124 ('|')
+\ XXX REMARK -- not used
 00000000
 00001000
 00001000
@@ -851,6 +870,7 @@
 00000000
 
 \ character 125 ('}')
+\ XXX REMARK -- not used
 00000000
 01110000
 00010000
@@ -861,6 +881,7 @@
 00000000
 
 \ character 126 ('~')
+\ XXX REMARK -- not used
 00000000
 00010100
 00101000

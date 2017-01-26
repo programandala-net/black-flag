@@ -60,41 +60,32 @@ because it's faster.
 
 Combine all graphics into one single UDG set:
 
-- 95 chars from graph font 1
-- 95 chars from graph font 2
-- -1 (space common to both graph fonts)
-- 21 UDG
-- 16 block chars (perhaps not all of them are used)
-- -1 useless empty block char
-- -7 not used chars in graph font 2
+-  95 chars from graph font 1
+-  67 chars from graph font 2
+-  21 UDG
+-  16 block chars (perhaps not all of them are used)
 
-Total: 218 characters
-
-Then add the characters needed for Spanish and Esperanto:
-
-- 16 chars for Spanish: áéíóúüñÁÉÍÓÚÜÑ¡¿
-- 12 chars for Esperanto: ĉĝĥĵŝŭĈĜĤĴŜŬ
+Total: 199 characters
 
 |===
 | Character codes  | Origin
 
 | 0..31            | graph font 2
 | 32..127          | graph font 1
-| 128              | *not used*
-| 129..143         | block chars
+| 128..143         | block chars
 | 144..164         | UDG set
-| 165..219         | graph font 2
-| 227..235         | Spanish characters
-| 236..247         | Esperanto characters
-| 248..255         | *not used*
+| 165..198         | graph font 2
 |===
 
 Only the strings printed with graph font 2 must be adapted.
 
-Problem: two sets of Spanish and Esperanto characters will be needed,
-one for each font (sticks and twisty). Therefore they have to be
-defined apart, as independet UDG sets, and activated when the
-corresponding text font is selected.
+The characters needed for Spanish and Esperanto are the following:
+
+- 16 chars for Spanish: áéíóúüñÁÉÍÓÚÜÑ¡¿
+- 12 chars for Esperanto: ĉĝĥĵŝŭĈĜĤĴŜŬ
+
+Two sets of Spanish and Esperanto characters will be needed, one for
+each font (sticks and twisty).
 
 .2017-01-08:
 

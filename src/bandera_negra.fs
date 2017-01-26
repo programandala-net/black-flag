@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.39.0+201701261955" ;
+: version  ( -- ca len )  s" 0.39.1+201701262155" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -57,8 +57,9 @@ need case  need or-of  need j  need 0exit  need default-of
   \ --------------------------------------------
   cr .(   -Math)  \ {{{2
 
-need >=  need <=  need under+  need between
+need >=  need <=  need under+  need between  need 2/
 need random-range  need randomize0  need -1..1  need d<>
+need odd?
 
   \ --------------------------------------------
   \ cr .(   -Memory)  \ {{{2
@@ -786,8 +787,9 @@ cyan dup papery + brighty constant sunny-sky-attr
 
 : wipe-sea  ( -- )  [ blue dup papery + ] cliteral color-sea  ;
 
-: (sea-and-sky)  ( -- )
-  wipe-sea waves new-clouds sunny-sky  ;
+: new-sunny-sky  ( -- )  new-clouds sunny-sky  ;
+
+: (sea-and-sky)  ( -- )  wipe-sea waves new-sunny-sky  ;
 
 : sea-and-sky  ( -- )  graph-font1 set-font (sea-and-sky)  ;
 
@@ -1575,15 +1577,14 @@ variable victory
   \ XXX TODO -- use letters instead of digits
 
 : villages-to-choose  ( -- )
-  wipe-treasure-island
-  black ink  yellow paper
-  6 2 do
-    1  i 1+ at-xy i 2-  dup . ."   " village$ type
-    12 i 1+ at-xy i 3 + dup . ."   " village$ type
+  wipe-treasure-island  black ink  yellow paper
+  villages 0 do
+    1 13 i odd? and + i 2/ treasure-island-top-y + at-xy
+    i dup . village$ type
   loop
-  12 7 at-xy ." 0  " villages 1- village$ type
   graph-font2 set-font
   green ink  27 5 at-xy .\" S\::T" 27 6 at-xy ." VUW"  ;
+  \ XXX TODO -- Factor the hut, perhaps also in `.huts`.
 
 : try-village  ( -- )
   villages-to-choose
@@ -1614,11 +1615,11 @@ variable victory
                      try-village try-direction try-steps  ;
 
 : enter-treasure-island  ( -- )
-  black paper cls wipe-treasure-island sunny-sky
+  black paper cls wipe-treasure-island new-sunny-sky
   quest success?
   if    s" ¡Hemos encontrado el oro, capitán!"
   else  s" Aquí no hay tesoro alguno, capitán."
-  then  sailor-says 2 seconds  ;
+  then  sailor-says  1 seconds  ;
   \ XXX TODO -- factor the two results, add longer texts and
   \ draw pictures.
 
