@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.39.1+201701262155" ;
+: version  ( -- ca len )  s" 0.39.2+201701270054" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -596,13 +596,13 @@ far-banks 3 + c@ cconstant screen-backup-bank
   \ ============================================================
   cr .( User input)  \ {{{1
 
-: get-digit  ( n1 -- n2 )
-  begin   key '0' - dup >r over 0 swap between 0=
+: get-digit  ( n1 n2 -- n3 )
+  begin   2dup key '0' - dup >r -rot between 0=
   while   rdrop 100 10 beep
-  repeat  drop r>  ;
-  \ Wait for a digit to be pressed by the player, until its
-  \ value is greater than 0 and less than _n1_, then return it
-  \ as _n2_.
+  repeat  2drop r>  ;
+  \ Wait for a digit key press, until its value is between _n1_
+  \ and _n2_, then return it as _n3_.
+  \ XXX TODO -- better sound for fail
 
   \ ============================================================
   cr .( Command panel)  \ {{{1
@@ -1471,7 +1471,14 @@ variable victory
   erase-island make-coast populate-island  ;
 
   \ ============================================================
-  cr .( On the treasure island)  \ {{{1
+  cr .( Treasure quest)  \ {{{1
+
+          1 4 2constant path-range
+          1 4 2constant tree-range
+0 villages 1- 2constant village-range
+          1 2 2constant turn-range
+          1 4 2constant direction-range
+          1 9 2constant pace-range
 
 : sailor-speech-balloon  ( -- )
   25 44 plot 20 10 rdraw 0  30 rdraw   2  2 rdraw  100 0 rdraw
@@ -1553,7 +1560,7 @@ variable victory
 : try-path  ( -- )
   paths-to-choose
   s" ¿Qué camino tomamos, capitán?" sailor-says
-  .clue-prompt 9 get-digit
+  .clue-prompt path-range get-digit
   dup .clue path clue-tried  ;
 
 : trees-to-choose  ( -- )
@@ -1565,14 +1572,14 @@ variable victory
 : try-tree  ( -- )
   trees-to-choose
   s" ¿En qué árbol paramos, capitán?" sailor-says
-  .clue-prompt 9 get-digit
+  .clue-prompt tree-range get-digit
   dup .clue tree clue-tried  ;
 
 : try-way  ( -- )
   \ XXX TODO -- draw tree
   s" ¿Vamos a la izquierda (1) o a la derecha (2), capitán?"
   sailor-says
-  .clue-prompt 9 get-digit
+  .clue-prompt turn-range get-digit
   dup .clue turn clue-tried  ;
   \ XXX TODO -- use letters instead of digits
 
@@ -1589,22 +1596,23 @@ variable victory
 : try-village  ( -- )
   villages-to-choose
   s" ¿Qué poblado atravesamos, capitán?" sailor-says
-  .clue-prompt 9 get-digit
+  .clue-prompt village-range get-digit
   dup .clue village clue-tried  ;
 
 : try-direction  ( -- )
   wipe-treasure-island  \ XXX TODO -- draw something instead
   s" ¿En qué dirección vamos, capitán? (1N 2S 3E 4O)"
   sailor-says
-  .clue-prompt 9 get-digit
+  .clue-prompt direction-range get-digit
   dup .clue direction clue-tried  ;
   \ XXX TODO -- use letters instead of digits
 
 : try-steps  ( -- )
   wipe-treasure-island  \ XXX TODO -- draw something instead
   s" ¿Cuántos pasos damos, capitán?" sailor-says
-  .clue-prompt 9 get-digit
+  .clue-prompt pace-range get-digit
   dup .clue pace clue-tried  ;
+  \ XXX TODO -- add range to the message
 
 : clear-for-quest  ( -- )
   [ 8 attr-line ] literal [ 14 columns * ] 1literal erase  ;
@@ -2329,14 +2337,16 @@ variable price  variable offer
   ship-up off  ;
 
 : init-clues  ( -- )
-  1 3 random-range path !  \ XXX TODO -- check range 0..?
-  1 3 random-range tree !  \ XXX TODO -- check range 0..?
-  0 9 random-range village !
-  0 1 random-range turn !
-  0 3 random-range direction !
-  1 9 random-range pace !  ;  \ XXX TODO -- check range 0..?
+       path-range random-range      path !
+       tree-range random-range      tree !
+    village-range random-range   village !
+       turn-range random-range      turn !
+  direction-range random-range direction !
+       pace-range random-range      pace !  ;
   \ XXX TODO -- use `random` for 0..x
   \ XXX TODO -- convert all ranges to 0..x
+  \ XXX TODO -- use constant for ranges and reuse them as
+  \ parameters of `get-digit`
 
 : init-plot  ( -- )
   init-clues  aboard on  1 crew-loc !
