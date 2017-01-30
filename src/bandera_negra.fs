@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.39.2+201701270054" ;
+: version  ( -- ca len )  s" 0.40.0+201701302256" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -97,7 +97,7 @@ need set-udg  need rom-font  need set-font  need get-font
 need black   need blue    need red  need green
 need cyan    need yellow  need white
 
-need attr!  need papery  need brighty
+need attr!  need papery  need brighty  need blackout
 
 need rdraw176 ' rdraw176 alias rdraw
 need plot176  ' plot176  alias plot
@@ -585,7 +585,8 @@ far-banks 3 + c@ cconstant screen-backup-bank
   r> set-font  ;
 
 : wipe-message  ( -- )
-  message-window set-window white ink  black paper  wcls  ;
+  message-window set-window
+  [ white black papery + ] cliteral attr!  wcls  ;
 
 : message  ( ca len -- )
   text-font set-font wipe-message wtype  ;
@@ -748,8 +749,9 @@ variable east-cloud-x  3 constant /east-cloud
   east-cloud-x @ dup 0 at-xy ." MNO"  1 at-xy ." PQR"  ;
 
 : sun-and-clouds  ( -- )
-  graph-font2 set-font  cyan paper
-  yellow ink sun  white ink clouds
+  graph-font2 set-font
+  [ yellow cyan papery + ] cliteral attr! sun
+  [ white  cyan papery + ] cliteral attr! clouds
   graph-font1 set-font  ;
 
 : color-sky  ( c -- )
@@ -770,7 +772,7 @@ variable east-cloud-x  3 constant /east-cloud
   \ Set the cursor at random coordinates for a sea wave.
 
 : waves  ( -- )
-  graph-font1 set-font cyan ink  blue paper
+  graph-font1 set-font [ cyan blue papery + ] cliteral attr!
   15 0 do  at-wave-coords ." kl"  at-wave-coords ." mn"
   loop  ;
 
@@ -809,12 +811,12 @@ cyan dup papery + brighty constant sunny-sky-attr
   1+ 2dup at-xy ." L"  ;
 
 : palm1  ( x y -- )
-  green ink  blue paper  palm-top  yellow ink
+  [ green blue papery + ] cliteral attr!  palm-top  yellow ink
   1 under+  palm-trunk 2drop  ;
   \ Print palm model 1 at characters coordinates _x y_.
 
 : palm2  ( x y -- )
-  green ink  yellow paper  palm-top  black ink
+  [ green yellow papery + ] cliteral attr!  palm-top  black ink
   1 under+  palm-trunk 1+ at-xy ." V"  ;
   \ Print palm model 2 at characters coordinates _x y_.
 
@@ -822,7 +824,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   cr .(   -Islands)  \ {{{2
 
 : .big-island5  ( -- )
-  green ink  blue paper
+  [ green blue papery + ] cliteral attr!
   18  7 at-xy ." HI A"
   17  8 at-xy .\" G\::\::\::\::BC"
   16  9 at-xy .\" F\::\::\::\::\::\::\::D"
@@ -830,7 +832,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   13 11 at-xy .\" F\::\::\::\::\::\::\::\::\::\::\::C"  ;
 
 : .big-island4  ( -- )
-  green ink  blue paper
+  [ green blue papery + ] cliteral attr!
   16  7 at-xy ." WXYA"
   14  8 at-xy .\" :\::\::\::\::\::\::C F\::\::D"
   13  9 at-xy .\" :\::\::\::\::\::\::\::\::B\::\::\::E"
@@ -838,18 +840,20 @@ cyan dup papery + brighty constant sunny-sky-attr
   ;
 
 : .little-island2  ( -- )
-  green ink  blue paper  14  8 at-xy .\" :\::\::C"
-                         16  7 at-xy ." A"
-                         13  9 at-xy .\" :\::\::\::\::D"
-                         12 10 at-xy .\" F\::\::\::\::\::E"  ;
+  [ green blue papery + ] cliteral attr!
+  14  8 at-xy .\" :\::\::C"
+  16  7 at-xy ." A"
+  13  9 at-xy .\" :\::\::\::\::D"
+  12 10 at-xy .\" F\::\::\::\::\::E"  ;
 
 : .little-island1  ( -- )
-  green ink  blue paper  23  8 at-xy .\" JK\::C"
-                         22  9 at-xy .\" :\::\::\::\::D"
-                         21 10 at-xy .\" F\::\::\::\::\::E"  ;
+  [ green blue papery + ] cliteral attr!
+  23  8 at-xy .\" JK\::C"
+  22  9 at-xy .\" :\::\::\::\::D"
+  21 10 at-xy .\" F\::\::\::\::\::E"  ;
 
 : .big-island3  ( -- )
-  green ink  blue paper
+  [ green blue papery + ] cliteral attr!
   21  7 at-xy ." Z123"
   19  8 at-xy .\" :\::\::\::\::\::C"
   18  9 at-xy .\" :\::\::\::\::\::\::\::D"
@@ -857,21 +861,21 @@ cyan dup papery + brighty constant sunny-sky-attr
   13 11 at-xy .\" JK\::\::\::\::\::\::\::\::\::\::\::\::C"  ;
 
 : .big-island2  ( -- )
-  green ink  blue paper
+  [ green blue papery + ] cliteral attr!
   17  7 at-xy ." Z123"
   14  8 at-xy .\" F\::B\::\::\::\::\::C"
   13  9 at-xy .\" G\::\::\::\::\::\::\::\::\::D"
   12 10 at-xy .\" F\::\::\::\::\::\::\::\::\::\::E"  ;
 
 : .big-island1  ( -- )
-  green ink  blue paper
+  [ green blue papery + ] cliteral attr!
   20  7 at-xy ." HI A"
   19  8 at-xy .\" G\::\::B\::\::\::C"
   18  9 at-xy .\" F\::\::\::\::\::\::\::\::D"
   16 10 at-xy .\" JK\::\::\::\::\::\::\::\::\::E"  ;
 
 : .two-little-islands  ( -- )
-  green ink  blue paper
+  [ green blue papery + ] cliteral attr!
   17  6 at-xy ." WXY  A"
   16  7 at-xy .\" A   A   F\::C"
   15  8 at-xy .\" :\::\x7F :\::\x7F G\::\::\::D"
@@ -879,11 +883,12 @@ cyan dup papery + brighty constant sunny-sky-attr
   13 10 at-xy .\" F\::\::\::\::E"  ;
 
 : .far-islands  ( -- )
-  green ink  cyan paper
+  [ green cyan papery + ] cliteral attr!
   0 2 at-xy ." Z123 HI A Z123 HI A Z123 HI Z123"  ;
 
 : .treasure-island  ( -- )
-  get-font >r graph-font1 set-font  green ink  blue paper
+  get-font >r graph-font1 set-font
+  [ green blue papery + ] cliteral attr!
   16  7 at-xy ." A A   HI"
   13  8 at-xy .\" F\::\::\::B\::\::\::B\::\::B\::\::\::C"
   12  9 at-xy .\" G\::\::\::\::\::\::\::"
@@ -895,11 +900,11 @@ cyan dup papery + brighty constant sunny-sky-attr
    8 12 at-xy .\" F\::\::\::\::\::\::\::\::\::\::"
               .\" \::\::\::\::\::\::\::\::\::\::\::\::D"
   31 13 at-xy ." E"
-  blue ink  green paper
+  [ blue green papery + ] cliteral attr!
    8 13 at-xy ."  HI Z123  HI A  A A  A "
   20 14 at-xy .\" B\::\::\::\::B"
   19 4 palm1  24 4 palm1  14 4 palm1
-  black ink  green paper
+  [ black green papery + ] cliteral attr!
   22 9 at-xy .\" \T\U"  \ the treasure
   ship-loc @ visited @ if
     s" Llegas nuevamente a la isla de " island-name$ s+ s" ."
@@ -913,17 +918,17 @@ cyan dup papery + brighty constant sunny-sky-attr
   cr .(   -Reefs)  \ {{{2
 
 : .south-reef  ( -- )
-  black ink  blue paper
+  [ black blue papery + ] cliteral attr!
   2 14 at-xy ."  A  HI   HI       HI  HI  A"
   0 15 at-xy .\" WXY  :\::\::\x7F     Z123     :\::\::\x7F"  ;
 
 : .west-reef  ( -- )
-  black ink  blue paper
+  [ black blue papery + ] cliteral attr!
    0 4 at-xy ." A"   1 6 at-xy ." HI"  0 8 at-xy ." WXY"
   1 11 at-xy ." A"  0 13 at-xy ." HI"  ;
 
 : .east-reef  ( -- )
-  black ink  blue paper
+  [ black blue papery + ] cliteral attr!
   30 4 at-xy ." HI"   28 6 at-xy ." A"
   29 7 at-xy ." WXY"  31 9 at-xy ." A"  ;
 
@@ -947,12 +952,12 @@ cyan dup papery + brighty constant sunny-sky-attr
        2+ at-xy .\" \P\Q\R"  ;
 
 : redraw-ship  ( -- )
-  white ink blue paper  ship-x @ ship-y @
+  [ white blue papery + ] cliteral attr!  ship-x @ ship-y @
   ship-up @ if    .ship-down  ship-up off
             else  .ship-up    ship-up on   then  ;
 
 : .enemy-ship  ( -- )
-  white ink  blue paper
+  [ white blue papery + ] cliteral attr!
   enemy-ship-x @ enemy-ship-y @ 2dup    at-xy ."  ab"
                                 2dup 1+ at-xy ."  90"
   yellow ink                         2+ at-xy ." 678"  ;
@@ -966,11 +971,12 @@ cyan dup papery + brighty constant sunny-sky-attr
   \ XXX TODO -- receive coordinates as parameters and reuse
 
 : .boat  ( -- )
-  yellow ink  blue paper  11 7 at-xy ." <>"  ;
+  [ yellow blue papery + ] cliteral attr!  11 7 at-xy ." <>"  ;
   \ XXX TODO -- random coords at empty space
 
 : .shark  ( -- )
-  white ink  blue paper  18 13 at-xy .\" \S"  ;
+  [ white blue papery + ] cliteral attr!
+  18 13 at-xy .\" \S"  ;
   \ XXX TODO -- `emit-udg` is faster
   \ XXX TODO -- random coords at empty space
   \ XXX TODO -- more of them
@@ -1053,7 +1059,7 @@ cyan dup papery + brighty constant sunny-sky-attr
 : max-damage?  ( -- f )  damage @ max-damage =  ;
 
 : .run-aground-reefs  ( -- )
-  black ink  blue paper
+  [ black blue papery + ] cliteral attr!
   17 10 at-xy ." WXY     A"
   19  6 at-xy ." A   Z123"
    6 11 at-xy ." A   HI"
@@ -1211,7 +1217,7 @@ white black papery + constant report-attr
 : sunk-delay  ( -- )  100 ms  ;
 
 : .sunk  ( -- )
-  graph-font1 set-font  white ink  blue paper
+  graph-font1 set-font  [ white blue papery + ] cliteral attr!
   enemy-ship-x @ enemy-ship-y @ 2dup .sunk-step-0 sunk-delay
                                 2dup .sunk-step-1 sunk-delay
                                      .sunk-step-2  ;
@@ -1266,7 +1272,7 @@ variable victory
     \ XXX TODO -- check the adapted expression
   enemy-ship-y +!
 
-  white ink  blue paper
+  [ white blue papery + ] cliteral attr!
   enemy-ship-x @    enemy-ship-y @ 2dup 2dup at-xy  ."  ab "
                                    1+        at-xy  ."  90 "
   yellow ink
@@ -1294,14 +1300,14 @@ variable victory
 : .ammo  ( -- )  ammo @ 1 .r  ;
 
 : .new-ammo  ( -- )
-  white ink red paper 21 23 at-xy .ammo  ;
+  [ white red papery + ] cliteral attr! 21 23 at-xy .ammo  ;
 
 : -ammo  ( -- )
   -1 ammo+!  text-font set-font .new-ammo  ;
 
 : .ammo-label  ( -- )
-  text-font set-font
-  white ink red paper 10 23 at-xy ." Munición = " .ammo  ;
+  text-font set-font [ white red papery + ] cliteral attr!
+  10 23 at-xy ." Munición = " .ammo  ;
 
 0 value gun-muzzle-y
   \ y coordinate of the cannon ball
@@ -1390,7 +1396,8 @@ variable victory
   loop  ;
   \ XXX TODO -- factor
 
-: clear-for-action  ( -- )  black ink yellow paper deck guns  ;
+: clear-for-action  ( -- )
+  [ black yellow papery + ] cliteral attr! deck guns  ;
 
 : battle-scenery  ( -- )
   blue paper cls 31 1 do  .wave  loop
@@ -1491,14 +1498,14 @@ variable victory
                 2  2 rdraw 0  14 rdraw 15  0 rdraw  ;
 
 : sailor-and-captain  ( -- )
-  graph-font1 set-font  cyan ink  black paper
+  graph-font1 set-font  [ cyan black papery + ] cliteral attr!
   0 17 at-xy ."  xy" 28 at-x ." pq" cr
              ."  vs" 28 at-x ." rs" cr
              ."  wu" 28 at-x ." tu"
   sailor-speech-balloon captain-speech-balloon  ;
 
 : sailor-says  ( ca len -- )
-  text-font set-font  black paper  white ink
+  text-font set-font  white attr!
   sailor-window set-window wcls wtype  ;
 
 : treasure-found  ( -- )
@@ -1512,13 +1519,12 @@ variable victory
 
   23 7 do  i 5 palm2  5 +loop  3 7 palm2  26 7 palm2
 
-  black ink  yellow paper  8 13 at-xy
+  [ black yellow papery + ] cliteral attr!  8 13 at-xy
   ." pq          xy                  "
   ." rs          vs                  tu      "
   .\" \T\U    wu"
   28 11 palm2  0 11 palm2
-  graph-font2 set-font  blue ink  yellow paper
-    \ XXX TODO -- remove paper
+  graph-font2 set-font  [ blue yellow papery + ] cliteral attr!
   13 17 at-xy .\" l\::m"
     \ XXX TODO -- factor the treasure
 
@@ -1545,7 +1551,7 @@ variable victory
 
 : paths-to-choose  ( -- )
   wipe-treasure-island
-  graph-font2 set-font green ink  yellow paper
+  graph-font2 set-font [ green yellow papery + ] cliteral attr!
   0 3 at-xy ."  5     6       45     6       5"
   graph-font1 set-font black ink
   25 0 do
@@ -1554,7 +1560,7 @@ variable victory
     i 1+  5 at-xy .\" :\::\::\::\::\x7F"
     i     6 at-xy .\" :\::\::\::\::\::\::\x7F"
   8 +loop
-  text-font set-font  white ink  red paper
+  text-font set-font  [ white red papery + ] cliteral attr!
   0 7 at-xy ."    1       2       3       4    "  ;
 
 : try-path  ( -- )
@@ -1564,7 +1570,8 @@ variable victory
   dup .clue path clue-tried  ;
 
 : trees-to-choose  ( -- )
-  wipe-treasure-island  black ink  yellow paper
+  wipe-treasure-island
+  [ black yellow papery + ] cliteral attr!
   0 7 at-xy ."  1       2       3       4"
   graph-font1 set-font  27 2 do  i 3 palm2  8 +loop  ;
   \ XXX TODO -- remove the loop
@@ -1584,7 +1591,8 @@ variable victory
   \ XXX TODO -- use letters instead of digits
 
 : villages-to-choose  ( -- )
-  wipe-treasure-island  black ink  yellow paper
+  wipe-treasure-island
+  [ black yellow papery + ] cliteral attr!
   villages 0 do
     1 13 i odd? and + i 2/ treasure-island-top-y + at-xy
     i dup . village$ type
@@ -1623,7 +1631,7 @@ variable victory
                      try-village try-direction try-steps  ;
 
 : enter-treasure-island  ( -- )
-  black paper cls wipe-treasure-island new-sunny-sky
+  blackout wipe-treasure-island new-sunny-sky
   quest success?
   if    s" ¡Hemos encontrado el oro, capitán!"
   else  s" Aquí no hay tesoro alguno, capitán."
@@ -1685,7 +1693,7 @@ variable victory
   \ XXX TODO -- use constants for the base coordinates
 
 : island-waves  ( -- )
-  graph-font1 set-font  white ink  blue paper
+  graph-font1 set-font  [ white blue papery + ] cliteral attr!
   walk-south? 0= if  south-waves  then
   walk-north? 0= if  north-waves  then
    walk-east? 0= if  east-waves   then
@@ -1722,27 +1730,29 @@ variable victory
   graph-font1 set-font  ;
 
 : .native  ( -- )
-  black ink  yellow paper  8 10 at-xy ."  _ `"
+  [ black yellow papery + ] cliteral attr!  8 10 at-xy ."  _ `"
                            8 11 at-xy ." }~.,"
                            8 12 at-xy ." {|\?"  ;
 
 : .ammo-gift  ( -- )
-  black ink  yellow paper  14 12 at-xy ." hi"  ;
+  [ black yellow papery + ] cliteral attr!
+  14 12 at-xy ." hi"  ;
   \ XXX TODO -- draw graphics depending on the actual ammount
 
 : .supplies  ( -- )
-  graph-font2 set-font
-  black ink  yellow paper 14 12 at-xy ." 90  9099 0009"
+  graph-font2 set-font [ black yellow papery + ] cliteral attr!
+  14 12 at-xy ." 90  9099 0009"
   graph-font1 set-font  ;
   \ XXX TODO -- draw graphics depending on the actual ammount
 
 : .snake  ( -- )
   graph-font2 set-font
-  black ink  yellow paper  14 12 at-xy ." xy"
+  [ black yellow papery + ] cliteral attr!  14 12 at-xy ." xy"
   graph-font1 set-font  ;
 
 : .dubloons  ( n -- )
-  get-font >r graph-font2 set-font  black ink  yellow paper
+  get-font >r graph-font2 set-font
+  [ black yellow papery + ] cliteral attr!
   12 dup at-xy s" vw vw vw vw vw vw vw vw " drop swap 3 * type
   r> set-font  ;
   \ XXX TODO -- use a loop
@@ -1911,8 +1921,8 @@ here - cell / constant island-events
 
 : disembarking-scene  ( -- )
   graph-font1 set-font  (sea-and-sky)
-  blue paper  green ink  target-island
-             yellow ink  disembarking-boat  ;
+  [ green  blue papery + ] cliteral attr!  target-island
+  [ yellow blue papery + ] cliteral attr! disembarking-boat  ;
 
 : on-treasure-island?  ( -- f )
   ship-loc @ sea @ treasure-island =  ;
@@ -1947,7 +1957,7 @@ here - cell / constant island-events
 
 : +storm  ( -- )
   graph-font1 set-font
-  70 0 do  white ink  cyan paper
+  70 0 do  [ white cyan papery + ] cliteral attr!
            ';' rain-drops  ']' rain-drops  '[' rain-drops
            3 random 0= if  redraw-ship  then
   loop  ;
@@ -2162,7 +2172,7 @@ variable price  variable offer
   \ He accepts one dubloon less
 
 : init-trade  ( -- )
-  graph-font1 set-font  black ink  yellow paper
+  graph-font1 set-font [ black yellow papery + ] cliteral attr!
   16 3 do  0 i at-xy blank-line$ type  loop
     \ XXX TODO -- improve with `fill`
   4 4 palm2  .native native-speech-balloon
@@ -2216,10 +2226,11 @@ variable price  variable offer
   endcase  ;
 
 : .black-flag  ( -- )
-  get-font >r graph-font2 set-font  black ink  yellow paper
+  get-font >r graph-font2 set-font
+  [ black yellow papery + ] cliteral attr!
   14 10 do  8 i at-xy ." t   "  loop
                            8  9 at-xy ." u"
-  white ink  black  paper  9 10 at-xy ." nop"
+              white attr!  9 10 at-xy ." nop"
                            9 11 at-xy ." qrs"
   r> set-font  ;
   \ XXX TODO -- faster: no loop, use "tnop" and "tqrs"
@@ -2374,7 +2385,8 @@ variable price  variable offer
 
 : init  ( -- )
   0 randomize0
-  text-font set-font  white ink  black paper  cls
+  text-font set-font
+  [ white black papery + ] cliteral attr!  cls
   0 [ rows 2 / ] cliteral at-xy
   s" Preparando el viaje..." columns type-center
   new-sea init-ship new-crew init-plot  ;
@@ -2393,9 +2405,10 @@ variable price  variable offer
   ;
 
 : sad-end  ( -- )
-  text-font set-font  white ink  red paper
+  text-font set-font  [ white red papery + ] cliteral attr!
   0 1 at-xy s" FIN DEL JUEGO" columns type-center
-  the-end-window set-window  black ink  yellow paper
+  the-end-window set-window
+  [ black yellow papery + ] cliteral attr!
   supplies @ 0= if
     s" - Las provisiones se han agotado." wtype wcr  then
   morale @ 0= if
@@ -2415,7 +2428,7 @@ variable price  variable offer
   \ XXX TODO --
 
 : the-end  ( -- )
-  black ink yellow paper wcls
+  [ black yellow papery + ] cliteral attr! wcls
   graph-font1 set-font  16 1 do  27 i palm2  1 i palm2  7 +loop
   success? if  happy-end  else  sad-end  then
   s" Pulsa una tecla para ver tus puntos" message
@@ -2431,13 +2444,13 @@ variable price  variable offer
   \ Draw a row of six skulls.
 
 : skull-border  ( -- )
-  graph-font2 set-font white ink  black paper  1 bright
-  home skulls 0 22 at-xy skulls  graph-font1 set-font
-  0 bright  ;
+  graph-font2 set-font
+  [ white black papery + brighty ] cliteral attr!
+  home skulls 0 22 at-xy skulls  graph-font1 set-font  ;
   \ Draw top and bottom borders of skulls.
 
 : intro  ( -- )
-  white ink black paper cls
+  [ white black papery + ] cliteral attr! cls
   skull-border intro-window set-window whome
   get-font >r text-font set-font
   s" Viejas leyendas hablan del tesoro "

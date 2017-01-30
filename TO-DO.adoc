@@ -1,6 +1,6 @@
 = To-Do list of Bandera Negra
 :author: Marcos Cruz (programandala.net)
-:revdate: 2017-01-24
+:revdate: 2017-01-31
 
 == Conversion to Forth
 
@@ -23,11 +23,6 @@ Solution 1: Restore the previous screen first (the sea scenery).
 Solution 2: Redesign the screen of the ship battle and reserve a
 window for messages. This window can be used for other new messages as
 well.
-
-.2017-01-21:
-
-Replace `paper`, `ink`, etc., with attributes and `color!`.
-It's faster.
 
 .2017-01-21:
 
