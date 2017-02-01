@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.40.0+201701302256" ;
+: version  ( -- ca len )  s" 0.41.0+201702011846" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -51,8 +51,6 @@ need case  need or-of  need j  need 0exit  need default-of
 
   \ --------------------------------------------
   \ cr .(   -Stack manipulation)  \ {{{2
-
-  \ need pick
 
   \ --------------------------------------------
   cr .(   -Math)  \ {{{2
@@ -98,6 +96,9 @@ need black   need blue    need red  need green
 need cyan    need yellow  need white
 
 need attr!  need papery  need brighty  need blackout
+need bright-mask
+
+need set-paper  need set-ink  need set-bright
 
 need rdraw176 ' rdraw176 alias rdraw
 need plot176  ' plot176  alias plot
@@ -557,7 +558,8 @@ esc-udg-chars-wordlist 3 set-esc-order
   cr .( Screen)  \ {{{1
 
 : init-screen  ( -- )
-  default-colors white ink blue paper black border cls
+  default-colors
+  [ white blue papery + ] cliteral dup black border attr-cls
   graph-font1 set-font  ;
 
 16384 constant screen  6912 constant /screen
@@ -748,11 +750,14 @@ variable east-cloud-x  3 constant /east-cloud
   west-cloud-x @ dup 0 at-xy ." EFGH" 1 at-xy ." IJKL"
   east-cloud-x @ dup 0 at-xy ." MNO"  1 at-xy ." PQR"  ;
 
-: sun-and-clouds  ( -- )
+: sun-and-clouds  ( b -- )
   graph-font2 set-font
-  [ yellow cyan papery + ] cliteral attr! sun
-  [ white  cyan papery + ] cliteral attr! clouds
+  [ yellow cyan papery + ] cliteral over or attr! sun
+  [ white  cyan papery + ] cliteral      or attr! clouds
   graph-font1 set-font  ;
+  \ Draw the sun and the clouds, using _b_ as an attribute
+  \ mask: the bits set in _b_ will be set in the attributes.
+  \ This is used to set bright on or off.
 
 : color-sky  ( c -- )
   [ sky-top-y attr-line  ] literal
@@ -778,8 +783,8 @@ variable east-cloud-x  3 constant /east-cloud
 
 cyan dup papery + brighty constant sunny-sky-attr
 
-: sunny-sky  ( -- )  sunny-sky-attr color-sky
-                     1 bright sun-and-clouds 0 bright  ;
+: sunny-sky  ( -- )
+  sunny-sky-attr color-sky bright-mask sun-and-clouds  ;
   \ Make the sky sunny.
 
 : color-sea  ( c -- )
@@ -811,12 +816,14 @@ cyan dup papery + brighty constant sunny-sky-attr
   1+ 2dup at-xy ." L"  ;
 
 : palm1  ( x y -- )
-  [ green blue papery + ] cliteral attr!  palm-top  yellow ink
+  [ green  blue papery + ] cliteral attr!  palm-top
+  [ yellow blue papery + ] cliteral attr!
   1 under+  palm-trunk 2drop  ;
   \ Print palm model 1 at characters coordinates _x y_.
 
 : palm2  ( x y -- )
-  [ green yellow papery + ] cliteral attr!  palm-top  black ink
+  [ green yellow papery + ] cliteral attr!  palm-top
+  [ black yellow papery + ] cliteral attr!
   1 under+  palm-trunk 1+ at-xy ." V"  ;
   \ Print palm model 2 at characters coordinates _x y_.
 
@@ -960,11 +967,12 @@ cyan dup papery + brighty constant sunny-sky-attr
   [ white blue papery + ] cliteral attr!
   enemy-ship-x @ enemy-ship-y @ 2dup    at-xy ."  ab"
                                 2dup 1+ at-xy ."  90"
-  yellow ink                         2+ at-xy ." 678"  ;
+  [ yellow blue papery + ] cliteral attr!
+                                     2+ at-xy ." 678"  ;
   \ XXX TODO -- receive coordinates as parameters and reuse
 
 : wipe-enemy-ship  ( -- )
-  blue paper
+  blue set-paper
   enemy-ship-x @ enemy-ship-y @ 2dup    at-xy ."    "
                                 2dup 1+ at-xy ."    "
                                      2+ at-xy ."    "  ;
@@ -1079,7 +1087,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   wipe-message  \ XXX TODO -- remove?
   graph-font1 set-font
   wipe-sea .far-islands .south-reef .east-reef .west-reef
-  white ink 14 8 .ship-up .run-aground-reefs
+  white set-ink 14 8 .ship-up .run-aground-reefs
   run-aground-damages run-aground-message
   3 seconds  ;
 
@@ -1094,8 +1102,7 @@ cyan dup papery + brighty constant sunny-sky-attr
 
 white black papery + constant report-attr
 
-: set-report-color  ( -- )
-  report-attr attr! permanent-colors  ;
+: set-report-color  ( -- )  report-attr attr!  ;
 
 : begin-report  ( -- )
   save-screen set-report-color cls text-font set-font  ;
@@ -1250,8 +1257,8 @@ variable victory
   \ location type.
 
 : .wave  ( -- )
-  graph-font1 set-font
-  cyan ink 11 30 random-range 1 20 random-range at-xy ." kl"  ;
+  graph-font1 set-font cyan set-ink
+  11 30 random-range 1 20 random-range at-xy ." kl"  ;
 
 : (move-enemy-ship)  ( -- )
   graph-font1 set-font
@@ -1275,7 +1282,7 @@ variable victory
   [ white blue papery + ] cliteral attr!
   enemy-ship-x @    enemy-ship-y @ 2dup 2dup at-xy  ."  ab "
                                    1+        at-xy  ."  90 "
-  yellow ink
+  [ yellow blue papery + ] cliteral attr!
   enemy-ship-x @ 1- enemy-ship-y @ 2+        at-xy ."  678 "
                                    2dup  1-  at-xy ."    "
                                          3 + at-xy ."    "
@@ -1328,7 +1335,8 @@ variable victory
   cannon-muzzle-x swap 2- 2dup 1-  ;
 
 : .cannon-muzzle-fire  ( row -- )
-  red ink cannon-muzzle-fire-coords at-xy ." -" at-xy ." +"  ;
+  red set-ink
+  cannon-muzzle-fire-coords at-xy ." -" at-xy ." +"  ;
   \ Print the fire effect of the cannon muzzle, which is at y
   \ coordinate _row_.
 
@@ -1347,10 +1355,10 @@ variable victory
   \ Erase the cannon ball at the end of its trajectory.
 
 : fire  ( n -- )
-  graph-font1 set-font  blue paper
+  graph-font1 set-font  blue set-paper
   gun>muzzle-y dup .cannon-muzzle-fire to gun-muzzle-y  -ammo
   move-enemy-ship
-  black ink cannon-muzzle-x gun-muzzle-y at-xy ."  j"
+  black set-ink cannon-muzzle-x gun-muzzle-y at-xy ."  j"
   gun-muzzle-y -cannon-muzzle-fire
   last-column cannon-muzzle-x do
     i gun-muzzle-y at-xy ."  j"
@@ -1388,8 +1396,8 @@ variable victory
 : guns  ( -- )
   3 0 do
     i gun>label-y
-    white paper text-font set-font 0 over at-xy i 1+ 1 .r
-    yellow paper
+    white set-paper text-font set-font 0 over at-xy i 1+ 1 .r
+    yellow set-paper
     graph-font2 set-font  1+ 4 over .gun-man
     graph-font1 set-font     6 over .gun
                              1 swap 1+ at-xy ." hi"  \ ammo
@@ -1400,7 +1408,7 @@ variable victory
   [ black yellow papery + ] cliteral attr! deck guns  ;
 
 : battle-scenery  ( -- )
-  blue paper cls 31 1 do  .wave  loop
+  [ blue papery ] cliteral attr-cls 31 1 do  .wave  loop
   clear-for-action .ammo-label battle-init-enemy-ship  ;
 
 : trigger  ( -- )
@@ -1542,7 +1550,7 @@ variable victory
 
 : .clue-prompt  ( -- )  at-clue '?' emit  ;
 
-: .clue  ( n -- )  black paper  at-clue .  ;
+: .clue  ( n -- )  black set-paper  at-clue .  ;
 
 : wipe-treasure-island  ( -- )
   [ treasure-island-top-y attr-line ] literal
@@ -1553,7 +1561,7 @@ variable victory
   wipe-treasure-island
   graph-font2 set-font [ green yellow papery + ] cliteral attr!
   0 3 at-xy ."  5     6       45     6       5"
-  graph-font1 set-font black ink
+  graph-font1 set-font black set-ink
   25 0 do
     i 3 + 3 at-xy .\" :\x7F"
     i 2+  4 at-xy .\" :\::\::\x7F"
@@ -1598,7 +1606,7 @@ variable victory
     i dup . village$ type
   loop
   graph-font2 set-font
-  green ink  27 5 at-xy .\" S\::T" 27 6 at-xy ." VUW"  ;
+  green set-ink  27 5 at-xy .\" S\::T" 27 6 at-xy ." VUW"  ;
   \ XXX TODO -- Factor the hut, perhaps also in `.huts`.
 
 : try-village  ( -- )
@@ -1668,7 +1676,7 @@ variable victory
   1  8 at-xy  ." l"
   0 10 at-xy ." kl"
   0 13 at-xy ." k"
-  graph-font2 set-font  yellow ink
+  graph-font2 set-font  yellow set-ink
   walk-north? 0= if  2  4 at-xy 'A' emit  then
   walk-south? 0= if  2 13 at-xy 'C' emit  then
   graph-font1 set-font  ;
@@ -1684,7 +1692,7 @@ variable victory
   31  8 at-xy  ." l"
   30 10 at-xy ." kl"
   31 13 at-xy  ." k"
-  yellow ink  graph-font2 set-font
+  yellow set-ink  graph-font2 set-font
   walk-north? 0= if  29  4 at-xy 'B' emit  then
   walk-south? 0= if  29 13 at-xy 'D' emit  then
   graph-font1 set-font  ;
@@ -1700,7 +1708,7 @@ variable victory
    walk-west? 0= if  west-waves   then  ;
 
 : .huts  ( -- )
-  green ink
+  green set-ink
   6  5 at-xy .\"  S\::T    ST   S\::T"
   6  6 at-xy .\"  VUW    78   VUW   4"
   4  8 at-xy .\" S\::T   S\::T    S\::T S\::T  S\::T "
@@ -1712,7 +1720,7 @@ variable victory
   \ of what must be drawn: 3 types of hut and nothing.
 
 : .villagers  ( -- )
-  black ink
+  black set-ink
   10  6 at-xy ." XYZ"
   17  6 at-xy ." YX"
   26  6 at-xy ." Z"
@@ -1726,7 +1734,7 @@ variable victory
   \ XXX TODO -- random
 
 : .village  ( -- )
-  graph-font2 set-font  yellow paper .huts .villagers
+  graph-font2 set-font  yellow set-paper .huts .villagers
   graph-font1 set-font  ;
 
 : .native  ( -- )
@@ -1979,7 +1987,7 @@ cyan dup papery + constant stormy-sky-attr
   \ XXX TODO -- improve: make the sky sunny after some time
 
 : stormy-sky  ( -- )  stormy-sky-attr color-sky
-                      sun-and-clouds  ;
+                      0 sun-and-clouds  ;
   \ Make the sky stormy.
   \ XXX TODO -- hide the sun
 
@@ -2023,18 +2031,18 @@ cyan dup papery + constant stormy-sky-attr
 : ?sail-west?   ( -- f )  west?  dup 0exit  sail-west   ;
 
 : ship-command?  ( c -- f )
-  dup 0exit  case
-  'N' key-up                or-of  ?sail-north?        endof
-  'S' key-down              or-of  ?sail-south?        endof
-  'E' key-right             or-of  ?sail-east?         endof
-  'O' key-left              or-of  ?sail-west?         endof
-  'I'                          of  main-report    true endof
-  'A' feasible-attack @ and    of  attack-ship    true endof
-  'T'                          of  crew-report    true endof
-  'P'                          of  score-report   true endof
-  'D' feasible-disembark @ and of  disembark      true endof
-  'F'                          of  quit-game on   true endof
-  'Q'                          of  quit                endof
+  dup 0exit  lower case
+  'n' key-up                or-of  ?sail-north?        endof
+  's' key-down              or-of  ?sail-south?        endof
+  'e' key-right             or-of  ?sail-east?         endof
+  'o' key-left              or-of  ?sail-west?         endof
+  'i'                          of  main-report    true endof
+  'a' feasible-attack @ and    of  attack-ship    true endof
+  't'                          of  crew-report    true endof
+  'p'                          of  score-report   true endof
+  'd' feasible-disembark @ and of  disembark      true endof
+  'f'                          of  quit-game on   true endof
+  'q'                          of  quit                endof
     \ XXX TMP -- 'Q' option for debugging
   false swap  endcase  ;
   \ If character _c_ is a valid ship command, execute it and
@@ -2042,7 +2050,7 @@ cyan dup papery + constant stormy-sky-attr
   \
   \ Note: the trigger `dup 0exit` is used at the start because
   \ the default value of _c_ is zero, which would clash with
-  \ 'A' and 'D' clauses if their "and-ed" control flags are
+  \ 'a' and 'd' clauses if their "and-ed" control flags are
   \ off. `dup exit` is smaller than a `0 of false endof`
   \ clause.
   \
@@ -2059,7 +2067,7 @@ cyan dup papery + constant stormy-sky-attr
 : ?storm  ( -- )  storm? if  storm  then  ;
 
 : ship-command  ( -- )
-  begin  ?redraw-ship ?storm  inkey upper ship-command?
+  begin  ?redraw-ship ?storm  inkey ship-command?
   until  ;
 
   \ ============================================================
@@ -2121,7 +2129,7 @@ create clues  ( -- a )
   cr .( Trading)  \ {{{1
 
 : native-speech-balloon  ( -- )
-  black ink
+  black set-ink
   100 100 plot  20 10 rdraw  0 30 rdraw  2 2 rdraw
   100 0 rdraw  2 -2 rdraw  0 -60 rdraw  -2 -2 rdraw
   -100 0 rdraw -2 2 rdraw  0 20 rdraw  -20 0 rdraw  ;
@@ -2280,26 +2288,26 @@ variable price  variable offer
   feasible-attack @ dup 0exit  attack-native  ;
 
 : island-command?  ( c -- f )
-  case
-    'N' key-up    or-of  ?walk-north?            endof
-    'S' key-down  or-of  ?walk-south?            endof
-    'E' key-right or-of  ?walk-east?             endof
-    'O' key-left  or-of  ?walk-west?             endof
-    'C'              of  ?trade?                 endof
-    'B'              of  ?embark?                endof
-    'I'              of  main-report      true   endof
-    'M'              of  ?attack-native?         endof
-    'T'              of  crew-report      true   endof
-    'P'              of  score-report     true   endof
-    'F'              of  quit-game on     true   endof
-    'Q'              of  quit                    endof
+  lower case
+    'n' key-up    or-of  ?walk-north?            endof
+    's' key-down  or-of  ?walk-south?            endof
+    'e' key-right or-of  ?walk-east?             endof
+    'o' key-left  or-of  ?walk-west?             endof
+    'c'              of  ?trade?                 endof
+    'b'              of  ?embark?                endof
+    'i'              of  main-report      true   endof
+    'm'              of  ?attack-native?         endof
+    't'              of  crew-report      true   endof
+    'p'              of  score-report     true   endof
+    'f'              of  quit-game on     true   endof
+    'q'              of  quit                    endof
       \ XXX TMP -- 'Q' option for debugging
   false swap  endcase  ;
   \ If character _c_ is a valid command on the island, execute
   \ it and return true; else return false.
 
 : island-command  ( -- )
-  begin  key upper island-command?  until  ;
+  begin  key island-command?  until  ;
 
   \ ============================================================
   cr .( Setup)  \ {{{1
@@ -2386,7 +2394,7 @@ variable price  variable offer
 : init  ( -- )
   0 randomize0
   text-font set-font
-  [ white black papery + ] cliteral attr!  cls
+  [ white black papery + ] cliteral attr! cls
   0 [ rows 2 / ] cliteral at-xy
   s" Preparando el viaje..." columns type-center
   new-sea init-ship new-crew init-plot  ;
@@ -2450,7 +2458,7 @@ variable price  variable offer
   \ Draw top and bottom borders of skulls.
 
 : intro  ( -- )
-  [ white black papery + ] cliteral attr! cls
+  blackout white attr!
   skull-border intro-window set-window whome
   get-font >r text-font set-font
   s" Viejas leyendas hablan del tesoro "
@@ -2470,14 +2478,14 @@ variable price  variable offer
   cr .( Main)  \ {{{1
 
 : scenery  ( -- )
-  aboard? if    sea-scenery
-          else  island-scenery  then  panel  ;
+  blackout  aboard? if    sea-scenery
+                    else  island-scenery  then  panel  ;
 
 : command  ( -- )
   aboard? if  ship-command  else  island-command  then  ;
 
 : game  ( -- )
-  cls scenery  begin  command game-over?  until  ;
+  scenery  begin  command game-over?  until  ;
 
 : run  ( -- )
   init-once  begin  intro init game the-end  again  ;
@@ -2505,10 +2513,10 @@ variable checkered
 
 : ship-here?  ( col row -- f )  sea-length * + ship-loc @ =  ;
 
-: loc-color  ( f -- ) if  red  else  white  then  ink  ;
+: loc-color  ( f -- ) if  red  else  white  then  set-ink  ;
 
 : .sea  ( -- )
-  black paper cr
+  black set-paper cr
   0 sea-breadth 1- do
     checkered@
     sea-length 0 do
@@ -2522,7 +2530,7 @@ variable checkered
   island-length * + crew-loc @ =  ;
 
 : .isl  ( -- )
-  black paper cr
+  black set-paper cr
   0 island-breadth 1- do
     checkered@
     island-length 0 do

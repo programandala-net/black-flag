@@ -1,8 +1,19 @@
 = To-Do list of Bandera Negra
 :author: Marcos Cruz (programandala.net)
-:revdate: 2017-01-31
+:revdate: 2017-02-01
 
 == Conversion to Forth
+
+.2017-02-01:
+
+Fix `damage-index`: use `max-damage-level` instead of `damage-levels`.
+
+.2017-02-01:
+
+To save some memory, store conditions in tittle case and convert them
+with `lowers` when needed, not the other way around. This would save
+`uppers1`, which depends on `upper`, which has been moved to the
+library of Solo Forth.
 
 .2017-01-23:
 
