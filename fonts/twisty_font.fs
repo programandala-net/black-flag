@@ -3,14 +3,7 @@
 \ This file is part of Bandera Negra
 \ http://programandala.net/
 
-\ XXX UNDER DEVELOPMENT
-
-\ Last modified: 201701181351
-
-\ Credit:
-\
-\ The twisty font was designed by Paul Howard for Alchemist PD,
-\ 1995, and packed into a viewer called "Fontbox I".
+\ Last modified: 201702012116
 
 \ Description:
 \
@@ -19,6 +12,11 @@
 \ original TAP.  The final goal is to create a source font, easy
 \ to edit as text, with the Spanish and Esperanto characters
 \ added, and to convert automatically to Forth code.
+
+\ Credit:
+\
+\ The twisty font was designed by Paul Howard for Alchemist PD,
+\ 1995, and packed into a viewer called "Fontbox I".
 
 \ ==============================================================
 
