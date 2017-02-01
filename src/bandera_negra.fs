@@ -18,7 +18,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.41.0+201702011846" ;
+: version  ( -- ca len )  s" 0.41.1+201702012120" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -380,7 +380,8 @@ yellow black papery +         3 stamina-attr c!
   hp@ far," casi como nuevo"
   hp@ far," impecable"            \ best: perfect
 far>sconstants damage-level$  ( n -- ca len )
-      constant damage-levels
+      dup cconstant damage-levels
+       1- cconstant max-damage-level
 
   \ --------------------------------------------
   cr .(   -Village names)  \ {{{2
@@ -479,9 +480,10 @@ far>sconstants number$  ( n -- ca len )  drop
 100 constant max-damage
 
 : damage-index  ( -- n )
-  damage @ damage-levels max-damage */  ;
-  \ Return damage index _n_ (0..`damage-levels`) correspondent
-  \ to the current value of `damage` (0..`max-damage`).
+  damage @ max-damage-level max-damage */  ;
+  \ Return damage index _n_ (0..`max-damage-level`)
+  \ correspondent to the current value of `damage`
+  \ (0..`max-damage`).
 
 : max-damage-index?  ( -- f )  damage-index damage-levels =  ;
 
