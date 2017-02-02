@@ -37,7 +37,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.42.0+201702021226" ;
+: version  ( -- ca len )  s" 0.42.1+201700213000" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -600,8 +600,8 @@ esc-udg-chars-wordlist 3 set-esc-order
   cr .( Screen)  \ {{{1
 
 : init-screen  ( -- )
-  default-colors
-  [ white blue papery + ] cliteral dup black border attr-cls
+  default-colors  black border
+  [ white blue papery + ] cliteral dup attr! attr-cls
   graphics-1  ;
 
 16384 constant screen  6912 constant /screen
