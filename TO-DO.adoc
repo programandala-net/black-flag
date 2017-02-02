@@ -2,13 +2,22 @@
 :author: Marcos Cruz (programandala.net)
 :revdate: 2017-02-02
 
-== Conversion to Forth
+.2017-02-02:
+
+Improve: Move string literal to far memory. This step will be needed
+to add more languages anyway.
 
 .2017-02-02:
 
-Count storms and adapt the warning accordingly.
+Fix: background color of the native speech.
 
-Reduce the storm probability after every storm.
+.2017-02-02:
+
+Improve: Count storms and adapt the warning accordingly.
+
+.2017-02-02:
+
+Improve: Reduce the storm probability after every storm.
 
 .2017-02-02:
 
@@ -17,14 +26,14 @@ column right or left.
 
 .2017-02-01:
 
-To save some memory, store conditions in tittle case and convert them
-with `lowers` when needed, not the other way around. This would save
-`uppers1`, which depends on `upper`, which has been moved to the
-library of Solo Forth.
+Improve: To save some memory, store conditions in tittle case and
+convert them with `lowers` when needed, not the other way around. This
+would save `uppers1`, which depends on `upper`, which has been moved
+to the library of Solo Forth.
 
 .2017-01-23:
 
-Print the ship in two colors.
+Improve: Print the ship in two colors.
 
 .2017-01-22:
 
@@ -42,6 +51,10 @@ Solution 2: Redesign the screen of the ship battle and reserve a
 window for messages. This window can be used for other new messages as
 well.
 
+.2017-01-22:
+
+Improve: Access all reports (a menu) with one key in the panel.
+
 .2017-01-21:
 
 Move the `name` double-cell array to far memory.
@@ -54,11 +67,6 @@ Add 128K sound effects.
 
 Wait for the space key after the reports, to prevent the key to
 activate a command after returning to the panel.
-
-.2017-01-18:
-
-Write `use-text-font`, `use-graph-font1`, `use-graph-font2`,
-`use-native-text-font`?
 
 .2017-01-12:
 
@@ -92,14 +100,6 @@ Total: 199 characters
 
 Only the strings printed with graph font 2 must be adapted.
 
-The characters needed for Spanish and Esperanto are the following:
-
-- 16 chars for Spanish: áéíóúüñÁÉÍÓÚÜÑ¡¿
-- 12 chars for Esperanto: ĉĝĥĵŝŭĈĜĤĴŜŬ
-
-Two sets of Spanish and Esperanto characters will be needed, one for
-each font (sticks and twisty).
-
 .2017-01-08:
 
 Simplify the ship damage calculations: Use only one counter and one
@@ -109,12 +109,6 @@ range.
 
 Convert `used-name`, `stamina` and maps to a character array, to save
 memory.
-
-== Future improvements
-
-.2017-01-22:
-
-Improve: Access all reports (a menu) with one key in the panel.
 
 == Old notes about the abandaned conversion to Master BASIC
 
@@ -167,7 +161,3 @@ Hacer que el jugador pueda elegir nombre al capitán.
 
 Añadir «Fin» a la lista de comandos.
 
-Al embarcar, borrar panel antes de redibujar pantalla.
-
-Hacer que el sol se imprima también al azar, pero no coincida con las
-nubes.

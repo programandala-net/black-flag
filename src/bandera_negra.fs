@@ -37,7 +37,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.42.4+201702021931" ;
+: version  ( -- ca len )  s" 0.43.0+201702022348" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -69,7 +69,9 @@ need alias
 need case  need or-of  need j  need 0exit  need default-of
 
   \ --------------------------------------------
-  \ cr .(   -Stack manipulation)  \ {{{2
+  cr .(   -Stack manipulation)  \ {{{2
+
+need >true  need >false
 
   \ --------------------------------------------
   cr .(   -Math)  \ {{{2
@@ -109,7 +111,8 @@ need whome
 need tab  need type-center  need at-x  need row
 need rows  need columns  need last-column
 need inverse  need tabulate
-need set-udg  need rom-font  need set-font  need get-font
+need rom-font
+need set-udg  need get-udg  need set-font  need get-font
 
 need black   need blue    need red  need green
 need cyan    need yellow  need white
@@ -563,9 +566,12 @@ esc-udg-chars-wordlist 3 set-esc-order
   \ only the standard chars, but also the block chars and the
   \ UDG chars.
 
+: get-fonts  ( -- )  get-font get-udg  ;
+: set-fonts  ( -- )  set-udg set-font  ;
+
   \ 2variable saved-font
-  \ : save-font     ( -- )  get-font get-udg saved-font 2!  ;
-  \ : restore-font  ( -- )  saved-font 2@ set-font set-udg  ;
+  \ : save-font     ( -- )  get-fonts saved-font 2!  ;
+  \ : restore-font  ( -- )  saved-font 2@ set-fonts  ;
   \ XXX TODO -- not used yet
 
 : native-font  ( -- )
@@ -636,8 +642,8 @@ far-banks 3 + c@ cconstant screen-backup-bank
   cr .( Text output)  \ {{{1
 
 : native-says  ( ca len -- )
-  get-font >r native-font native-window set-window wcls wtype
-  r> set-font  ;
+  get-fonts 2>r native-font native-window set-window wcls wtype
+  2r> set-fonts  ;
 
 : wipe-message  ( -- )
   message-window set-window
@@ -664,11 +670,6 @@ far-banks 3 + c@ cconstant screen-backup-bank
 
 21 constant panel-y
  3 constant panel-rows
-
-variable feasible-disembark      \ flag
-variable feasible-embark         \ flag
-variable feasible-attack         \ flag
-variable feasible-trade          \ flag
 
 : reef?  ( n -- f )  sea @ reef =  ;
   \ Is there a reef at sea map position _n_?
@@ -728,7 +729,16 @@ variable feasible-trade          \ flag
   \
   \ XXX TODO -- use a modified  version of "+"?
 
-: feasible-attack?  ( -- f )
+: feasible-island-attack?  ( -- f )
+  crew-loc @ island @
+  dup snake           = if  >true exit  then
+  dup native-village  = if  >true exit  then
+  dup hostile-native  = if  >true exit  then
+  dup native-ammo     = if  >true exit  then
+  dup native-supplies = if  >true exit  then
+      >false  ;
+
+: feasible-sea-attack?  ( -- f )
   ship-loc @ sea @ dup >r 13 <
                            r@ shark = or
                            r> treasure-island = or  0=
@@ -737,11 +747,15 @@ variable feasible-trade          \ flag
   \ now is associated with certain locations but should be
   \ independent
 
+: feasible-attack?  ( -- f )
+  aboard? if    feasible-sea-attack?
+          else  feasible-island-attack?  then  ;
+
 : common-commands  ( -- )
   0 panel-y at-xy s" Información" 0 >option$ type cr
                   s" Tripulación" 0 >option$ type cr
                   s" Puntuación"  0 >option$ type
-  feasible-attack? dup >r feasible-attack !
+  feasible-attack? >r
   16 panel-y at-xy s" Atacar" 0 r> ?>option$ type  ;
 
 : feasible-disembark?  ( -- f )
@@ -751,7 +765,7 @@ variable feasible-trade          \ flag
 
 : ship-commands  ( -- )
   .debug-info  \ XXX INFORMER
-  feasible-disembark? dup >r feasible-disembark !
+  feasible-disembark? >r
   16 [ panel-y 1+ ] cliteral at-xy
   s" Desembarcar" 0 r> ?>option$ type  ;
 
@@ -764,10 +778,10 @@ variable feasible-trade          \ flag
 
 : island-commands  ( -- )
   .debug-info  \ XXX INFORMER
-  feasible-embark? dup >r feasible-embark !
+  feasible-embark? >r
   16 [ panel-y 1+ ] cliteral at-xy
   s" emBarcar" 2 r> ?>option$ type
-  feasible-trade? dup >r feasible-trade !
+  feasible-trade? >r
   16 [ panel-y 2+ ] cliteral at-xy
   s" Comerciar" 0 r> ?>option$ type  ;
 
@@ -946,7 +960,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   0 2 at-xy ." Z123 HI A Z123 HI A Z123 HI Z123"  ;
 
 : .treasure-island  ( -- )
-  get-font >r graphics-1
+  get-fonts 2>r graphics-1
   [ green blue papery + ] cliteral attr!
   16  7 at-xy ." A A   HI"
   13  8 at-xy .\" F\::\::\::B\::\::\::B\::\::B\::\::\::C"
@@ -970,7 +984,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   else
     s" Has encontrado la perdida isla de "
     island-name$ s+ s" ..."
-  then  s+ message  r> set-font  ;
+  then  s+ message  2r> set-fonts  ;
   \ XXX TODO -- factor
 
   \ --------------------------------------------
@@ -1418,7 +1432,7 @@ variable victory
   loop  -cannon-ball  ;
 
 : no-ammo-left  ( -- )
-  feasible-attack off  panel-commands
+  panel-commands
   s" Te quedaste sin munición." message  4 seconds  ;
   \ XXX TODO -- the enemy wins; our ship sinks,
   \ or the money and part of the crew are captured
@@ -1486,6 +1500,9 @@ variable victory
 
 : attack-ship  ( -- )
   ammo @ if  (attack-ship)  else  no-ammo-left  then  ;
+
+: ?attack-ship?  ( -- f )
+  feasible-sea-attack? dup 0exit attack-ship  ;
 
   \ ============================================================
   cr .( Island map)  \ {{{1
@@ -1814,10 +1831,10 @@ sailor-window-cols 2+ 8 * 4 +
   graphics-1  ;
 
 : .dubloons  ( n -- )
-  get-font >r graphics-2
+  get-fonts 2>r graphics-2
   [ black yellow papery + ] cliteral attr!
   12 dup at-xy s" vw vw vw vw vw vw vw vw " drop swap 3 * type
-  r> set-font  ;
+  2r> set-fonts  ;
   \ XXX TODO -- use a loop
   \ XXX TODO -- other option: print at random empty places
 
@@ -2003,6 +2020,9 @@ here - cell / constant island-events
   wipe-message wipe-panel
   disembarking-scene enter-island  ;
 
+: ?disembark?  ( -- f )
+  feasible-disembark? dup 0exit disembark  ;
+
   \ ============================================================
   cr .( Storm)  \ {{{1
 
@@ -2083,28 +2103,22 @@ cyan dup papery + constant stormy-sky-attr
 : ?sail-west?   ( -- f )  west?  dup 0exit  sail-west   ;
 
 : ship-command?  ( c -- f )
-  dup 0exit  lower case
-  'n' key-up                or-of  ?sail-north?        endof
-  's' key-down              or-of  ?sail-south?        endof
-  'e' key-right             or-of  ?sail-east?         endof
-  'o' key-left              or-of  ?sail-west?         endof
-  'i'                          of  main-report    true endof
-  'a' feasible-attack @ and    of  attack-ship    true endof
-  't'                          of  crew-report    true endof
-  'p'                          of  score-report   true endof
-  'd' feasible-disembark @ and of  disembark      true endof
-  'f'                          of  quit-game on   true endof
-  'q'                          of  quit                endof
-    \ XXX TMP -- 'Q' option for debugging
+  lower case
+  'n' key-up     or-of  ?sail-north?        endof
+  's' key-down   or-of  ?sail-south?        endof
+  'e' key-right  or-of  ?sail-east?         endof
+  'o' key-left   or-of  ?sail-west?         endof
+  'i'               of  main-report    true endof
+  'a'               of  ?attack-ship?       endof
+  't'               of  crew-report    true endof
+  'p'               of  score-report   true endof
+  'd'               of  ?disembark?         endof
+  'f'               of  quit-game on   true endof
+  'q'               of  quit                endof
+    \ XXX TMP -- 'q' option for debugging
   false swap  endcase  ;
   \ If character _c_ is a valid ship command, execute it and
   \ return true; else return false.
-  \
-  \ Note: the trigger `dup 0exit` is used at the start because
-  \ the default value of _c_ is zero, which would clash with
-  \ 'a' and 'd' clauses if their "and-ed" control flags are
-  \ off. `dup exit` is smaller than a `0 of false endof`
-  \ clause.
   \
   \ XXX TODO -- use execution table instead? better yet:
   \ `thiscase` structure.
@@ -2264,15 +2278,34 @@ variable price  variable offer
   2 seconds  ;
   \ XXX not used yet
 
+: .black-flag  ( -- )
+  get-fonts 2>r graphics-2
+  [ black yellow papery + ] cliteral attr!
+  14 10 do  8 i at-xy ." t   "  loop
+                           8  9 at-xy ." u"
+              white attr!  9 10 at-xy ." nop"
+                           9 11 at-xy ." qrs"
+  2r> set-fonts  ;
+  \ XXX TODO -- faster: no loop, use "tnop" and "tqrs"
+
+: -native  ( -- )
+  just-3-palms-1 crew-loc @ island !  .black-flag  ;
+  \ XXX TODO -- improve -- don't change the scenery:
+  \ first, make natives, animals and things independent from
+  \ the location
+
 : hard-to-kill-native  ( -- )
+  -native
   s" El nativo muere, pero antes mata a "
   dead @ name$ s+ s" ." s+ message  ;
 
 : dead-native-has-supplies  ( -- )
+  -native
   s" El nativo tiene provisiones "
   s" escondidas en su taparrabos." s+ message  1 supplies+!  ;
 
 : dead-native-has-dubloons  ( -- )
+  -native
   2 3 random-range r>
   s" Encuentras " r@ coins$ s+
   s"  en el cuerpo del nativo muerto." s+ message r> cash+!  ;
@@ -2282,22 +2315,6 @@ variable price  variable offer
                          1 of  dead-native-has-supplies  endof
                    default-of  dead-native-has-dubloons  endof
   endcase  ;
-
-: .black-flag  ( -- )
-  get-font >r graphics-2
-  [ black yellow papery + ] cliteral attr!
-  14 10 do  8 i at-xy ." t   "  loop
-                           8  9 at-xy ." u"
-              white attr!  9 10 at-xy ." nop"
-                           9 11 at-xy ." qrs"
-  r> set-font  ;
-  \ XXX TODO -- faster: no loop, use "tnop" and "tqrs"
-
-: -native  ( -- )
-  just-3-palms-1 crew-loc @ island !  .black-flag  ;
-  \ XXX TODO -- improve -- don't change the scenery:
-  \ first, make natives, animals and things independent from
-  \ the location
 
 : attack-native-but-snake-kills  ( -- )
   s" Matas al nativo, pero la serpiente mata a "
@@ -2330,12 +2347,12 @@ variable price  variable offer
 : ?walk-east?   ( -- f )  east?  dup 0exit  walk-east   ;
 : ?walk-west?   ( -- f )  west?  dup 0exit  walk-west   ;
 
-: ?trade?  ( -- f )  feasible-trade @ dup 0exit  trade  ;
+: ?trade?  ( -- f )  feasible-trade? dup 0exit  trade  ;
 
-: ?embark?  ( -- f )  feasible-embark @ dup 0exit  embark  ;
+: ?embark?  ( -- f )  feasible-embark? dup 0exit  embark  ;
 
 : ?attack-native?  ( -- f )
-  feasible-attack @ dup 0exit  attack-native  ;
+  feasible-island-attack? dup 0exit  attack-native  ;
 
 : island-command?  ( c -- f )
   lower case
@@ -2346,12 +2363,12 @@ variable price  variable offer
     'c'              of  ?trade?                 endof
     'b'              of  ?embark?                endof
     'i'              of  main-report      true   endof
-    'm'              of  ?attack-native?         endof
+    'a'              of  ?attack-native?         endof
     't'              of  crew-report      true   endof
     'p'              of  score-report     true   endof
     'f'              of  quit-game on     true   endof
     'q'              of  quit                    endof
-      \ XXX TMP -- 'Q' option for debugging
+      \ XXX TMP -- 'q' option for debugging
   false swap  endcase  ;
   \ If character _c_ is a valid command on the island, execute
   \ it and return true; else return false.
@@ -2509,7 +2526,7 @@ variable price  variable offer
 : intro  ( -- )
   blackout white attr!
   skull-border intro-window set-window whome
-  get-font >r text-font
+  get-fonts 2>r text-font
   s" Viejas leyendas hablan del tesoro "
   s" que esconde la perdida isla de " s+
   island-name$ s+ s" ." s+ wtype wcr wcr
@@ -2521,7 +2538,7 @@ variable price  variable offer
   island-name$ s+
   s"  y sigue las pistas hasta el tesoro..." s+ wtype wcr wcr
   0 row 2+ at-xy s" Pulsa una tecla" columns type-center
-  120 ?seconds r> set-font  ;
+  120 ?seconds 2r> set-fonts  ;
 
   \ ============================================================
   cr .( Main)  \ {{{1
@@ -2543,10 +2560,10 @@ variable price  variable offer
   cr .( Debugging tools [2])  \ {{{1
 
 : (.debug-info)  ( -- )
-  get-font >r text-font
+  get-fonts 2>r text-font
   home aboard? if    ship-loc ? ship-loc @ sea
                else  crew-loc ? crew-loc @ island
-               then  ? .s  r> set-font  ;
+               then  ? .s  2r> set-fonts  ;
 
 ' (.debug-info) ' .debug-info defer!
 
