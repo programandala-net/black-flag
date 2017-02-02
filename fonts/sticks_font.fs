@@ -27,7 +27,9 @@
 \
 \ 2017-02-02: Make the file executable for Gforth and prepare it
 \ to convert the UDG data to bytes stored with `c,`, which is
-\ the compact format used in the final source.
+\ the compact format used in the final source.  Redesign
+\ character 96 (the GBP sign in the ZX Spectrum character set)
+\ as a backtick, its original shape in ASCII.
 
 \ ==============================================================
 
@@ -743,13 +745,13 @@ udg
 
 \ character 96 ('`')
 00000000
-00011100
-00100010
-01111000
-00100000
-00100000
-01111110
-00100000
+00011000
+00010000
+00001000
+00000000
+00000000
+00000000
+00000000
 udg
 
 \ character 97 ('a')

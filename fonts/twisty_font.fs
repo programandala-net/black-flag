@@ -5,7 +5,7 @@
 \ This file is part of Bandera Negra
 \ http://programandala.net/
 
-\ Last modified: 201702021202
+\ Last modified: 201702021603
 
 \ ==============================================================
 \ Description
@@ -27,7 +27,9 @@
 \
 \ 2017-02-02: Make the file executable for Gforth and prepare it
 \ to convert the UDG data to bytes stored with `c,`, which is
-\ the compact format used in the final source.
+\ the compact format used in the final source. Redesign
+\ character 96 (the GBP sign in the ZX Spectrum character set)
+\ as a backtick, its original shape in ASCII.
 
 \ ==============================================================
 
@@ -742,13 +744,13 @@ udg
 udg
 
 \ character 96 ('`')
-00000010
-00011100
-00010000
-01111000
+00000000
 00100000
-00100010
-01111100
+00011000
+00000000
+00000000
+00000000
+00000000
 00000000
 udg
 
