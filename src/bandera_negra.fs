@@ -37,7 +37,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.42.2+20170021508" ;
+: version  ( -- ca len )  s" 0.42.3+201702021741" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -2040,18 +2040,15 @@ cyan dup papery + constant stormy-sky-attr
 : damages  ( -- )  10 49 damaged  ;
 
 : storm-warning  ( -- )
-  wipe-panel
   s" De pronto se desata una fuerte tormenta..." message  ;
 
 : storm-report  ( -- )
   s" Cuando la mar y el cielo se calman, "
   s" compruebas el estado del barco: " s+ damage$ s+ s" ." s+
   message  ;
-  \ XXX FIXME -- sometimes `damage$` is empty: check the range
-  \ of the damage percentage.
 
-: storm  ( -- )  stormy-sky storm-warning
-                 +storm damages -storm storm-report  ;
+: storm  ( -- )  stormy-sky wipe-panel storm-warning
+                 +storm damages -storm storm-report panel  ;
 
   \ ============================================================
   cr .( Ship command)  \ {{{1
