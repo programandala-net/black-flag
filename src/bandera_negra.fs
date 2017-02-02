@@ -37,7 +37,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.42.1+201700213000" ;
+: version  ( -- ca len )  s" 0.42.2+20170021508" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -593,6 +593,10 @@ esc-udg-chars-wordlist 3 set-esc-order
 16 6 11 4 window native-window
 
 7 12 10 7 window sailor-window
+
+12 cconstant sailor-window-cols
+
+7 12 sailor-window-cols 7 window sailor-window
 
 5 3 22 20 window the-end-window
 
@@ -1533,9 +1537,14 @@ variable victory
           1 4 2constant direction-range
           1 9 2constant pace-range
 
+sailor-window-cols 2+ 8 * 4 +
+  cconstant sailor-speech-balloon-width
+
 : sailor-speech-balloon  ( -- )
-  25 44 plot 20 10 rdraw 0  30 rdraw   2  2 rdraw  100 0 rdraw
-              2 -2 rdraw 0 -60 rdraw  -2 -2 rdraw -100 0 rdraw
+  25 44 plot 20 10 rdraw 0  30 rdraw   2  2 rdraw
+             sailor-speech-balloon-width 0 rdraw
+              2 -2 rdraw 0 -60 rdraw  -2 -2 rdraw
+             sailor-speech-balloon-width negate 0 rdraw
              -2  2 rdraw 0  19 rdraw -20  0 rdraw  ;
 
 : captain-speech-balloon  ( -- )
