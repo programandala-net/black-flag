@@ -5,7 +5,7 @@
 # This file is part of Bandera Negra
 # http://programandala.net/
 
-# Last modified 201701080041
+# Last modified 201702021204
 
 ################################################################
 # Requirements
@@ -15,8 +15,14 @@
 # fsb2 (by Marcos Cruz)
 # 	http://programandala.net/en.program.fsb2.html
 
+# Gforth (by Anton Erlt, Bernd Paysan et al.)
+# 	http://gnu.org/software/gforth
+
 # mkmgt (by Marcos Cruz)
 # 	http://programandala.net/en.program.mkmgt.html
+
+# vim (by Bram Moolenaar)
+#   http://vim.org
 
 ################################################################
 # History
@@ -26,6 +32,8 @@
 # 2016-12-21: Build fonts and UDG sources from the original TAP files.
 #
 # 2017-01-08: Reorganize graph fonts and add ordinary fonts.
+#
+# 2017-02-02: Add Spanish chars UDG files. Update the requirements.
 
 ################################################################
 # Notes
@@ -73,17 +81,31 @@ tmp/bandera_negra_sticks_font.fs: fonts/sticks_font.tap
 tmp/bandera_negra_twisty_font.fs: fonts/twisty_font.tap
 	make/udg_tap_to_forth_c-comma.fs $< > $@
 
+tmp/bandera_negra_sticks_font_es.fs: fonts/sticks_font_es.fs
+	./$< > $@
+
+tmp/bandera_negra_twisty_font_es.fs: fonts/twisty_font_es.fs
+	./$< > $@
+
 tmp/bandera_negra.complete.fs: \
 	src/bandera_negra.fs \
 	tmp/bandera_negra_graph_font_1.fs \
 	tmp/bandera_negra_graph_font_2.fs \
 	tmp/bandera_negra_sticks_font.fs \
 	tmp/bandera_negra_twisty_font.fs \
+	tmp/bandera_negra_sticks_font_es.fs \
+	tmp/bandera_negra_twisty_font_es.fs \
 	tmp/bandera_negra_udg.fs \
 	src/bandera_negra_end-app.fs
 	cat $^ > $@
 
-tmp/bandera_negra.fba: tmp/bandera_negra.complete.fs
+tmp/bandera_negra.complete.converted.fs: tmp/bandera_negra.complete.fs
+	vim -S ./make/utf8_to_udg.vim \
+		-c "set fileencoding=latin1" \
+		-c "saveas! $@" \
+		-c "quit!" $<
+
+tmp/bandera_negra.fba: tmp/bandera_negra.complete.converted.fs
 	./make/fs2fba.sh $<
 	mv $(basename $<).fba $@
 

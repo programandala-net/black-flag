@@ -1,16 +1,35 @@
 ( bandera-negra )
 
   \ Bandera negra
-  \
-  \ A simulation game
-  \ for the ZX Spectrum 128
+
+  \ ============================================================
+  \ Description
+
+  \ A simulation and adventure game for the ZX Spectrum 128
   \ written in Forth with Solo Forth
+  \ (http://programandala.net/en.program.solo_forth.html).
 
-  \ This game is a translated and improved remake of
-  \   "Jolly Roger"
-  \   Copyright (C) 1984 Barry Jones / Video Vault ltd.
+  \ A translated and improved remake of Barry Jones' "Jolly
+  \ Roger" (1984).
 
-  \ Copyright (C) 2011,2014,2015,2016,2017 Marcos Cruz (programandala.net)
+  \ ============================================================
+  \ Authors
+
+  \ Original game in Sinclair BASIC:
+  \
+  \ Copyright (C) 1984 Barry Jones / Video Vault ltd.
+
+  \ Remake in Forth:
+  \
+  \ Copyright (C) 2011,2014,2015,2016,2017 Marcos Cruz
+  \ (programandala.net)
+
+  \ ============================================================
+  \ License
+
+  \ You may do whatever you want with this work, so long as you
+  \ retain every copyright, credit and authorship notice, and
+  \ this license.  There is no warranty.
 
   \ ============================================================
 
@@ -18,7 +37,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.41.1+201702012120" ;
+: version  ( -- ca len )  s" 0.42.0+201702021226" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -298,7 +317,7 @@ men avariable stamina
   hp@ far," Armando Bronca"
   hp@ far," Borja Monserrano"
   hp@ far," Clemente Cato"
-  hp@ far," CÈsar Pullido"  \ XXX TODO -- check
+  hp@ far," C√©sar Pullido"  \ XXX TODO -- check
   hp@ far," Enrique Sitos"
   hp@ far," Erasmo Coso"
   hp@ far," Felipe Llejo"
@@ -310,8 +329,8 @@ men avariable stamina
   hp@ far," Manolo Pillo"
   hp@ far," Marcos Tilla"
   hp@ far," Melchor Icete"
-  hp@ far," NÈstor Nillo"
-  hp@ far," NÈstor Tilla"
+  hp@ far," N√©stor Nillo"
+  hp@ far," N√©stor Tilla"
   hp@ far," Paco Tilla"
   hp@ far," Pascual Baricoque"
   hp@ far," Pedro Medario"
@@ -321,16 +340,16 @@ men avariable stamina
   hp@ far," Roberto Mate"
   hp@ far," Rodrigo Minolas"
   hp@ far," Ulises Cocido"
-  hp@ far," Ulises TanterÌa"
+  hp@ far," Ulises Tanter√≠a"
   hp@ far," Vicente Nario"
   hp@ far," Vicente Rador"
-  hp@ far," VÌctor Nillo"
-  hp@ far," VÌctor Pedo"
-  hp@ far," VÌctor Tilla"
-  hp@ far," ZacarÌas Queroso"
-  hp@ far," ”scar Nicero"
-  hp@ far," ”scar Romato"
-  hp@ far," ”scar Terista"
+  hp@ far," V√≠ctor Nillo"
+  hp@ far," V√≠ctor Pedo"
+  hp@ far," V√≠ctor Tilla"
+  hp@ far," Zacar√≠as Queroso"
+  hp@ far," √ìscar Nicero"
+  hp@ far," √ìscar Romato"
+  hp@ far," √ìscar Terista"
 farsconstants stock-name$  ( n -- ca len )
       constant stock-names
 
@@ -369,14 +388,14 @@ yellow black papery +         3 stamina-attr c!
   cr .(   -Ship damage descriptions)  \ {{{2
 
 0
-  hp@ far," hundiÈndose"            \ worst: sinking
+  hp@ far," hundi√©ndose"            \ worst: sinking
   hp@ far," a punto de hundirse"
   hp@ far," haciendo agua"
   hp@ far," destrozado"
   hp@ far," casi destrozado"
-  hp@ far," gravemente daÒado"
-  hp@ far," muy daÒado"
-  hp@ far," algo daÒado"
+  hp@ far," gravemente da√±ado"
+  hp@ far," muy da√±ado"
+  hp@ far," algo da√±ado"
   hp@ far," casi como nuevo"
   hp@ far," impecable"            \ best: perfect
 far>sconstants damage-level$  ( n -- ca len )
@@ -433,7 +452,7 @@ far>sconstants hand$  ( n -- ca len )  drop
   \ XXX TODO -- move to the Solo Forth library
 
 : dubloons$  ( n -- ca len )
-  s" dobl" rot 1 > if  s" ones"  else  s" Ûn"  then  s+  ;
+  s" dobl" rot 1 > if  s" ones"  else  s" √≥n"  then  s+  ;
   \ Return string "doubloon" or "doubloons", depending on _n_.
 
 0
@@ -520,14 +539,17 @@ far>sconstants number$  ( n -- ca len )  drop
 768 constant /font
   \ Bytes for font (characters 32..127, 8 bytes each).
 
-rom-font value graph-font1
-rom-font value graph-font2
+16 8 * constant /spanish-chars
+  \ Bytes needed by the 16 Spanish chars UDG set
+
+rom-font value graph1-font
+rom-font value graph2-font
 rom-font value sticks-font
 rom-font value twisty-font
+       0 value sticks-font-es-udg
+       0 value twisty-font-es-udg
 
-' twisty-font alias text-font
-
-here set-udg 165 128 - 8 * allot
+create graph-udg 165 128 - 8 * allot  graph-udg set-udg
   \ Reserve data space for the block chars (128..143) and the
   \ UDG (144.164).
 
@@ -540,6 +562,24 @@ esc-udg-chars-wordlist 3 set-esc-order
   \ Set the escaped strings search order in order to escape not
   \ only the standard chars, but also the block chars and the
   \ UDG chars.
+
+: native-font  ( -- )
+  sticks-font set-font  sticks-font-es-udg set-udg  ;
+  \ Set the font used for native speech, and the corresponding
+  \ UDG set with the Spanish chars.
+
+: text-font  ( -- )
+  twisty-font set-font  twisty-font-es-udg set-udg  ;
+  \ Set the font used for ordinary texts, and the corresponding
+  \ UDG set with the Spanish chars.
+
+: graphics-1  ( -- )
+  graph1-font set-font  graph-udg set-udg  ;
+  \ Set the first graphic font and the graphic UDG set.
+
+: graphics-2  ( -- )
+  graph2-font set-font  graph-udg set-udg  ;
+  \ Set the second graphic font and the graphic UDG set.
 
   \ ============================================================
   cr .( Windows)  \ {{{1
@@ -562,7 +602,7 @@ esc-udg-chars-wordlist 3 set-esc-order
 : init-screen  ( -- )
   default-colors
   [ white blue papery + ] cliteral dup black border attr-cls
-  graph-font1 set-font  ;
+  graphics-1  ;
 
 16384 constant screen  6912 constant /screen
   \ Address and size of the screen.
@@ -584,16 +624,14 @@ far-banks 3 + c@ cconstant screen-backup-bank
   cr .( Text output)  \ {{{1
 
 : native-says  ( ca len -- )
-  get-font >r sticks-font set-font
-  native-window set-window wcls wtype
+  get-font >r native-font native-window set-window wcls wtype
   r> set-font  ;
 
 : wipe-message  ( -- )
   message-window set-window
   [ white black papery + ] cliteral attr!  wcls  ;
 
-: message  ( ca len -- )
-  text-font set-font wipe-message wtype  ;
+: message  ( ca len -- )  text-font wipe-message wtype  ;
 
   \ ============================================================
   \ cr .( Sound )  \ {{{1
@@ -688,9 +726,9 @@ variable feasible-trade          \ flag
   \ independent
 
 : common-commands  ( -- )
-  0 panel-y at-xy s" InformaciÛn" 0 >option$ type cr
-                  s" TripulaciÛn" 0 >option$ type cr
-                  s" PuntuaciÛn"  0 >option$ type
+  0 panel-y at-xy s" Informaci√≥n" 0 >option$ type cr
+                  s" Tripulaci√≥n" 0 >option$ type cr
+                  s" Puntuaci√≥n"  0 >option$ type
   feasible-attack? dup >r feasible-attack !
   16 panel-y at-xy s" Atacar" 0 r> ?>option$ type  ;
 
@@ -728,7 +766,7 @@ variable feasible-trade          \ flag
 white black papery + constant panel-attr
 
 : panel-commands  ( -- )
-  text-font set-font panel-attr attr!
+  text-font panel-attr attr!
   common-commands aboard? if    ship-commands
                           else  island-commands
                           then  compass  ;
@@ -753,10 +791,10 @@ variable east-cloud-x  3 constant /east-cloud
   east-cloud-x @ dup 0 at-xy ." MNO"  1 at-xy ." PQR"  ;
 
 : sun-and-clouds  ( b -- )
-  graph-font2 set-font
+  graphics-2
   [ yellow cyan papery + ] cliteral over or attr! sun
   [ white  cyan papery + ] cliteral      or attr! clouds
-  graph-font1 set-font  ;
+  graphics-1  ;
   \ Draw the sun and the clouds, using _b_ as an attribute
   \ mask: the bits set in _b_ will be set in the attributes.
   \ This is used to set bright on or off.
@@ -779,7 +817,7 @@ variable east-cloud-x  3 constant /east-cloud
   \ Set the cursor at random coordinates for a sea wave.
 
 : waves  ( -- )
-  graph-font1 set-font [ cyan blue papery + ] cliteral attr!
+  graphics-1 [ cyan blue papery + ] cliteral attr!
   15 0 do  at-wave-coords ." kl"  at-wave-coords ." mn"
   loop  ;
 
@@ -800,7 +838,7 @@ cyan dup papery + brighty constant sunny-sky-attr
 
 : (sea-and-sky)  ( -- )  wipe-sea waves new-sunny-sky  ;
 
-: sea-and-sky  ( -- )  graph-font1 set-font (sea-and-sky)  ;
+: sea-and-sky  ( -- )  graphics-1 (sea-and-sky)  ;
 
   \ ============================================================
   cr .( Sea graphics)  \ {{{1
@@ -896,7 +934,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   0 2 at-xy ." Z123 HI A Z123 HI A Z123 HI Z123"  ;
 
 : .treasure-island  ( -- )
-  get-font >r graph-font1 set-font
+  get-font >r graphics-1
   [ green blue papery + ] cliteral attr!
   16  7 at-xy ." A A   HI"
   13  8 at-xy .\" F\::\::\::B\::\::\::B\::\::B\::\::\::C"
@@ -995,7 +1033,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   11 enemy-ship-x ! 4 enemy-ship-y !  ;
 
 : sea-picture  ( n -- )
-  graph-font1 set-font  case
+  graphics-1  case
    2 of  .big-island5  19 4 palm1                   endof
    3 of  .big-island4
          14 4 palm1  19 4 palm1  24 4 palm1  .shark endof
@@ -1032,7 +1070,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   \ XXX TODO -- simpler, use an execution table
 
 : sea-scenery  ( -- )
-  graph-font1 set-font
+  graphics-1
   sea-and-sky redraw-ship  ship-loc @ sea @ sea-picture  ;
 
   \ ============================================================
@@ -1077,7 +1115,7 @@ cyan dup papery + brighty constant sunny-sky-attr
    7  8 at-xy .\" H\..I  A"  ;
 
 : run-aground-message  ( -- )
-  s" °Has encallado! El barco est· " damage$ s+ s" ." s+
+  s" ¬°Has encallado! El barco est√° " damage$ s+ s" ." s+
   message  ;
 
 : run-aground-damages  ( -- )
@@ -1087,7 +1125,7 @@ cyan dup papery + brighty constant sunny-sky-attr
 
 : run-aground  ( -- )
   wipe-message  \ XXX TODO -- remove?
-  graph-font1 set-font
+  graphics-1
   wipe-sea .far-islands .south-reef .east-reef .west-reef
   white set-ink 14 8 .ship-up .run-aground-reefs
   run-aground-damages run-aground-message
@@ -1107,7 +1145,7 @@ white black papery + constant report-attr
 : set-report-color  ( -- )  report-attr attr!  ;
 
 : begin-report  ( -- )
-  save-screen set-report-color cls text-font set-font  ;
+  save-screen set-report-color cls text-font  ;
   \ Common task at the start of all reports.
 
 : end-report  ( -- )
@@ -1120,14 +1158,14 @@ white black papery + constant report-attr
 
 : main-report  ( -- )
   begin-report
-  0 1 at-xy s" Informe de situaciÛn" columns type-center
+  0 1 at-xy s" Informe de situaci√≥n" columns type-center
   0 4 at-xy  18 /tabulate !
-  ." DÌas:"             day        .datum
+  ." D√≠as:"             day        .datum
   ." Hombres:"          alive      .datum
   ." Moral:"            morale     .datum
   ." Provisiones:"      supplies   .datum
   ." Doblones:"         cash       .datum
-  ." MuniciÛn:"         ammo       .datum
+  ." Munici√≥n:"         ammo       .datum
   ." Barcos hundidos:"  sunk-ships .datum
   ." Barco:"            tabulate damage$ 2dup uppers1 type
   end-report  ;
@@ -1149,8 +1187,8 @@ white black papery + constant report-attr
   r> condition$ 2dup uppers1 type  ;
 
 : .crew-report-header  ( -- )
-  0 1 at-xy s" Estado de la tripulaciÛn" columns type-center
-  name-x 4 at-xy ." Nombre"  status-x 4 at-xy ." CondiciÛn"  ;
+  0 1 at-xy s" Estado de la tripulaci√≥n" columns type-center
+  name-x 4 at-xy ." Nombre"  status-x 4 at-xy ." Condici√≥n"  ;
 
 : crew-report  ( -- )
   begin-report .crew-report-header
@@ -1166,9 +1204,9 @@ white black papery + constant report-attr
 
 : score-report  ( -- )
   begin-report
-  0 1 at-xy s" PuntuaciÛn" columns type-center
+  0 1 at-xy s" Puntuaci√≥n" columns type-center
   0 4 at-xy
-  ." DÌas"            tab day         @ 4 .r ."  x  200" cr cr
+  ." D√≠as"            tab day         @ 4 .r ."  x  200" cr cr
   ." Barcos hundidos" tab sunk-ships  @ 4 .r ."  x 1000" cr cr
   ." Negocios"        tab trades      @ 4 .r ."  x  200" cr cr
   ." Pistas"          tab found-clues @ 4 .r ."  x 1000" cr cr
@@ -1187,7 +1225,7 @@ white black papery + constant report-attr
 
 : hit-boat  ( -- )
   s" La bala alcanza su objetivo. "
-  s" Esto desmoraliza a la tripulaciÛn." s+ message
+  s" Esto desmoraliza a la tripulaci√≥n." s+ message
   -2 morale+!
   3 4 random-range 1 ?do  injured drop  loop  ;
   \ XXX TODO -- inform about how many injured?
@@ -1201,7 +1239,7 @@ white black papery + constant report-attr
            then  5 seconds wipe-message  ;
 
 : almost-attack-boat  ( -- )
-  s" Por suerte no hay municiÛn para disparar..." message
+  s" Por suerte no hay munici√≥n para disparar..." message
   2 seconds
   s" Pues enseguida te das cuenta de que ibas a hundir "
   s" uno de tus botes." s+ message
@@ -1226,7 +1264,7 @@ white black papery + constant report-attr
 : sunk-delay  ( -- )  100 ms  ;
 
 : .sunk  ( -- )
-  graph-font1 set-font  [ white blue papery + ] cliteral attr!
+  graphics-1  [ white blue papery + ] cliteral attr!
   enemy-ship-x @ enemy-ship-y @ 2dup .sunk-step-0 sunk-delay
                                 2dup .sunk-step-1 sunk-delay
                                      .sunk-step-2  ;
@@ -1259,11 +1297,11 @@ variable victory
   \ location type.
 
 : .wave  ( -- )
-  graph-font1 set-font cyan set-ink
+  graphics-1 cyan set-ink
   11 30 random-range 1 20 random-range at-xy ." kl"  ;
 
 : (move-enemy-ship)  ( -- )
-  graph-font1 set-font
+  graphics-1
   5 random 1+ enemy-ship-move !
     \ XXX TODO -- use the stack instead of `enemy-ship-move`?
 
@@ -1311,12 +1349,11 @@ variable victory
 : .new-ammo  ( -- )
   [ white red papery + ] cliteral attr! 21 23 at-xy .ammo  ;
 
-: -ammo  ( -- )
-  -1 ammo+!  text-font set-font .new-ammo  ;
+: -ammo  ( -- )  -1 ammo+! text-font .new-ammo  ;
 
 : .ammo-label  ( -- )
-  text-font set-font [ white red papery + ] cliteral attr!
-  10 23 at-xy ." MuniciÛn = " .ammo  ;
+  text-font [ white red papery + ] cliteral attr!
+  10 23 at-xy ." Munici√≥n = " .ammo  ;
 
 0 value gun-muzzle-y
   \ y coordinate of the cannon ball
@@ -1357,7 +1394,7 @@ variable victory
   \ Erase the cannon ball at the end of its trajectory.
 
 : fire  ( n -- )
-  graph-font1 set-font  blue set-paper
+  graphics-1  blue set-paper
   gun>muzzle-y dup .cannon-muzzle-fire to gun-muzzle-y  -ammo
   move-enemy-ship
   black set-ink cannon-muzzle-x gun-muzzle-y at-xy ."  j"
@@ -1369,7 +1406,7 @@ variable victory
 
 : no-ammo-left  ( -- )
   feasible-attack off  panel-commands
-  s" Te quedaste sin municiÛn." message  4 seconds  ;
+  s" Te quedaste sin munici√≥n." message  4 seconds  ;
   \ XXX TODO -- the enemy wins; our ship sinks,
   \ or the money and part of the crew are captured
 
@@ -1391,17 +1428,16 @@ variable victory
   \ XXX TODO --
 
 : deck  ( -- )
-  text-font set-font
-  22 0 do  0 i at-xy  ." ________ "  loop  ;
+  text-font 22 0 do  0 i at-xy  ." ________ "  loop  ;
   \ XXX TODO -- faster
 
 : guns  ( -- )
   3 0 do
     i gun>label-y
-    white set-paper text-font set-font 0 over at-xy i 1+ 1 .r
+    white set-paper text-font 0 over at-xy i 1+ 1 .r
     yellow set-paper
-    graph-font2 set-font  1+ 4 over .gun-man
-    graph-font1 set-font     6 over .gun
+    graphics-2  1+ 4 over .gun-man
+    graphics-1     6 over .gun
                              1 swap 1+ at-xy ." hi"  \ ammo
   loop  ;
   \ XXX TODO -- factor
@@ -1508,15 +1544,14 @@ variable victory
                 2  2 rdraw 0  14 rdraw 15  0 rdraw  ;
 
 : sailor-and-captain  ( -- )
-  graph-font1 set-font  [ cyan black papery + ] cliteral attr!
+  graphics-1  [ cyan black papery + ] cliteral attr!
   0 17 at-xy ."  xy" 28 at-x ." pq" cr
              ."  vs" 28 at-x ." rs" cr
              ."  wu" 28 at-x ." tu"
   sailor-speech-balloon captain-speech-balloon  ;
 
 : sailor-says  ( ca len -- )
-  text-font set-font  white attr!
-  sailor-window set-window wcls wtype  ;
+  text-font white attr! sailor-window set-window wcls wtype  ;
 
 : treasure-found  ( -- )
   [ 0 attr-line ] literal [ 3 columns * ] 1literal
@@ -1534,12 +1569,12 @@ variable victory
   ." rs          vs                  tu      "
   .\" \T\U    wu"
   28 11 palm2  0 11 palm2
-  graph-font2 set-font  [ blue yellow papery + ] cliteral attr!
+  graphics-2  [ blue yellow papery + ] cliteral attr!
   13 17 at-xy .\" l\::m"
     \ XXX TODO -- factor the treasure
 
-  s" °Capit·n, somos ricos!" message
-  4 seconds  graph-font1 set-font  ;
+  s" ¬°Capit√°n, somos ricos!" message
+  4 seconds  graphics-1  ;
   \ XXX TODO -- use this proc instead of happy-end?
   \ XXX TODO -- factor
 
@@ -1561,21 +1596,21 @@ variable victory
 
 : paths-to-choose  ( -- )
   wipe-treasure-island
-  graph-font2 set-font [ green yellow papery + ] cliteral attr!
+  graphics-2 [ green yellow papery + ] cliteral attr!
   0 3 at-xy ."  5     6       45     6       5"
-  graph-font1 set-font black set-ink
+  graphics-1 black set-ink
   25 0 do
     i 3 + 3 at-xy .\" :\x7F"
     i 2+  4 at-xy .\" :\::\::\x7F"
     i 1+  5 at-xy .\" :\::\::\::\::\x7F"
     i     6 at-xy .\" :\::\::\::\::\::\::\x7F"
   8 +loop
-  text-font set-font  [ white red papery + ] cliteral attr!
+  text-font [ white red papery + ] cliteral attr!
   0 7 at-xy ."    1       2       3       4    "  ;
 
 : try-path  ( -- )
   paths-to-choose
-  s" øQuÈ camino tomamos, capit·n?" sailor-says
+  s" ¬øQu√© camino tomamos, capit√°n?" sailor-says
   .clue-prompt path-range get-digit
   dup .clue path clue-tried  ;
 
@@ -1583,18 +1618,18 @@ variable victory
   wipe-treasure-island
   [ black yellow papery + ] cliteral attr!
   0 7 at-xy ."  1       2       3       4"
-  graph-font1 set-font  27 2 do  i 3 palm2  8 +loop  ;
+  graphics-1  27 2 do  i 3 palm2  8 +loop  ;
   \ XXX TODO -- remove the loop
 
 : try-tree  ( -- )
   trees-to-choose
-  s" øEn quÈ ·rbol paramos, capit·n?" sailor-says
+  s" ¬øEn qu√© √°rbol paramos, capit√°n?" sailor-says
   .clue-prompt tree-range get-digit
   dup .clue tree clue-tried  ;
 
 : try-way  ( -- )
   \ XXX TODO -- draw tree
-  s" øVamos a la izquierda (1) o a la derecha (2), capit·n?"
+  s" ¬øVamos a la izquierda (1) o a la derecha (2), capit√°n?"
   sailor-says
   .clue-prompt turn-range get-digit
   dup .clue turn clue-tried  ;
@@ -1607,19 +1642,19 @@ variable victory
     1 13 i odd? and + i 2/ treasure-island-top-y + at-xy
     i dup . village$ type
   loop
-  graph-font2 set-font
+  graphics-2
   green set-ink  27 5 at-xy .\" S\::T" 27 6 at-xy ." VUW"  ;
   \ XXX TODO -- Factor the hut, perhaps also in `.huts`.
 
 : try-village  ( -- )
   villages-to-choose
-  s" øQuÈ poblado atravesamos, capit·n?" sailor-says
+  s" ¬øQu√© poblado atravesamos, capit√°n?" sailor-says
   .clue-prompt village-range get-digit
   dup .clue village clue-tried  ;
 
 : try-direction  ( -- )
   wipe-treasure-island  \ XXX TODO -- draw something instead
-  s" øEn quÈ direcciÛn vamos, capit·n? (1N 2S 3E 4O)"
+  s" ¬øEn qu√© direcci√≥n vamos, capit√°n? (1N 2S 3E 4O)"
   sailor-says
   .clue-prompt direction-range get-digit
   dup .clue direction clue-tried  ;
@@ -1627,7 +1662,7 @@ variable victory
 
 : try-steps  ( -- )
   wipe-treasure-island  \ XXX TODO -- draw something instead
-  s" øCu·ntos pasos damos, capit·n?" sailor-says
+  s" ¬øCu√°ntos pasos damos, capit√°n?" sailor-says
   .clue-prompt pace-range get-digit
   dup .clue pace clue-tried  ;
   \ XXX TODO -- add range to the message
@@ -1643,8 +1678,8 @@ variable victory
 : enter-treasure-island  ( -- )
   blackout wipe-treasure-island new-sunny-sky
   quest success?
-  if    s" °Hemos encontrado el oro, capit·n!"
-  else  s" AquÌ no hay tesoro alguno, capit·n."
+  if    s" ¬°Hemos encontrado el oro, capit√°n!"
+  else  s" Aqu√≠ no hay tesoro alguno, capit√°n."
   then  sailor-says  1 seconds  ;
   \ XXX TODO -- factor the two results, add longer texts and
   \ draw pictures.
@@ -1678,10 +1713,10 @@ variable victory
   1  8 at-xy  ." l"
   0 10 at-xy ." kl"
   0 13 at-xy ." k"
-  graph-font2 set-font  yellow set-ink
+  graphics-2  yellow set-ink
   walk-north? 0= if  2  4 at-xy 'A' emit  then
   walk-south? 0= if  2 13 at-xy 'C' emit  then
-  graph-font1 set-font  ;
+  graphics-1  ;
   \ XXX TODO -- factor
   \ XXX TODO -- random waves
   \ XXX TODO -- use constants for the base coordinates
@@ -1694,16 +1729,16 @@ variable victory
   31  8 at-xy  ." l"
   30 10 at-xy ." kl"
   31 13 at-xy  ." k"
-  yellow set-ink  graph-font2 set-font
+  yellow set-ink  graphics-2
   walk-north? 0= if  29  4 at-xy 'B' emit  then
   walk-south? 0= if  29 13 at-xy 'D' emit  then
-  graph-font1 set-font  ;
+  graphics-1  ;
   \ XXX TODO -- factor
   \ XXX TODO -- random waves
   \ XXX TODO -- use constants for the base coordinates
 
 : island-waves  ( -- )
-  graph-font1 set-font  [ white blue papery + ] cliteral attr!
+  graphics-1  [ white blue papery + ] cliteral attr!
   walk-south? 0= if  south-waves  then
   walk-north? 0= if  north-waves  then
    walk-east? 0= if  east-waves   then
@@ -1736,8 +1771,8 @@ variable victory
   \ XXX TODO -- random
 
 : .village  ( -- )
-  graph-font2 set-font  yellow set-paper .huts .villagers
-  graph-font1 set-font  ;
+  graphics-2  yellow set-paper .huts .villagers
+  graphics-1  ;
 
 : .native  ( -- )
   [ black yellow papery + ] cliteral attr!  8 10 at-xy ."  _ `"
@@ -1750,18 +1785,18 @@ variable victory
   \ XXX TODO -- draw graphics depending on the actual ammount
 
 : .supplies  ( -- )
-  graph-font2 set-font [ black yellow papery + ] cliteral attr!
+  graphics-2 [ black yellow papery + ] cliteral attr!
   14 12 at-xy ." 90  9099 0009"
-  graph-font1 set-font  ;
+  graphics-1  ;
   \ XXX TODO -- draw graphics depending on the actual ammount
 
 : .snake  ( -- )
-  graph-font2 set-font
+  graphics-2
   [ black yellow papery + ] cliteral attr!  14 12 at-xy ." xy"
-  graph-font1 set-font  ;
+  graphics-1  ;
 
 : .dubloons  ( n -- )
-  get-font >r graph-font2 set-font
+  get-font >r graphics-2
   [ black yellow papery + ] cliteral attr!
   12 dup at-xy s" vw vw vw vw vw vw vw vw " drop swap 3 * type
   r> set-font  ;
@@ -1787,7 +1822,7 @@ variable victory
   crew-loc @ island @ island-location  ;
 
 : island-scenery  ( -- )
-  graph-font1 set-font
+  graphics-1
   wipe-island-scenery sunny-sky island-waves
   ~~ current-island-location  ;
 
@@ -1802,19 +1837,19 @@ variable victory
 
 : spider  ( -- )
   s" A " injured name$ s+
-  s"  le muerde una araÒa." s+ message  ;
+  s"  le muerde una ara√±a." s+ message  ;
 
 : scorpion  ( -- )
-  s" A " injured name$ s+ s"  le pica un escorpiÛn." s+
+  s" A " injured name$ s+ s"  le pica un escorpi√≥n." s+
   message  ;
 
 : hunger  ( -- )
-  s" La tripulaciÛn est· hambrienta." message
+  s" La tripulaci√≥n est√° hambrienta." message
   -1 morale+!  ;
   \ XXX TODO -- only if supplies are not enough
 
 : thirst  ( -- )
-  s" La tripulaciÛn est· sedienta." message
+  s" La tripulaci√≥n est√° sedienta." message
   -1 morale+!  ;
   \ XXX TODO -- only if supplies are not enough
 
@@ -1824,12 +1859,12 @@ variable victory
   \ XXX TODO -- factor: repeated in `enter-this-island-location`
 
 : no-problem  ( -- )
-  s" Sin novedad, capit·n." message  ;
+  s" Sin novedad, capit√°n." message  ;
   \ XXX TODO -- improve message
   \ XXX TODO -- rename
 
 : no-danger  ( -- )
-  s" La zona est· despejada, capit·n." message  ;
+  s" La zona est√° despejada, capit√°n." message  ;
   \ XXX TODO -- improve message, depending on the location,
   \ e.g. "no hay moros en la costa"
   \ XXX TODO -- rename
@@ -1885,7 +1920,7 @@ here - cell / constant island-events
   endof
 
   native-ammo of  ~~
-    s" Un nativo te da algo de municiÛn." message
+    s" Un nativo te da algo de munici√≥n." message
     1 ammo+!  be-hostile-native
       \ XXX TODO -- random ammount
       \ XXX TODO -- choose it in advance and draw it in
@@ -1930,7 +1965,7 @@ here - cell / constant island-events
   21 0 do  i 11 at-xy ."  <>" 200 ms  loop  ;
 
 : disembarking-scene  ( -- )
-  graph-font1 set-font  (sea-and-sky)
+  graphics-1  (sea-and-sky)
   [ green  blue papery + ] cliteral attr!  target-island
   [ yellow blue papery + ] cliteral attr! disembarking-boat  ;
 
@@ -1966,7 +2001,7 @@ here - cell / constant island-events
        at-east-rain /east-cloud emits  60 ms  ;
 
 : +storm  ( -- )
-  graph-font1 set-font
+  graphics-1
   70 0 do  [ white cyan papery + ] cliteral attr!
            ';' rain-drops  ']' rain-drops  '[' rain-drops
            3 random 0= if  redraw-ship  then
@@ -2101,10 +2136,10 @@ cyan dup papery + constant stormy-sky-attr
   s" Tomar camino " path @ number$ s+ s" ." s+  ;
 
 : tree-clue$  ( -- ca len )
-  s" Parar en ·rbol " tree @ number$ s+ s" ." s+  ;
+  s" Parar en √°rbol " tree @ number$ s+ s" ." s+  ;
 
 : turn-clue$  ( -- ca len )
-  s" Ir a " turn @ hand$ s+ s"  en ·rbol." s+  ;
+  s" Ir a " turn @ hand$ s+ s"  en √°rbol." s+  ;
 
 : village-clue$  ( -- ca len )
   s" Atravesar poblado " village @ village$ s+ s" ." s+  ;
@@ -2125,7 +2160,7 @@ create clues  ( -- a )
 : native-tells-clue  ( -- )
   s" Bien... Pista ser..." native-says
   2 seconds  clue$ native-says
-  2 seconds  s" °Buen viaje a isla de tesoro!" native-says  ;
+  2 seconds  s" ¬°Buen viaje a isla de tesoro!" native-says  ;
 
   \ ============================================================
   cr .( Trading)  \ {{{1
@@ -2142,7 +2177,7 @@ variable price  variable offer
 : make-offer  ( -- )
   cash @ max-offer min >r
   s" Tienes " cash @ coins$ s+
-  s" . øQuÈ oferta le haces? (1-" s+ r@ u>str s+ ." )" s+
+  s" . ¬øQu√© oferta le haces? (1-" s+ r@ u>str s+ ." )" s+
   message
   r> get-digit offer !
   200 10 beep
@@ -2153,7 +2188,7 @@ variable price  variable offer
   \ XXX TODO -- rename to `your-offer`
 
 : rejected-offer  ( -- )
-  2 seconds  s" °T˙ insultar! °Fuera de isla mÌa!" native-says
+  2 seconds  s" ¬°T√∫ insultar! ¬°Fuera de isla m√≠a!" native-says
   4 seconds  embark  ;
 
 : accepted-offer  ( -- )
@@ -2168,8 +2203,8 @@ variable price  variable offer
 
 : lower-price  ( -- )
   -3 -2 random-range price +!
-  s" Bueno, t˙ darme... " price @ coins$ s+
-  s"  y no hablar m·s." s+ native-says
+  s" Bueno, t√∫ darme... " price @ coins$ s+
+  s"  y no hablar m√°s." s+ native-says
   make-offer offer @ price @ >=
   if  accepted-offer  else  rejected-offer  then  ;
   \ The native lowers the price by several dubloons.
@@ -2182,18 +2217,18 @@ variable price  variable offer
   \ He accepts one dubloon less
 
 : init-trade  ( -- )
-  graph-font1 set-font [ black yellow papery + ] cliteral attr!
+  graphics-1 [ black yellow papery + ] cliteral attr!
   16 3 do  0 i at-xy blank-line$ type  loop
     \ XXX TODO -- improve with `fill`
   4 4 palm2  .native native-speech-balloon
   s" Un comerciante nativo te sale al encuentro." message  ;
 
 : trade  ( -- )
-  init-trade  s" Yo vender pista de tesoro a t˙." native-says
+  init-trade  s" Yo vender pista de tesoro a t√∫." native-says
   5 9 random-range price !
   s" Precio ser " price @ coins$ s+ s" ." s+ native-says
   \ XXX TODO -- pause or join:
-  1 seconds  s" øQuÈ dar t˙, blanco?" native-says  make-offer
+  1 seconds  s" ¬øQu√© dar t√∫, blanco?" native-says  make-offer
   offer @ price @ 1-  >= if  accepted-offer exit  then
     \ One dubloon less is accepted.
   offer @ price @ 4 - <= if  rejected-offer exit  then
@@ -2205,14 +2240,14 @@ variable price  variable offer
            endcase
 
   -1 price +!
-  s" °No! °Yo querer m·s! T˙ darme " price @ coins$ s+ s" ." s+
+  s" ¬°No! ¬°Yo querer m√°s! T√∫ darme " price @ coins$ s+ s" ." s+
   native-says  one-coin-less  ;
 
   \ ============================================================
   cr .( Attack)  \ {{{1
 
 : impossible  ( -- )
-  s" Lo siento, capit·n, no puede hacer eso." message
+  s" Lo siento, capit√°n, no puede hacer eso." message
   2 seconds  ;
   \ XXX not used yet
 
@@ -2236,7 +2271,7 @@ variable price  variable offer
   endcase  ;
 
 : .black-flag  ( -- )
-  get-font >r graph-font2 set-font
+  get-font >r graphics-2
   [ black yellow papery + ] cliteral attr!
   14 10 do  8 i at-xy ." t   "  loop
                            8  9 at-xy ." u"
@@ -2256,7 +2291,7 @@ variable price  variable offer
   dead name$ s+ s" ." s+ message -native  ;
 
 : attack-native-village  ( -- )
-  s" Un poblado entero es un enemigo muy difÌcil. "
+  s" Un poblado entero es un enemigo muy dif√≠cil. "
   dead name$ s+ s"  muere en el combate." s+ message  ;
 
 : attack-native-there  ( n -- )
@@ -2394,8 +2429,7 @@ variable price  variable offer
 : new-crew  ( -- )  new-crew-names init-crew-stamina  ;
 
 : init  ( -- )
-  0 randomize0
-  text-font set-font
+  0 randomize0 text-font
   [ white black papery + ] cliteral attr! cls
   0 [ rows 2 / ] cliteral at-xy
   s" Preparando el viaje..." columns type-center
@@ -2415,31 +2449,31 @@ variable price  variable offer
   ;
 
 : sad-end  ( -- )
-  text-font set-font  [ white red papery + ] cliteral attr!
+  text-font [ white red papery + ] cliteral attr!
   0 1 at-xy s" FIN DEL JUEGO" columns type-center
   the-end-window set-window
   [ black yellow papery + ] cliteral attr!
   supplies @ 0= if
     s" - Las provisiones se han agotado." wtype wcr  then
   morale @ 0= if
-    s" - La tripulaciÛn se ha amotinado." wtype wcr  then
+    s" - La tripulaci√≥n se ha amotinado." wtype wcr  then
   ammo @ 0 <= if
-    s" - La municiÛn se ha terminado." wtype wcr  then
+    s" - La munici√≥n se ha terminado." wtype wcr  then
   alive @ 0= if
-    s" - Toda tu tripulaciÛn ha muerto." wtype wcr  then
+    s" - Toda tu tripulaci√≥n ha muerto." wtype wcr  then
   max-damage? = if
-    s" - El barco est· muy daÒado y es imposible repararlo."
+    s" - El barco est√° muy da√±ado y es imposible repararlo."
     wtype wcr
   then
   cash @ 0= if  s" - No te queda dinero." wtype  then  ;
 
 : happy-end  ( -- )
-  s" Lo lograste, capit·n." message  ;
+  s" Lo lograste, capit√°n." message  ;
   \ XXX TODO --
 
 : the-end  ( -- )
   [ black yellow papery + ] cliteral attr! wcls
-  graph-font1 set-font  16 1 do  27 i palm2  1 i palm2  7 +loop
+  graphics-1  16 1 do  27 i palm2  1 i palm2  7 +loop
   success? if  happy-end  else  sad-end  then
   s" Pulsa una tecla para ver tus puntos" message
   key drop 200 30 beep score-report  ;
@@ -2454,21 +2488,21 @@ variable price  variable offer
   \ Draw a row of six skulls.
 
 : skull-border  ( -- )
-  graph-font2 set-font
+  graphics-2
   [ white black papery + brighty ] cliteral attr!
-  home skulls 0 22 at-xy skulls  graph-font1 set-font  ;
+  home skulls 0 22 at-xy skulls  graphics-1  ;
   \ Draw top and bottom borders of skulls.
 
 : intro  ( -- )
   blackout white attr!
   skull-border intro-window set-window whome
-  get-font >r text-font set-font
+  get-font >r text-font
   s" Viejas leyendas hablan del tesoro "
   s" que esconde la perdida isla de " s+
   island-name$ s+ s" ." s+ wtype wcr wcr
-  s" Los nativos del archipiÈlago recuerdan "
+  s" Los nativos del archipi√©lago recuerdan "
   s" las antiguas pistas que conducen al tesoro. " s+
-  s" Deber·s comerciar con ellos para que te las digan." s+
+  s" Deber√°s comerciar con ellos para que te las digan." s+
   wtype wcr wcr
   s" Visita todas las islas hasta encontrar la isla de "
   island-name$ s+
@@ -2496,7 +2530,7 @@ variable price  variable offer
   cr .( Debugging tools [2])  \ {{{1
 
 : (.debug-info)  ( -- )
-  get-font >r text-font set-font
+  get-font >r text-font
   home aboard? if    ship-loc ? ship-loc @ sea
                else  crew-loc ? crew-loc @ island
                then  ? .s  r> set-font  ;
@@ -2557,11 +2591,10 @@ variable checkered
 : .udgau  ( -- )  cr 165 144 .chars  ;
 
 : .font  ( a -- )
-  text-font set-font cr ." font: " dup .  set-font .ascii
-  text-font set-font  ;
+  text-font cr ." font: " dup .  set-font .ascii text-font ;
 
 : .graphs  ( -- )
-  cls graph-font1 .font graph-font2 .font .udg  ;
+  cls graph1-font .font graph2-font .font .udg  ;
 
 : .damages  ( -- )
   max-damage 1+ 0 ?do
@@ -2570,8 +2603,8 @@ variable checkered
 
 : ini  ( -- )  init-once init  ;
 
-: f1  ( -- )  graph-font1 set-font  ;
-: f2  ( -- )  graph-font2 set-font  ;
+: f1  ( -- )  graphics-1  ;
+: f2  ( -- )  graphics-2  ;
 : f   ( -- )  rom-font    set-font  ;
 
   \ ============================================================
@@ -2586,10 +2619,12 @@ variable checkered
   \ for Alchemist PD, 1995, and packed into a viewer called
   \ "Fontbox I".
 
-here 256 -         dup to graph-font1
-           /font + dup to graph-font2
-           /font + dup to sticks-font
-           /font +     to twisty-font
+here 256 -             dup to graph1-font
+               /font + dup to graph2-font
+               /font + dup to sticks-font
+               /font + dup to twisty-font
+         256 + /font + dup to sticks-font-es-udg
+      /spanish-chars +     to twisty-font-es-udg
 
   \ Update the font pointers with addresses relative to the
   \ current data pointer, were the fonts are being compiled.
