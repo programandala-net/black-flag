@@ -5,7 +5,7 @@
 # This file is part of Bandera Negra
 # http://programandala.net/
 
-# Last modified 201702021204
+# Last modified 201702021553
 
 ################################################################
 # Requirements
@@ -29,11 +29,15 @@
 
 # 2016-12-19: Start.
 #
-# 2016-12-21: Build fonts and UDG sources from the original TAP files.
+# 2016-12-21: Build fonts and UDG sources from the original TAP
+# files.
 #
 # 2017-01-08: Reorganize graph fonts and add ordinary fonts.
 #
-# 2017-02-02: Add Spanish chars UDG files. Update the requirements.
+# 2017-02-02: Add Spanish chars UDG files. Update the
+# requirements.  Build the fonts from the Forth source files,
+# using a FantomoUDG converter; the original TAP files are not
+# needed anymore.
 
 ################################################################
 # Notes
@@ -66,36 +70,36 @@ clean:
 secondary_source_files=$(sort $(wildcard src/00*.fsb))
 library_source_files=$(sort $(wildcard src/lib/*.fsb))
 
-tmp/bandera_negra_graph_font_1.fs: graphs/jolly_roger_graph_font_1.tap
+tmp/graph_font_1.fs: graphs/jolly_roger_graph_font_1.tap
 	make/udg_tap_to_forth_c-comma.fs $< > $@
 
-tmp/bandera_negra_graph_font_2.fs: graphs/jolly_roger_graph_font_2.tap
+tmp/graph_font_2.fs: graphs/jolly_roger_graph_font_2.tap
 	make/udg_tap_to_forth_c-comma.fs $< > $@
 
-tmp/bandera_negra_udg.fs: graphs/jolly_roger_udg.tap
+tmp/udg.fs: graphs/jolly_roger_udg.tap
 	make/udg_tap_to_forth.fs $< > $@
 
-tmp/bandera_negra_sticks_font.fs: fonts/sticks_font.tap
-	make/udg_tap_to_forth_c-comma.fs $< > $@
-
-tmp/bandera_negra_twisty_font.fs: fonts/twisty_font.tap
-	make/udg_tap_to_forth_c-comma.fs $< > $@
-
-tmp/bandera_negra_sticks_font_es.fs: fonts/sticks_font_es.fs
+tmp/sticks_font.fs: fonts/sticks_font.fs
 	./$< > $@
 
-tmp/bandera_negra_twisty_font_es.fs: fonts/twisty_font_es.fs
+tmp/twisty_font.fs: fonts/twisty_font.fs
+	./$< > $@
+
+tmp/sticks_font_es.fs: fonts/sticks_font_es.fs
+	./$< > $@
+
+tmp/twisty_font_es.fs: fonts/twisty_font_es.fs
 	./$< > $@
 
 tmp/bandera_negra.complete.fs: \
 	src/bandera_negra.fs \
-	tmp/bandera_negra_graph_font_1.fs \
-	tmp/bandera_negra_graph_font_2.fs \
-	tmp/bandera_negra_sticks_font.fs \
-	tmp/bandera_negra_twisty_font.fs \
-	tmp/bandera_negra_sticks_font_es.fs \
-	tmp/bandera_negra_twisty_font_es.fs \
-	tmp/bandera_negra_udg.fs \
+	tmp/graph_font_1.fs \
+	tmp/graph_font_2.fs \
+	tmp/sticks_font.fs \
+	tmp/twisty_font.fs \
+	tmp/sticks_font_es.fs \
+	tmp/twisty_font_es.fs \
+	tmp/udg.fs \
 	src/bandera_negra_end-app.fs
 	cat $^ > $@
 

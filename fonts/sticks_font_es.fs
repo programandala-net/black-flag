@@ -20,7 +20,7 @@
 
 .( \ Sticks font Spanish characters UDG set) cr
 
-include udg_stack_to_forth_c-comma.fs
+include ../make/udg_stack_to_forth_c-comma.fs
 
 2 base !
 
