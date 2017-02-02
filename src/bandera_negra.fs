@@ -37,7 +37,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.42.3+201702021741" ;
+: version  ( -- ca len )  s" 0.42.4+201702021931" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -563,6 +563,11 @@ esc-udg-chars-wordlist 3 set-esc-order
   \ only the standard chars, but also the block chars and the
   \ UDG chars.
 
+  \ 2variable saved-font
+  \ : save-font     ( -- )  get-font get-udg saved-font 2!  ;
+  \ : restore-font  ( -- )  saved-font 2@ set-font set-udg  ;
+  \ XXX TODO -- not used yet
+
 : native-font  ( -- )
   sticks-font set-font  sticks-font-es-udg set-udg  ;
   \ Set the font used for native speech, and the corresponding
@@ -573,12 +578,15 @@ esc-udg-chars-wordlist 3 set-esc-order
   \ Set the font used for ordinary texts, and the corresponding
   \ UDG set with the Spanish chars.
 
+: graphic-udg-set  ( -- )  graph-udg set-udg  ;
+  \ Set the graphic UDG set.
+
 : graphics-1  ( -- )
-  graph1-font set-font  graph-udg set-udg  ;
+  graph1-font set-font  graphic-udg-set  ;
   \ Set the first graphic font and the graphic UDG set.
 
 : graphics-2  ( -- )
-  graph2-font set-font  graph-udg set-udg  ;
+  graph2-font set-font  graphic-udg-set  ;
   \ Set the second graphic font and the graphic UDG set.
 
   \ ============================================================
@@ -1002,7 +1010,8 @@ cyan dup papery + brighty constant sunny-sky-attr
   2dup 1+ at-xy .\" \M\N\O"
        2+ at-xy .\" \P\Q\R"  ;
 
-: redraw-ship  ( -- )
+: .ship  ( -- )
+  graphic-udg-set
   [ white blue papery + ] cliteral attr!  ship-x @ ship-y @
   ship-up @ if    .ship-down  ship-up off
             else  .ship-up    ship-up on   then  ;
@@ -1075,7 +1084,7 @@ cyan dup papery + brighty constant sunny-sky-attr
 
 : sea-scenery  ( -- )
   graphics-1
-  sea-and-sky redraw-ship  ship-loc @ sea @ sea-picture  ;
+  sea-and-sky .ship  ship-loc @ sea @ sea-picture  ;
 
   \ ============================================================
   cr .( Crew stamina)  \ {{{1
@@ -2013,7 +2022,7 @@ here - cell / constant island-events
   graphics-1
   70 0 do  [ white cyan papery + ] cliteral attr!
            ';' rain-drops  ']' rain-drops  '[' rain-drops
-           3 random 0= if  redraw-ship  then
+           3 random 0= if  .ship  then
   loop  ;
   \ Make the rain effect.
   \ XXX TODO -- random duration
@@ -2100,18 +2109,16 @@ cyan dup papery + constant stormy-sky-attr
   \ XXX TODO -- use execution table instead? better yet:
   \ `thiscase` structure.
 
-: redraw-ship?  ( -- f )  frames@ drop 1024 mod 0=  ;
+: .ship?  ( -- f )  frames@ drop 1024 mod 0=  ;
 
-: ?redraw-ship  ( -- )  redraw-ship? if  redraw-ship  then  ;
+: ?.ship  ( -- )  .ship? if  .ship  then  ;
 
 : storm?  ( -- f )  8912 random 0=  ;
-  \ XXX TODO -- increase the probability of storm every day?
 
 : ?storm  ( -- )  storm? if  storm  then  ;
 
 : ship-command  ( -- )
-  begin  ?redraw-ship ?storm  inkey ship-command?
-  until  ;
+  begin  ?.ship ?storm  inkey ship-command?  until  ;
 
   \ ============================================================
   cr .( Misc commands on the island)  \ {{{1

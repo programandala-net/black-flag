@@ -6,21 +6,14 @@
 
 .2017-02-02:
 
-Improve the random position of the clouds: Make them move only one
-column right or left.
+Count storms and adapt the warning accordingly.
+
+Reduce the storm probability after every storm.
 
 .2017-02-02:
 
-Fix: Sometimes, the ship is corrupted after the storm, a report or the
-battle. The proper graphics are not restored.
-
-Use this:
-
-----
-2variable saved-font
-: save-font     ( -- )  get-font get-udg saved-font 2!  ;
-: restore-font  ( -- )  saved-font 2@ set-font set-udg  ;
-----
+Improve the random position of the clouds: Make them move only one
+column right or left.
 
 .2017-02-01:
 
