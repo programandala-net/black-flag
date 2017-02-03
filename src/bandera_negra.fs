@@ -37,7 +37,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.43.1+201702030157" ;
+: version  ( -- ca len )  s" 0.44.0+201702031801" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -448,7 +448,11 @@ far>sconstants hand$  ( n -- ca len )  drop
   cr .( Functions)  \ {{{1
 
 22528 constant attributes
-  \ Address of the screen attributes (768 bytes)
+  \ Address of the screen attributes.
+
+768 constant /attributes
+  \ Size of the screen attributes in bytes.  (24 rows of 32
+  \ columns).
 
 : attr-line  ( l -- a )  columns * attributes +  ;
   \ First attribute address of a character line.
@@ -618,9 +622,7 @@ esc-udg-chars-wordlist 3 set-esc-order
   cr .( Screen)  \ {{{1
 
 : init-screen  ( -- )
-  default-colors  black border
-  [ white blue papery + ] cliteral dup attr! attr-cls
-  graphics-1  ;
+  default-colors  black border  blackout  graphics-1  ;
 
 16384 constant screen  6912 constant /screen
   \ Address and size of the screen.
@@ -2521,12 +2523,10 @@ variable price  variable offer
 
 : skull-border  ( -- )
   graphics-2
-  [ white black papery + brighty ] cliteral attr!
   home skulls 0 22 at-xy skulls  graphics-1  ;
   \ Draw top and bottom borders of skulls.
 
-: intro  ( -- )
-  blackout white attr!
+: (intro)  ( -- )
   skull-border intro-window set-window whome
   get-fonts 2>r text-font
   s" Viejas leyendas hablan del tesoro "
@@ -2540,7 +2540,16 @@ variable price  variable offer
   island-name$ s+
   s"  y sigue las pistas hasta el tesoro..." s+ wtype wcr wcr
   0 row 2+ at-xy s" Pulsa una tecla" columns type-center
-  120 ?seconds 2r> set-fonts  ;
+  2r> set-fonts  ;
+
+: paint-screen  ( b -- )
+  [ attributes ] literal [ /attributes ] literal rot fill  ;
+  \ Paint the whole screen with attribute _b_.
+
+: intro  ( -- )
+  blackout black attr!  (intro)
+  [ white brighty ] cliteral paint-screen
+  120 ?seconds  ;
 
   \ ============================================================
   cr .( Main)  \ {{{1
