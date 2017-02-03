@@ -37,7 +37,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.43.0+201702022348" ;
+: version  ( -- ca len )  s" 0.43.1+201702030157" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -642,7 +642,9 @@ far-banks 3 + c@ cconstant screen-backup-bank
   cr .( Text output)  \ {{{1
 
 : native-says  ( ca len -- )
-  get-fonts 2>r native-font native-window set-window wcls wtype
+  get-fonts 2>r
+  native-font native-window set-window
+  [ yellow papery ] cliteral attr! wcls wtype
   2r> set-fonts  ;
 
 : wipe-message  ( -- )
