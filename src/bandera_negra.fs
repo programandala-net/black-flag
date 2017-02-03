@@ -37,7 +37,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.44.0+201702031801" ;
+: version  ( -- ca len )  s" 0.45.0+201702031904" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -93,6 +93,7 @@ need frames@  need ms  need seconds  need ?seconds
 
 need 2avariable  need avariable    need cavariable  need value
 
+need far>sconstant
 need far>sconstants  need farsconstants  need far,"
 
 need u>str
@@ -2526,20 +2527,28 @@ variable price  variable offer
   home skulls 0 22 at-xy skulls  graphics-1  ;
   \ Draw top and bottom borders of skulls.
 
+s" Viejas leyendas hablan del tesoro "
+s" que esconde la perdida isla de " s+ island-name$ s+ s" ." s+
+far>sconstant intro-text-0$
+
+s" Los nativos del archipiélago recuerdan "
+s" las antiguas pistas que conducen al tesoro. " s+
+s" Deberás comerciar con ellos para que te las digan." s+
+far>sconstant intro-text-1$
+
+s" Visita todas las islas hasta encontrar la isla de "
+island-name$ s+ s"  y sigue las pistas hasta el tesoro..." s+
+far>sconstant intro-text-2$
+
+s" Pulsa una tecla" far>sconstant press-any-key$
+
 : (intro)  ( -- )
   skull-border intro-window set-window whome
   get-fonts 2>r text-font
-  s" Viejas leyendas hablan del tesoro "
-  s" que esconde la perdida isla de " s+
-  island-name$ s+ s" ." s+ wtype wcr wcr
-  s" Los nativos del archipiélago recuerdan "
-  s" las antiguas pistas que conducen al tesoro. " s+
-  s" Deberás comerciar con ellos para que te las digan." s+
-  wtype wcr wcr
-  s" Visita todas las islas hasta encontrar la isla de "
-  island-name$ s+
-  s"  y sigue las pistas hasta el tesoro..." s+ wtype wcr wcr
-  0 row 2+ at-xy s" Pulsa una tecla" columns type-center
+  intro-text-0$ wtype wcr wcr
+  intro-text-1$ wtype wcr wcr
+  intro-text-2$ wtype wcr wcr
+  0 row 2+ at-xy press-any-key$ columns type-center
   2r> set-fonts  ;
 
 : paint-screen  ( b -- )
