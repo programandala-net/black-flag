@@ -1,9 +1,9 @@
   \ 001_loader.fsb
   \
-  \ This file is part of Bandera Negra
+  \ This file is part of Black Flag
   \ http://programandala.net/
 
-( Bandera Negra -- load block  )
+( Black Flag -- load block  )
 
 [defined] need
 ?\ 2 load
@@ -14,7 +14,7 @@
 
 need load-app
 
-load-app bandera-negra
+load-app black-flag
 
   \ Compile the game.
 

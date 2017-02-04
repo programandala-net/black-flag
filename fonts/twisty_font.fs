@@ -2,7 +2,7 @@
 
 \ twisty_font.fs
 
-\ This file is part of Bandera Negra
+\ This file is part of Black Flag
 \ http://programandala.net/
 
 \ Last modified: 201702021603

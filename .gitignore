@@ -1,4 +1,4 @@
-# ZX Spectrum emulator snapshots:
+# Temporary ZX Spectrum emulator snapshots:
 *.szx
 
 # Plus D disk images:
@@ -6,5 +6,8 @@
 
 # Development resources:
 _meta/
+
+# Temporary screenshots:
+*.png
 
 # vim: filetype=config

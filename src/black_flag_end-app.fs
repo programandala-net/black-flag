@@ -1,9 +1,9 @@
   \ This file is part of
-  \ Bandera Negra
+  \ Black Flag
 
   \ Copyright (C) 2011,2014,2015,2016,2017 Marcos Cruz (programandala.net)
 
-cls .( Bandera Negra)
+cls .( Black Flag)
 cr version type
 cr .( Loaded)
 

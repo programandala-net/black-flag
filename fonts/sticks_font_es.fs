@@ -2,7 +2,7 @@
 
 \ sticks_font_es.fs
 \
-\ This file is part of Bandera Negra
+\ This file is part of Black Flag
 \ http://programandala.net/
 
 \ Last modified: 201702020151

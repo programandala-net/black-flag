@@ -1,28 +1,28 @@
-== Bandera Negra
+== Black Flag 
 :author: Marcos Cruz (programandala.net)
-:revdate: 2016-12-18
+:revdate: 2017-02-04
 
-Bandera Negra ("Black flag", in Spanish) is a Spanish remake of "Jolly
-Roger" (written by Barry Jones, published by Video Vault ltd. in
-1984).
+Black flag is a project under development, a remake of Jolly Roger
+(written by Barry Jones, published by Video Vault ltd. in 1984).
 
-This program is written in Forth with
-http://programandala.net/en.program.solo_forth.html[Solo Forth],
-for ZX Spectrum 128.
+This remake is written in Forth with
+http://programandala.net/en.program.solo_forth.html[Solo Forth], for
+ZX Spectrum 128.
+
+The game will be trilingual. At the moment it's only in Spanish.
+
+== History
 
 The project started by converting the sources of a previous abandoned
 http://programandala.net/es.programa.bandera_negra.mbim.html[version
 for SAM Coupé] from MasterBASIC to Solo Forth...
 
-== History
-
 2015-11-02: First changes on the MasterBASIC version, to convert it to
 Forth.
 
 2016-12-15: A Git repository is created to resume the development.
+Initial version 0.0.0 is used to indicate the conversion from
+MasterBASIC to Forth is in progress.
 
-== Versions
-
-Current version 0.0.0 indicates the conversion from Master BASIC to
-Forth is still in progress.
+2016-12-20: Version 0.1.0: the language conversion is finished.
 

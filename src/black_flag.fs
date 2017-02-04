@@ -1,6 +1,6 @@
-( bandera-negra )
+( black-flag )
 
-  \ Bandera negra
+  \ Black Flag
 
   \ ============================================================
   \ Description
@@ -9,8 +9,7 @@
   \ written in Forth with Solo Forth
   \ (http://programandala.net/en.program.solo_forth.html).
 
-  \ A translated and improved remake of Barry Jones' "Jolly
-  \ Roger" (1984).
+  \ A remake of Barry Jones' "Jolly Roger" (1984).
 
   \ ============================================================
   \ Authors
@@ -37,9 +36,9 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.47.0+201702041723" ;
+: version  ( -- ca len )  s" 0.47.0+201702041812" ;
 
-cr cr .( Bandera Negra) cr version type cr
+cr cr .( Black Flag) cr version type cr
 
   \ ============================================================
   cr .( Requirements)  \ {{{1

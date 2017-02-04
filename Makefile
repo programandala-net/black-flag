@@ -2,10 +2,10 @@
 
 # Author: Marcos Cruz (programandala.net), 2016
 
-# This file is part of Bandera Negra
+# This file is part of Black Flag
 # http://programandala.net/
 
-# Last modified 201702021553
+# Last modified 201702041804
 
 ################################################################
 # Requirements
@@ -38,6 +38,8 @@
 # requirements.  Build the fonts from the Forth source files,
 # using a FantomoUDG converter; the original TAP files are not
 # needed anymore.
+#
+# 2017-02-04: Update after the new name of the project.
 
 ################################################################
 # Notes
@@ -60,12 +62,12 @@ MAKEFLAGS = --no-print-directory
 # Main
 
 .PHONY: all
-all: disk_2_bandera_negra.mgt
+all: disk_2_black_flag.mgt
 
 .PHONY : clean
 clean:
 	rm -f tmp/*
-	rm -f disk_2_bandera_negra.mgt
+	rm -f disk_2_black_flag.mgt
 
 secondary_source_files=$(sort $(wildcard src/00*.fsb))
 library_source_files=$(sort $(wildcard src/lib/*.fsb))
@@ -91,8 +93,8 @@ tmp/sticks_font_es.fs: fonts/sticks_font_es.fs
 tmp/twisty_font_es.fs: fonts/twisty_font_es.fs
 	./$< > $@
 
-tmp/bandera_negra.complete.fs: \
-	src/bandera_negra.fs \
+tmp/black_flag.complete.fs: \
+	src/black_flag.fs \
 	tmp/graph_font_1.fs \
 	tmp/graph_font_2.fs \
 	tmp/sticks_font.fs \
@@ -100,16 +102,16 @@ tmp/bandera_negra.complete.fs: \
 	tmp/sticks_font_es.fs \
 	tmp/twisty_font_es.fs \
 	tmp/udg.fs \
-	src/bandera_negra_end-app.fs
+	src/black_flag_end-app.fs
 	cat $^ > $@
 
-tmp/bandera_negra.complete.converted.fs: tmp/bandera_negra.complete.fs
+tmp/black_flag.complete.converted.fs: tmp/black_flag.complete.fs
 	vim -S ./make/utf8_to_udg.vim \
 		-c "set fileencoding=latin1" \
 		-c "saveas! $@" \
 		-c "quit!" $<
 
-tmp/bandera_negra.fba: tmp/bandera_negra.complete.converted.fs
+tmp/black_flag.fba: tmp/black_flag.complete.converted.fs
 	./make/fs2fba.sh $<
 	mv $(basename $<).fba $@
 
@@ -122,13 +124,13 @@ tmp/library.fb: tmp/library.fsb
 	fsb2 $<
 	mv $<.fb $@
 
-tmp/disk_2_bandera_negra.fb: \
+tmp/disk_2_black_flag.fb: \
 	tmp/library.fb \
-	tmp/bandera_negra.fba
+	tmp/black_flag.fba
 	cat $^ > $@
 
-disk_2_bandera_negra.mgt: tmp/disk_2_bandera_negra.fb
+disk_2_black_flag.mgt: tmp/disk_2_black_flag.fb
 	cp $< $<.copy
-	make/fb2mgt.sh tmp/disk_2_bandera_negra.fb
-	mv tmp/disk_2_bandera_negra.mgt .
+	make/fb2mgt.sh tmp/disk_2_black_flag.fb
+	mv tmp/disk_2_black_flag.mgt .
 	mv $<.copy $<

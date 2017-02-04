@@ -1,6 +1,6 @@
 \ jolly_roger_graph_font_1_sprites.fs
 
-\ This file is part of Bandera Negra
+\ This file is part of Black Flag
 \ http://programandala.net/
 
 \ XXX UNDER DEVELOPMENT
