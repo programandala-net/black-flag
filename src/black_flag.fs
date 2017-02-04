@@ -36,7 +36,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.47.0+201702041812" ;
+: version  ( -- ca len )  s" 0.48.0+201702042150" ;
 
 cr cr .( Black Flag) cr version type cr
 
@@ -880,9 +880,9 @@ cyan dup papery + brighty constant sunny-sky-attr
   2dup 1+ at-xy ." S TU" ;
 
 : palm-trunk  ( x y -- x' y' )
-  1+ 2dup at-xy ." N"
-  1+ 2dup at-xy ." M"
-  1+ 2dup at-xy ." L"  ;
+  1+ 2dup at-xy 'N' emit
+  1+ 2dup at-xy 'M' emit
+  1+ 2dup at-xy 'L' emit  ;
 
 : palm1  ( x y -- )
   [ green  blue papery + ] cliteral attr!  palm-top
@@ -893,7 +893,7 @@ cyan dup papery + brighty constant sunny-sky-attr
 : palm2  ( x y -- )
   [ green yellow papery + ] cliteral attr!  palm-top
   [ black yellow papery + ] cliteral attr!
-  1 under+  palm-trunk 1+ at-xy ." V"  ;
+  1 under+  palm-trunk 1+ at-xy 'V' emit  ;
   \ Print palm model 2 at characters coordinates _x y_.
 
   \ --------------------------------------------
@@ -918,7 +918,7 @@ cyan dup papery + brighty constant sunny-sky-attr
 : .little-island2  ( -- )
   [ green blue papery + ] cliteral attr!
   14  8 at-xy .\" :\::\::C"
-  16  7 at-xy ." A"
+  16  7 at-xy 'A' emit
   13  9 at-xy .\" :\::\::\::\::D"
   12 10 at-xy .\" F\::\::\::\::\::E"  ;
 
@@ -975,7 +975,7 @@ cyan dup papery + brighty constant sunny-sky-attr
               .\" \::\::\::\::\::\::\::\::\::\::C"
    8 12 at-xy .\" F\::\::\::\::\::\::\::\::\::\::"
               .\" \::\::\::\::\::\::\::\::\::\::\::\::D"
-  31 13 at-xy ." E"
+  31 13 at-xy 'E' emit
   [ blue green papery + ] cliteral attr!
    8 13 at-xy ."  HI Z123  HI A  A A  A "
   20 14 at-xy .\" B\::\::\::\::B"
@@ -1000,13 +1000,13 @@ cyan dup papery + brighty constant sunny-sky-attr
 
 : .west-reef  ( -- )
   [ black blue papery + ] cliteral attr!
-   0 4 at-xy ." A"   1 6 at-xy ." HI"  0 8 at-xy ." WXY"
-  1 11 at-xy ." A"  0 13 at-xy ." HI"  ;
+   0 4 at-xy 'A' emit   1 6 at-xy ." HI"  0 8 at-xy ." WXY"
+  1 11 at-xy 'A' emit  0 13 at-xy ." HI"  ;
 
 : .east-reef  ( -- )
   [ black blue papery + ] cliteral attr!
-  30 4 at-xy ." HI"   28 6 at-xy ." A"
-  29 7 at-xy ." WXY"  31 9 at-xy ." A"  ;
+  30 4 at-xy ." HI"   28 6 at-xy 'A' emit
+  29 7 at-xy ." WXY"  31 9 at-xy 'A' emit  ;
 
 : .reefs  ( -- )
   sail-north? 0= if  .far-islands  then
@@ -1412,7 +1412,7 @@ variable victory
 
 : .cannon-muzzle-fire  ( row -- )
   red set-ink
-  cannon-muzzle-fire-coords at-xy ." -" at-xy ." +"  ;
+  cannon-muzzle-fire-coords at-xy '-' emit at-xy '+' emit  ;
   \ Print the fire effect of the cannon muzzle, which is at y
   \ coordinate _row_.
 
@@ -1753,11 +1753,11 @@ sailor-window-cols 2+ 8 * 4 +
 : west-waves  ( -- )
   [ sea-top-y sea-rows bounds ] 2literal
   do  0 i at-xy ."   "  loop
-  0  4 at-xy ." m"
+  0  4 at-xy   'm' emit
   0  6 at-xy ." mn"
-  1  8 at-xy  ." l"
+  1  8 at-xy    'l' emit
   0 10 at-xy ." kl"
-  0 13 at-xy ." k"
+  0 13 at-xy   'k' emit
   graphics-2  yellow set-ink
   walk-north? 0= if  2  4 at-xy 'A' emit  then
   walk-south? 0= if  2 13 at-xy 'C' emit  then
@@ -1769,11 +1769,11 @@ sailor-window-cols 2+ 8 * 4 +
 : east-waves  ( -- )
   [ sea-top-y sea-rows bounds ] 2literal
   do  30 i at-xy ."   "  loop
-  30  4 at-xy ." m"
+  30  4 at-xy   'm' emit
   30  6 at-xy ." mn"
-  31  8 at-xy  ." l"
+  31  8 at-xy    'l' emit
   30 10 at-xy ." kl"
-  31 13 at-xy  ." k"
+  31 13 at-xy    'k' emit
   yellow set-ink  graphics-2
   walk-north? 0= if  29  4 at-xy 'B' emit  then
   walk-south? 0= if  29 13 at-xy 'D' emit  then
@@ -1805,13 +1805,13 @@ sailor-window-cols 2+ 8 * 4 +
   black set-ink
   10  6 at-xy ." XYZ"
   17  6 at-xy ." YX"
-  26  6 at-xy ." Z"
+  26  6 at-xy 'Z' emit
    8  9 at-xy ." ZZ"
-  13  9 at-xy ." Y"
+  13  9 at-xy 'Y' emit
   24  9 at-xy ." ZX"
-   7 12 at-xy ." X"
-  17 12 at-xy ." Y"
-  22 12 at-xy ." Z"
+   7 12 at-xy 'X' emit
+  17 12 at-xy 'Y' emit
+  22 12 at-xy 'Z' emit
   26 12 at-xy ." XY"  ;
   \ XXX TODO -- random
 
@@ -1849,19 +1849,20 @@ sailor-window-cols 2+ 8 * 4 +
   \ XXX TODO -- other option: print at random empty places
 
 : island-location  ( n -- )
-  ~~ case
+  case
     native-village  of  .village                          endof
     dubloons-found  of  4 8 palm2 14 5 palm2              endof
       \ XXX TODO -- print dubloons here
-    hostile-native  of  ~~ 14 5 palm2 25 8 palm2 .native  endof
-    just-3-palms-1  of  25 8 palm2 4 8 palm2 16 5 palm2   endof
+    hostile-native  of  14 5 palm2 25 8 palm2 .native  endof
+    just-3-palms-1  of  ~~ 25 8 palm2
+    ~~ 4 8 palm2 ~~ 16 5 palm2   ~~ endof
     snake of
       13 5 palm2 5 6 palm2 18 8 palm2 23 8 palm2 .snake
                                                           endof
     just-3-palms-2  of  23 8 palm2 4 8 palm2 17 5 palm2   endof
-    native-supplies of  ~~ .supplies  .native  16 4 palm2 endof
-    native-ammo     of  ~~ .ammo-gift .native 20 5 palm2  endof
-  endcase  ~~ ;
+    native-supplies of  .supplies  .native  16 4 palm2 endof
+    native-ammo     of  .ammo-gift .native 20 5 palm2  endof
+  endcase  ;
 
 : current-island-location  ( -- )
   crew-loc @ island @ island-location  ;
@@ -1869,7 +1870,7 @@ sailor-window-cols 2+ 8 * 4 +
 : island-scenery  ( -- )
   graphics-1
   wipe-island-scenery sunny-sky island-waves
-  ~~ current-island-location  ;
+  current-island-location  ;
 
   \ ============================================================
   cr .( Events on an island)  \ {{{1
@@ -1934,21 +1935,21 @@ here - cell / constant island-events
 
   .debug-info
 
-  ~~ case
+  case
 
-  snake of  ~~
+  snake of
     s" Una serpiente ha mordido a "
     injured name$ s+ s" ." s+ message
     \ XXX TODO -- inform if the man is dead
   endof
 
-  hostile-native of  ~~
+  hostile-native of
     s" Un nativo intenta bloquear el paso y hiere a "
     injured dup >r name$ s+ s" , que resulta " s+
     r> condition$ s+ s" ." s+ message
   endof
 
-  dubloons-found of  ~~
+  dubloons-found of
 
     1 2 random-range >r
     s" Encuentras " r@ coins$ s+ s" ." s+ message
@@ -1964,7 +1965,7 @@ here - cell / constant island-events
 
   endof
 
-  native-ammo of  ~~
+  native-ammo of
     s" Un nativo te da algo de munición." message
     1 ammo+!  be-hostile-native
       \ XXX TODO -- random ammount
@@ -1972,7 +1973,7 @@ here - cell / constant island-events
       \ `island-location`
   endof
 
-  native-supplies of  ~~
+  native-supplies of
     s" Un nativo te da provisiones." message
     1 supplies+!  be-hostile-native
       \ XXX TODO -- random ammount
@@ -1980,7 +1981,7 @@ here - cell / constant island-events
       \ `island-location`
   endof
 
-  native-village of  ~~
+  native-village of
     s" Descubres un poblado nativo." message
     \ XXX TODO -- Change the message if the village is visited.
   endof
@@ -1989,7 +1990,7 @@ here - cell / constant island-events
 
   just-3-palms-2 of  island-event  endof
 
-  ~~ endcase
+  endcase
   .debug-info  \ XXX INFORMER
   ;
 
@@ -2001,7 +2002,7 @@ here - cell / constant island-events
   cr .( Disembark)  \ {{{1
 
 : target-island  ( -- )
-  31  8 at-xy ." :"
+  31  8 at-xy ':' emit
   27  9 at-xy .\" HI :\::"
   25 10 at-xy .\" F\::\::\::\::\::\::"
   23 11 at-xy .\" JK\::\::\::\::\::\::\::"  ;
@@ -2214,7 +2215,7 @@ variable price  variable offer
 : make-offer  ( -- )
   cash @ max-offer min >r
   s" Tienes " cash @ coins$ s+
-  s" . ¿Qué oferta le haces? (1-" s+ r@ u>str s+ ." )" s+
+  s" . ¿Qué oferta le haces? (1-" s+ r@ u>str s+ s" )" s+
   message
   r> get-digit offer !
   200 10 beep
@@ -2292,7 +2293,7 @@ variable price  variable offer
   get-fonts 2>r graphics-2
   [ black yellow papery + ] cliteral attr!
   14 10 do  8 i at-xy ." t   "  loop
-                           8  9 at-xy ." u"
+                           8  9 at-xy  'u' emit
               white attr!  9 10 at-xy ." nop"
                            9 11 at-xy ." qrs"
   2r> set-fonts  ;

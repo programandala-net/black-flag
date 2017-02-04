@@ -1,6 +1,6 @@
-= To-Do list of Bandera Negra
+= To-Do list of Black Flag
 :author: Marcos Cruz (programandala.net)
-:revdate: 2017-02-02
+:revdate: 2017-02-04
 
 .2017-02-02:
 
@@ -71,11 +71,6 @@ activate a command after returning to the panel.
 .2017-01-12:
 
 Move the palms into the word of their islands.
-
-.2017-01-12:
-
-Change `." X"` (4 bytes) to `'X' emit` (5 bytes) in some places,
-because it's faster.
 
 .2017-01-10, 2017-01-18:
 
