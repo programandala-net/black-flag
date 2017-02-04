@@ -37,7 +37,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.45.0+201702031904" ;
+: version  ( -- ca len )  s" 0.46.0+201702032117" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -192,10 +192,7 @@ island-length island-breadth * cconstant /island
 
 10 cconstant men
 
-: island-name$  ( -- ca len )  s" Calavera"  ;
-
-: ship-name$  ( -- ca len )  s" Furioso"  ;
-  \ XXX TODO -- not used yet
+s" Calavera" far>sconstant island-name$
 
   \ Sea location types
   \ XXX TODO -- complete
@@ -628,8 +625,7 @@ esc-udg-chars-wordlist 3 set-esc-order
 16384 constant screen  6912 constant /screen
   \ Address and size of the screen.
 
-farlimit @ /screen - dup constant screen-backup
-                         farlimit !
+farlimit @ /screen - dup constant screen-backup  farlimit !
 
 far-banks 3 + c@ cconstant screen-backup-bank
 
@@ -1180,9 +1176,11 @@ white black papery + constant report-attr
   save-screen set-report-color cls text-font  ;
   \ Common task at the start of all reports.
 
+s" Pulsa una tecla" far>sconstant press-any-key$
+
 : end-report  ( -- )
   set-report-color
-  0 row 2+ at-xy s" Pulsa una tecla" columns type-center
+  0 row 2+ at-xy press-any-key$ columns type-center
   key drop  restore-screen  ;
   \ Common task at the end of all reports.
 
@@ -1849,11 +1847,11 @@ sailor-window-cols 2+ 8 * 4 +
     dubloons-found  of  4 8 palm2 14 5 palm2              endof
       \ XXX TODO -- print dubloons here
     hostile-native  of  ~~ 14 5 palm2 25 8 palm2 .native  endof
-    just-3-palms-1  of  25 8 palm2  4 8 palm2 16 5 palm2  endof
+    just-3-palms-1  of  25 8 palm2 4 8 palm2 16 5 palm2   endof
     snake of
       13 5 palm2 5 6 palm2 18 8 palm2 23 8 palm2 .snake
                                                           endof
-    just-3-palms-2  of  23 8 palm2 17 5 palm2 4 8 palm2   endof
+    just-3-palms-2  of  23 8 palm2 4 8 palm2 17 5 palm2   endof
     native-supplies of  ~~ .supplies  .native  16 4 palm2 endof
     native-ammo     of  ~~ .ammo-gift .native 20 5 palm2  endof
   endcase  ~~ ;
@@ -2384,8 +2382,6 @@ variable price  variable offer
   \ ============================================================
   cr .( Setup)  \ {{{1
 
-: init-once  ( -- )  init-screen  ;
-
 : add-row-reefs  ( n1 n0 -- )  ?do  reef i sea !  loop  ;
 
 : add-north-reefs  ( -- )
@@ -2423,7 +2419,7 @@ variable price  variable offer
 
 : new-sea  ( -- )  empty-sea add-reefs populate-sea  ;
 
-: init-ship  ( -- )
+: new-ship  ( -- )
   32 42 random-range ship-loc !  9 ship-y !  4 ship-x !
   ship-up off  ;
 
@@ -2439,7 +2435,7 @@ variable price  variable offer
   \ XXX TODO -- use constant for ranges and reuse them as
   \ parameters of `get-digit`
 
-: init-plot  ( -- )
+: new-adventure  ( -- )
   init-clues  aboard on  1 crew-loc !
   men alive !  2 ammo !  5 cash !  10 morale !  10 supplies !
   quit-game off  damage off  day off  found-clues off
@@ -2464,11 +2460,8 @@ variable price  variable offer
 : new-crew  ( -- )  new-crew-names init-crew-stamina  ;
 
 : init  ( -- )
-  0 randomize0 text-font
-  [ white black papery + ] cliteral attr! cls
-  0 [ rows 2 / ] cliteral at-xy
-  s" Preparando el viaje..." columns type-center
-  new-sea init-ship new-crew init-plot  ;
+  blackout 0 randomize0 text-font
+  new-sea new-ship new-crew new-adventure  ;
 
   \ ============================================================
   cr .( Game over)  \ {{{1
@@ -2540,8 +2533,6 @@ s" Visita todas las islas hasta encontrar la isla de "
 island-name$ s+ s"  y sigue las pistas hasta el tesoro..." s+
 far>sconstant intro-text-2$
 
-s" Pulsa una tecla" far>sconstant press-any-key$
-
 : (intro)  ( -- )
   skull-border intro-window set-window whome
   get-fonts 2>r text-font
@@ -2574,7 +2565,7 @@ s" Pulsa una tecla" far>sconstant press-any-key$
   scenery  begin  command game-over?  until  ;
 
 : run  ( -- )
-  init-once  begin  intro init game the-end  again  ;
+  init-screen  begin  intro init game the-end  again  ;
 
   \ ============================================================
   cr .( Debugging tools [2])  \ {{{1
@@ -2651,7 +2642,7 @@ variable checkered
     cr i . i damage ! damage-index . damage$ type  key drop
   loop  ;
 
-: ini  ( -- )  init-once init  ;
+: ini  ( -- )  init-screen init  ;
 
 : f1  ( -- )  graphics-1  ;
 : f2  ( -- )  graphics-2  ;
