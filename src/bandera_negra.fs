@@ -37,7 +37,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.46.0+201702032117" ;
+: version  ( -- ca len )  s" 0.47.0+201702041723" ;
 
 cr cr .( Bandera Negra) cr version type cr
 
@@ -109,7 +109,7 @@ need esc-block-chars-wordlist  need esc-udg-chars-wordlist
 need window  need set-window  need wcls  need wtype
 need whome
 
-need tab  need type-center  need at-x  need row
+need tab  need type-center-field  need at-x  need row
 need rows  need columns  need last-column
 need inverse  need tabulate
 need rom-font
@@ -554,9 +554,12 @@ rom-font value twisty-font
        0 value sticks-font-es-udg
        0 value twisty-font-es-udg
 
-create graph-udg 165 128 - 8 * allot  graph-udg set-udg
+here 165 128 - 8 * allot
   \ Reserve data space for the block chars (128..143) and the
-  \ UDG (144.164).
+  \ BASIC UDG (144..164).
+
+128 8 * - dup constant graph-udg  set-udg
+  \ Point to UDG 0.
 
 need block-chars
   \ Compile the block chars at the UDG data space.
@@ -1180,7 +1183,7 @@ s" Pulsa una tecla" far>sconstant press-any-key$
 
 : end-report  ( -- )
   set-report-color
-  0 row 2+ at-xy press-any-key$ columns type-center
+  0 row 2+ at-xy press-any-key$ columns type-center-field
   key drop  restore-screen  ;
   \ Common task at the end of all reports.
 
@@ -1188,7 +1191,7 @@ s" Pulsa una tecla" far>sconstant press-any-key$
 
 : main-report  ( -- )
   begin-report
-  0 1 at-xy s" Informe de situación" columns type-center
+  0 1 at-xy s" Informe de situación" columns type-center-field
   0 4 at-xy  18 /tabulate !
   ." Días:"             day        .datum
   ." Hombres:"          alive      .datum
@@ -1213,12 +1216,17 @@ s" Pulsa una tecla" far>sconstant press-any-key$
   >r white attr!
   name-x r@ 6 + at-xy r@ name$ type
   r@ set-condition-color
-  status-x r@ 6 + at-xy
-  r> condition$ 2dup uppers1 type  ;
+  status-x r@ 6 + at-xy r> condition$ 2dup uppers1 type  ;
+
+
+s" Estado de la tripulación" far>sconstant "crew-report"$
+s" Nombre" far>sconstant "name"$
+s" Condición" far>sconstant "condition"$
 
 : .crew-report-header  ( -- )
-  0 1 at-xy s" Estado de la tripulación" columns type-center
-  name-x 4 at-xy ." Nombre"  status-x 4 at-xy ." Condición"  ;
+  0 1 at-xy "crew-report"$ columns type-center-field
+  name-x   4 at-xy "name"$      type
+  status-x 4 at-xy "condition"$ type  ;
 
 : crew-report  ( -- )
   begin-report .crew-report-header
@@ -1234,7 +1242,7 @@ s" Pulsa una tecla" far>sconstant press-any-key$
 
 : score-report  ( -- )
   begin-report
-  0 1 at-xy s" Puntuación" columns type-center
+  0 1 at-xy s" Puntuación" columns type-center-field
   0 4 at-xy
   ." Días"            tab day         @ 4 .r ."  x  200" cr cr
   ." Barcos hundidos" tab sunk-ships  @ 4 .r ."  x 1000" cr cr
@@ -2478,7 +2486,7 @@ variable price  variable offer
 
 : sad-end  ( -- )
   text-font [ white red papery + ] cliteral attr!
-  0 1 at-xy s" FIN DEL JUEGO" columns type-center
+  0 1 at-xy s" FIN DEL JUEGO" columns type-center-field
   the-end-window set-window
   [ black yellow papery + ] cliteral attr!
   supplies @ 0= if
@@ -2539,7 +2547,7 @@ far>sconstant intro-text-2$
   intro-text-0$ wtype wcr wcr
   intro-text-1$ wtype wcr wcr
   intro-text-2$ wtype wcr wcr
-  0 row 2+ at-xy press-any-key$ columns type-center
+  0 row 2+ at-xy press-any-key$ columns type-center-field
   2r> set-fonts  ;
 
 : paint-screen  ( b -- )
@@ -2660,12 +2668,12 @@ variable checkered
   \ for Alchemist PD, 1995, and packed into a viewer called
   \ "Fontbox I".
 
-here 256 -             dup to graph1-font
-               /font + dup to graph2-font
-               /font + dup to sticks-font
-               /font + dup to twisty-font
-         256 + /font + dup to sticks-font-es-udg
-      /spanish-chars +     to twisty-font-es-udg
+here 256 -                dup to graph1-font
+                  /font + dup to graph2-font
+                  /font + dup to sticks-font
+                  /font + dup to twisty-font
+  256 + 128 8 * - /font + dup to sticks-font-es-udg
+         /spanish-chars +     to twisty-font-es-udg
 
   \ Update the font pointers with addresses relative to the
   \ current data pointer, were the fonts are being compiled.
