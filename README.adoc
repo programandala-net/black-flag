@@ -2,8 +2,9 @@
 :author: Marcos Cruz (programandala.net)
 :revdate: 2017-02-04
 
-Black flag is a project under development, a remake of Jolly Roger
-(written by Barry Jones, published by Video Vault ltd. in 1984).
+Black flag is a project under development, a remake of
+http://www.worldofspectrum.org/infoseekid.cgi?id=0002639[Jolly Roger]
+(written by Barry Jones in 1984).
 
 This remake is written in Forth with
 http://programandala.net/en.program.solo_forth.html[Solo Forth], for
