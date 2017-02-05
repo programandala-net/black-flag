@@ -2,14 +2,16 @@
 :author: Marcos Cruz (programandala.net)
 :revdate: 2017-02-04
 
-.2017-02-02:
+.2017-02-04:
 
-Improve: Move string literal to far memory. This step will be needed
-to add more languages anyway.
+Fix the crashes when entering the island locations than have 3 palms.
+The problem seem related to the fact that there's no event in those
+locations, and the stack gets unbalanced.
 
-.2017-02-02:
+.2017-02-02, 2017-02-04:
 
-Fix: background color of the native speech.
+Improve: Move all string literals to far memory. This step will be
+needed to add more languages anyway.
 
 .2017-02-02:
 
