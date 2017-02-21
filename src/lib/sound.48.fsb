@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201701252210
+  \ Last modified: 201702172230
 
   \ -----------------------------------------------------------
   \ Description
@@ -57,6 +57,9 @@
   \ support also negative values of pitch.
   \
   \ 2017-01-25: Typo.
+  \
+  \ 2017-02-17: Update cross references.  Change markup of code
+  \ that is not a cross reference.
 
 ( bleep hz>bleep dhz>bleep )
 
@@ -98,12 +101,16 @@ code bleep  ( duration pitch -- )
   \ on the following basis:
   \
   \ To generate a frequency of F Hz, _pitch_ must be set to:
-  \
-  \ `pitch = (437500/F)-30`
+  \ 
+  \ ....
+  \ pitch = (437500/F)-30
+  \ ....
   \
   \ Looking in the opposite direction:
   \
-  \ `F = 437500/(pitch+30)`
+  \ ....
+  \ F = 437500/(pitch+30)
+  \ ....
   \
   \ The duration of the note is determined as a number of
   \ cycles, so _duration_ must be set to `F x T`, where T is
@@ -162,7 +169,7 @@ code bleep  ( duration pitch -- )
   \ _____
 
   \
-  \ See: `hz>bleep`, `dzh>bleep`, `beep`.
+  \ See also: `hz>bleep`, `dzh>bleep`, `beep`.
   \
   \ }doc
 
@@ -185,7 +192,7 @@ code bleep  ( duration pitch -- )
   \ Convert _frequency_ (in Hz) and _duration1_ (in ms) to
   \ the parameters _duration2 pitch_ needed by `bleep`.
   \
-  \ See: `dhz>bleep`, `bleep`.
+  \ See also: `dhz>bleep`.
   \
   \ }doc
 
@@ -209,7 +216,7 @@ code bleep  ( duration pitch -- )
   \ _duration1_ (in ms) to the parameters _duration2 pitch_
   \ needed by `bleep`.
   \
-  \ See: `hz>bleep`, `bleep`.
+  \ See also: `hz>bleep`.
   \
   \ }doc
 
@@ -281,7 +288,7 @@ create middle-octave  ( -- a )
   \   C   D   E   F   G   A   B
   \ ....
 
-  \ See: `beep>dhz`, `beep`, `/octave`, `octave-changer`.
+  \ See also: `beep`, `/octave`, `octave-changer`.
   \
   \ }doc
 
@@ -294,7 +301,7 @@ create middle-octave  ( -- a )
   \ A constant that returns the number of notes in one octave:
   \ 12.
   \
-  \ See: `middle-octave`.
+  \ See also: `middle-octave`.
   \
   \ }doc
 
@@ -313,7 +320,7 @@ here    ' drop    ,
   \ _a_ is the address of the second execution token (cell
   \ offset 0).
   \
-  \ See: `change-octave`, `beep>dhz`, `middle-octave`.
+  \ See also: `change-octave`, `beep>dhz`, `middle-octave`.
   \
   \ }doc
 
@@ -332,7 +339,7 @@ need polarity  need octave-changer  need array>
   \ zero) to its corresponding note frequency _u'_ in octave
   \ _n_.  If _n_ is zero, _u'_ equals _u_.
   \
-  \ See: `octave-changer`, `beep>dhz`, `middle-octave`.
+  \ See also: `octave-changer`, `beep>dhz`, `middle-octave`.
   \
   \ }doc
 
@@ -354,7 +361,7 @@ need ?(
   \ corresponding note _+n3_ (0..11) in octave _-n2_, being
   \ zero the middle octave.
   \
-  \ See: `beep>note`, `+beep>note`, `/octave`.
+  \ See also: `beep>note`, `+beep>note`, `/octave`.
   \
   \ }doc
 
@@ -370,7 +377,7 @@ need ?(
   \ corresponding note _+n3_ (0..11) in octave _+n2_, being
   \ zero the middle octave.
   \
-  \ See: `beep>note`, `-beep>note`, `/octave`.
+  \ See also: `beep>note`, `-beep>note`, `/octave`.
   \
   \ }doc
 
@@ -387,7 +394,7 @@ need ?(
   \ corresponding note _+n3_ (0..11) in octave _n2_, being zero
   \ the middle octave.
   \
-  \ See: `-beep>note`, `+beep>note`, `beep>dhz`, `beep>bleep`,
+  \ See also: `-beep>note`, `+beep>note`, `beep>dhz`, `beep>bleep`,
   \ `beep`, `/octave`.
   \
   \ }doc
@@ -414,7 +421,7 @@ need beep>note  need note>dhz need change-octave
   \ Convert a Sinclair BASIC BEEP's pitch _n_ to its
   \ corresponding frequency in dHz (tenths of hertzs) _u_.
   \
-  \ See: `beep>note`, `beep>bleep`, `beep`.
+  \ See also: `beep>note`, `beep>bleep`, `beep`.
   \
   \ }doc
 
@@ -456,7 +463,7 @@ need beep>dhz  need dhz>bleep
   \           C   D   E   F   G   A   B   C
   \ ....
 
-  \ See: `beep>dhz`, `beep>note`, `dhz>bleep`, `bleep`.
+  \ See also: `beep>dhz`, `beep>note`, `dhz>bleep`.
   \
   \ }doc
 
@@ -518,7 +525,7 @@ need beep>dhz  need dhz>bleep
   \ ----
 
   \
-  \ See: `beep>bleep`, `bleep`.
+  \ See also: `beep>bleep`, `bleep`.
   \
   \ }doc
 

@@ -36,7 +36,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.48.0+201702042150" ;
+: version  ( -- ca len )  s" 0.49.0+201702211234" ;
 
 cr cr .( Black Flag) cr version type cr
 
@@ -66,6 +66,7 @@ need alias
   cr .(   -Control structures)  \ {{{2
 
 need case  need or-of  need j  need 0exit  need default-of
+need do
 
   \ --------------------------------------------
   cr .(   -Stack manipulation)  \ {{{2
@@ -1334,7 +1335,7 @@ variable victory
   \ location type.
 
 : .wave  ( -- )
-  graphics-1 cyan set-ink
+  graphics-1 [ cyan blue papery + ] cliteral attr!
   11 30 random-range 1 20 random-range at-xy ." kl"  ;
 
 : (move-enemy-ship)  ( -- )
@@ -2678,4 +2679,4 @@ here 256 -                dup to graph1-font
   \ Update the font pointers with addresses relative to the
   \ current data pointer, were the fonts are being compiled.
 
-  \ vim: filetype:soloforth foldmethod=marker
+ \ vim: filetype=soloforth foldmethod=marker

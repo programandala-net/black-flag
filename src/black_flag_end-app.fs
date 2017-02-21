@@ -13,4 +13,4 @@ cr cr .( Type RUN to start) cr
 
 end-app
 
-  \ vim: filetype:soloforth
+  \ vim: filetype=soloforth
