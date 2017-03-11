@@ -5,7 +5,7 @@
 # This file is part of Black Flag
 # http://programandala.net/
 
-# Last modified 201702041804
+# Last modified 201703051905
 
 ################################################################
 # Requirements
@@ -40,6 +40,9 @@
 # needed anymore.
 #
 # 2017-02-04: Update after the new name of the project.
+#
+# 2017-03-05: Update filename extension after the changes in
+# Solo Forth and fsb2.
 
 ################################################################
 # Notes
@@ -69,8 +72,8 @@ clean:
 	rm -f tmp/*
 	rm -f disk_2_black_flag.mgt
 
-secondary_source_files=$(sort $(wildcard src/00*.fsb))
-library_source_files=$(sort $(wildcard src/lib/*.fsb))
+secondary_source_files=$(sort $(wildcard src/00*.fs))
+library_source_files=$(sort $(wildcard src/lib/*.fs))
 
 tmp/graph_font_1.fs: graphs/jolly_roger_graph_font_1.tap
 	make/udg_tap_to_forth_c-comma.fs $< > $@
@@ -115,14 +118,13 @@ tmp/black_flag.fba: tmp/black_flag.complete.converted.fs
 	./make/fs2fba.sh $<
 	mv $(basename $<).fba $@
 
-tmp/library.fsb: \
+tmp/library.fs: \
 	$(secondary_source_files) \
 	$(library_source_files)
 	cat $^ > $@
 
-tmp/library.fb: tmp/library.fsb
+tmp/library.fb: tmp/library.fs
 	fsb2 $<
-	mv $<.fb $@
 
 tmp/disk_2_black_flag.fb: \
 	tmp/library.fb \

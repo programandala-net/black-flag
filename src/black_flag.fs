@@ -36,7 +36,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.49.0+201702211234" ;
+: version  ( -- ca len )  s" 0.50.0+201703051958" ;
 
 cr cr .( Black Flag) cr version type cr
 
@@ -314,43 +314,43 @@ men avariable stamina
   \ Crew names are pun funny names in Spanish:
 
 0
-  hp@ far," Alfredo Minguero"
-  hp@ far," Armando Bronca"
-  hp@ far," Borja Monserrano"
-  hp@ far," Clemente Cato"
-  hp@ far," César Pullido"  \ XXX TODO -- check
-  hp@ far," Enrique Sitos"
-  hp@ far," Erasmo Coso"
-  hp@ far," Felipe Llejo"
-  hp@ far," Javi Oneta"
-  hp@ far," Javier Nesnoche"
-  hp@ far," Jorge Neral"
-  hp@ far," Lope Dorreta"
-  hp@ far," Lope Lotilla"
-  hp@ far," Manolo Pillo"
-  hp@ far," Marcos Tilla"
-  hp@ far," Melchor Icete"
-  hp@ far," Néstor Nillo"
-  hp@ far," Néstor Tilla"
-  hp@ far," Paco Tilla"
-  hp@ far," Pascual Baricoque"
-  hp@ far," Pedro Medario"
-  hp@ far," Policarpio Nero"
-  hp@ far," Ramiro Inoveo"
-  hp@ far," Ricardo Borriquero"
-  hp@ far," Roberto Mate"
-  hp@ far," Rodrigo Minolas"
-  hp@ far," Ulises Cocido"
-  hp@ far," Ulises Tantería"
-  hp@ far," Vicente Nario"
-  hp@ far," Vicente Rador"
-  hp@ far," Víctor Nillo"
-  hp@ far," Víctor Pedo"
-  hp@ far," Víctor Tilla"
-  hp@ far," Zacarías Queroso"
-  hp@ far," Óscar Nicero"
-  hp@ far," Óscar Romato"
-  hp@ far," Óscar Terista"
+  np@ far," Alfredo Minguero"
+  np@ far," Armando Bronca"
+  np@ far," Borja Monserrano"
+  np@ far," Clemente Cato"
+  np@ far," César Pullido"  \ XXX TODO -- check
+  np@ far," Enrique Sitos"
+  np@ far," Erasmo Coso"
+  np@ far," Felipe Llejo"
+  np@ far," Javi Oneta"
+  np@ far," Javier Nesnoche"
+  np@ far," Jorge Neral"
+  np@ far," Lope Dorreta"
+  np@ far," Lope Lotilla"
+  np@ far," Manolo Pillo"
+  np@ far," Marcos Tilla"
+  np@ far," Melchor Icete"
+  np@ far," Néstor Nillo"
+  np@ far," Néstor Tilla"
+  np@ far," Paco Tilla"
+  np@ far," Pascual Baricoque"
+  np@ far," Pedro Medario"
+  np@ far," Policarpio Nero"
+  np@ far," Ramiro Inoveo"
+  np@ far," Ricardo Borriquero"
+  np@ far," Roberto Mate"
+  np@ far," Rodrigo Minolas"
+  np@ far," Ulises Cocido"
+  np@ far," Ulises Tantería"
+  np@ far," Vicente Nario"
+  np@ far," Vicente Rador"
+  np@ far," Víctor Nillo"
+  np@ far," Víctor Pedo"
+  np@ far," Víctor Tilla"
+  np@ far," Zacarías Queroso"
+  np@ far," Óscar Nicero"
+  np@ far," Óscar Romato"
+  np@ far," Óscar Terista"
 farsconstants stock-name$  ( n -- ca len )
       constant stock-names
 
@@ -368,11 +368,11 @@ stock-names avariable used-name  ( n -- a )
   \ XXX TODO -- Store in far memory.
 
 0
-  hp@ far," en forma"
-  hp@ far," magullado"
-  hp@ far," herido leve"
-  hp@ far," herido grave"
-  hp@ far," muerto"
+  np@ far," en forma"
+  np@ far," magullado"
+  np@ far," herido leve"
+  np@ far," herido grave"
+  np@ far," muerto"
 far>sconstants stamina$  ( n -- ca len )
    1- constant max-stamina
     0 constant min-stamina
@@ -389,16 +389,16 @@ yellow black papery +         3 stamina-attr c!
   cr .(   -Ship damage descriptions)  \ {{{2
 
 0
-  hp@ far," hundiéndose"            \ worst: sinking
-  hp@ far," a punto de hundirse"
-  hp@ far," haciendo agua"
-  hp@ far," destrozado"
-  hp@ far," casi destrozado"
-  hp@ far," gravemente dañado"
-  hp@ far," muy dañado"
-  hp@ far," algo dañado"
-  hp@ far," casi como nuevo"
-  hp@ far," impecable"            \ best: perfect
+  np@ far," hundiéndose"            \ worst: sinking
+  np@ far," a punto de hundirse"
+  np@ far," haciendo agua"
+  np@ far," destrozado"
+  np@ far," casi destrozado"
+  np@ far," gravemente dañado"
+  np@ far," muy dañado"
+  np@ far," algo dañado"
+  np@ far," casi como nuevo"
+  np@ far," impecable"            \ best: perfect
 far>sconstants damage-level$  ( n -- ca len )
       dup cconstant damage-levels
        1- cconstant max-damage-level
@@ -411,16 +411,16 @@ far>sconstants damage-level$  ( n -- ca len )
   \ and have funny meanings.
 
 0
-  hp@ far," Mislongo"   \ mis-long-o="wrong lenght"
-  hp@ far," Ombreto"    \ ombr-et-o="little shadow"
-  hp@ far," Figokesto"  \ fig-o-kest-o="fig basket"
-  hp@ far," Misedukota" \ mis-eduk-ot-a="one to be miseducated"
-  hp@ far," Topikega"   \ topik-eg-a=
-  hp@ far," Fibaloto"   \ fi-balot-o
-  hp@ far," Pomotruko"  \ pom-o-truk-o
-  hp@ far," Putotombo"  \ put-o-tomb-o="well tomb"
-  hp@ far," Ursorelo"   \ urs-orel-="ear of bear"
-  hp@ far," Kukumemo"   \ kukum-em-o
+  np@ far," Mislongo"   \ mis-long-o="wrong lenght"
+  np@ far," Ombreto"    \ ombr-et-o="little shadow"
+  np@ far," Figokesto"  \ fig-o-kest-o="fig basket"
+  np@ far," Misedukota" \ mis-eduk-ot-a="one to be miseducated"
+  np@ far," Topikega"   \ topik-eg-a=
+  np@ far," Fibaloto"   \ fi-balot-o
+  np@ far," Pomotruko"  \ pom-o-truk-o
+  np@ far," Putotombo"  \ put-o-tomb-o="well tomb"
+  np@ far," Ursorelo"   \ urs-orel-="ear of bear"
+  np@ far," Kukumemo"   \ kukum-em-o
 far>sconstants village$  ( n -- ca len )
       constant villages
 
@@ -428,18 +428,18 @@ far>sconstants village$  ( n -- ca len )
   cr .(   -Cardinal points)  \ {{{2
 
 0
-  hp@ far," oeste"
-  hp@ far," este"
-  hp@ far," sur"
-  hp@ far," norte"
+  np@ far," oeste"
+  np@ far," este"
+  np@ far," sur"
+  np@ far," norte"
 far>sconstants cardinal$  ( n -- ca len )  drop
 
   \ --------------------------------------------
   cr .(   -Hands)  \ {{{2
 
 0
-  hp@ far," derecha"    \ right
-  hp@ far," izquierda"  \ left
+  np@ far," derecha"    \ right
+  np@ far," izquierda"  \ left
 far>sconstants hand$  ( n -- ca len )  drop
 
   \ ============================================================
@@ -461,18 +461,18 @@ far>sconstants hand$  ( n -- ca len )  drop
   \ Return string "doubloon" or "doubloons", depending on _n_.
 
 0
-  hp@ far," once"
-  hp@ far," diez"
-  hp@ far," nueve"
-  hp@ far," ocho"
-  hp@ far," siete"
-  hp@ far," seis"
-  hp@ far," cinco"
-  hp@ far," cuatro"
-  hp@ far," tres"
-  hp@ far," dos"
-  hp@ far," un"
-  hp@ far," cero"
+  np@ far," once"
+  np@ far," diez"
+  np@ far," nueve"
+  np@ far," ocho"
+  np@ far," siete"
+  np@ far," seis"
+  np@ far," cinco"
+  np@ far," cuatro"
+  np@ far," tres"
+  np@ far," dos"
+  np@ far," un"
+  np@ far," cero"
 far>sconstants number$  ( n -- ca len )  drop
 
 : highlighted$  ( c -- ca len )
