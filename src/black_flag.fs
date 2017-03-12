@@ -36,7 +36,7 @@ only forth definitions
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.50.0+201703051958" ;
+: version  ( -- ca len )  s" 0.51.0+201703121709" ;
 
 cr cr .( Black Flag) cr version type cr
 
@@ -358,7 +358,7 @@ men 2avariable name  ( n -- a )
   \ A double-cell array to hold the address and length
   \ of the names of the crew members, compiled in `names$`.
 
-: name$  ( n -- ca len )  name 2@ save-farstring  ;
+: name$  ( n -- ca len )  name 2@ far>stringer  ;
 
 stock-names avariable used-name  ( n -- a )
   \ An array to hold a true flag when the correspondent name

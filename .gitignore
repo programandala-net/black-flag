@@ -7,7 +7,8 @@
 # Development resources:
 _meta/
 
-# Temporary screenshots:
-*.png
+# Screenshots
+# XXX TODO --
+screenshots/
 
 # vim: filetype=config

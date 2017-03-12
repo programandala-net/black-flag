@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201702271814
+  \ Last modified: 201703120057
 
   \ -----------------------------------------------------------
   \ Description
@@ -117,14 +117,13 @@
   \ independent from the assembler, to be reused by `l:`.
   \
   \ 2017-02-27: Add `ldi,` and `ldd,`.
-
-  \ -----------------------------------------------------------
-  \ XXX TODO
-
-  \ - Make absolute-jump control structures optional.
-  \ - Document.
+  \
+  \ 2017-03-11: Make absolute-jump control structures optional.
+  \ Improve documentation.
 
 ( assembler )
+
+  \ XXX TODO - Finish the documentation.
 
 get-order get-current only forth definitions
 
@@ -147,7 +146,7 @@ assembler-wordlist wordlist>vocabulary assembler
 
 also assembler definitions base @ hex
 
-need ?rel
+need ?rel need inverse-cond
 
   \ Registers
 
@@ -265,8 +264,6 @@ A8 m2 xor, -->
 
 : addix, ( regp -- ) ix-op c, addp, ;
 : addiy, ( regp -- ) iy-op c, addp, ;
-  \ XXX TODO -- study changes needed to use `ix addp,` instead;
-  \ that means `h addp,` should be used instead of `addp,`
 
   \ Macros
 
@@ -284,13 +281,11 @@ A8 m2 xor, -->
 ( assembler )
 
   \ ZX Spectrum specific
-  \ XXX TODO -- make it optional
 
 CF m4 hook,  \ rst $08
 D7 m1 prt,   \ rst $16
 
   \ Index register opcodes
-  \ XXX TODO -- make it optional
 
 86 ma addx, 8E ma adcx, 96 ma subx, 9E ma sbcx, A6 ma andx,
 AE ma xorx, B6 ma orx,  BE ma cpx,  34 ma incx, 35 ma decx,
@@ -300,10 +295,10 @@ AE ma xorx, B6 ma orx,  BE ma cpx,  34 ma incx, 35 ma decx,
 : ftx, ( disp regpi reg -- ) nip 8* 46 + c, c, ;
 : stx, ( reg disp regpi -- ) drop swap 70 + c, c, ;
 : st#x, ( 8b disp regpi -- ) drop 36 c, swap c, c, ;
-: ftpx, ( disp regpi regp -- )
-  3dup 1+ ftx, rot 1+ -rot ftx, ;
-: stpx, ( disp regpi regp -- )
-  3dup 1+ stx, rot 1+ -rot stx, ;  -->
+: ftpx, ( disp regpi regp -- ) 3dup 1+ ftx, rot 1+ -rot ftx, ;
+: stpx, ( disp regpi regp -- ) 3dup 1+ stx, rot 1+ -rot stx, ;
+
+-->
 
 ( assembler )
 
@@ -316,8 +311,7 @@ E2 cconstant po?  EA cconstant pe?
 F2 cconstant p?   FA cconstant m?
 
 : jp>jr ( op1 -- op2 )
-  dup C3 =  if  drop 18 exit  then
-  dup c? > #-273 ?throw  A2 - ;
+  dup C3 = if drop 18 exit then dup c? > #-273 ?throw A2 - ;
   \ Convert an absolute-jump opcode to its relative-jump
   \ equivalent.  Throw error #-273 if the jump condition is
   \ invalid.
@@ -355,12 +349,6 @@ F2 cconstant p?   FA cconstant m?
 
   \ Control structures with relative jumps
 
-: inverse-cond ( op1 -- op2 ) 8 xor ;
-  \ Convert a condition flag (actually, an absolute jump
-  \ opcode) to its opposite.
-  \
-  \ Examples: `c?` to `nc?`; `nz?` to `z?`, etc.
-
 : rahead ( -- orig ) 18 , >rmark ;
   \ Create a relative branch forward.
   \ Leave the origin address of a forward relative branch
@@ -394,54 +382,90 @@ F2 cconstant p?   FA cconstant m?
   \
   \ Note: $18 is the opcode of `jr`.
 
-: rrepeat ( dest cs-id1 orig cs-id2 -- )
-  2swap ragain 2- rthen ;
+: rrepeat ( dest cs-id1 orig cs-id2 --) 2swap ragain 2- rthen ;
   \ End a `rbegin rrepeat` loop.
 
-: rstep ( dest cs-id -- ) 10 (runtil) ;  -->
+: rstep ( dest cs-id -- ) 10 (runtil) ;
   \ End a `rbegin rstep` loop by compiling `djnz`.
   \
   \ Note: $10 is the Z80 opcode for `djnz`.
 
-( assembler )
+base ! set-current set-order
+
+( aif athen aelse abegin awhile auntil aagain arepeat )
 
   \ Control structures with absolute jumps
-  \ XXX TODO -- make them optional
 
-: (aif) ( op -- orig cs-id ) c, >mark 08 ;
+get-order get-current
+only forth-wordlist set-current         need ?pairs
+assembler-wordlist >order set-current   need inverse-cond
+
+: (aif) ( op -- orig cs-id ) c, >mark $08 ;
 
 : aif ( op -- orig cs-id ) inverse-cond (aif) ;
 
-: athen ( orig cs-id -- ) 08 ?pairs >resolve ;
+: athen ( orig cs-id -- ) $08 ?pairs >resolve ;
 
 : aelse ( orig cs-id -- orig cs-id )
-  08 ?pairs C3 (aif) rot swap athen 08 ;
+  $08 ?pairs $C3 (aif) rot swap athen $08 ;
   \ Note: $C3 is the opcode of `jp`.
 
-: abegin ( -- dest cs-id ) <mark 09 ;
+: abegin ( -- dest cs-id ) <mark $09 ;
 
 : awhile ( op -- orig cs-id ) aif 2+ ;
 
-: auntil  inverse-cond c, 09 ?pairs <resolve ;
+: auntil  inverse-cond c, $09 ?pairs <resolve ;
   \ ( dest cs-id op -- )
   \ Compile an absolute conditional jump.
 
-: aagain ( cs-id -- ) C3 auntil ;
+: aagain ( cs-id -- ) $C3 auntil ;
   \ Compile an absolute jump.
   \
   \ Note: $C3 is the opcode of `jp`
 
 : arepeat ( dest cs-id1 orig cs-id2 ) 2swap aagain 2- athen ;
 
-: >amark ( -- a ) here 2- ;
-  \ Leave the address of an absolute forward reference.
+set-current set-order
 
-: >aresolve ( a -- ) >amark swap ! ;
-  \ Resolve an absolute forward reference.
+( inverse-cond >amark >aresolve ?rel unresolved )
 
-base ! set-current set-order
+[unneeded] inverse-cond ?\ : inverse-cond ( op1 -- op2) 8 xor ;
 
-( ?rel unresolved )
+  \ doc{
+  \
+  \ inverse-cond ( op1 -- op2)
+  \
+  \ Convert an assembler condition flag (actually, an absolute
+  \ jump opcode) to its opposite.
+  \
+  \ Examples: `c?` to `nc?`; `nz?` to `z?`, etc.
+  \
+  \ }doc
+
+[unneeded] >amark ?\ : >amark ( -- a ) here 2- ;
+
+  \ doc{
+  \
+  \ >amark  ( -- a )
+  \
+  \ Leave the address of an assembler absolute forward
+  \ reference.
+  \
+  \ }doc
+
+[unneeded] >aresolve ?( need >amark
+
+: >aresolve ( a -- ) >amark swap ! ; ?)
+
+  \ doc{
+  \
+  \ >aresolve  ( a -- )
+  \
+  \ Resolve an assembler absolute forward reference.
+  \
+  \ See also: `>amark`.
+  \
+  \ }doc
 
 [unneeded] ?rel
 
@@ -451,8 +475,8 @@ base ! set-current set-order
   \
   \ ?rel ( n -- )
   \
-  \ If branch _n_ is too long, throw exception #-269
-  \ (relative jump too long).
+  \ If assembler relative branch _n_ is too long, throw
+  \ exception #-269 (relative jump too long).
   \
   \ }doc
 
@@ -488,7 +512,6 @@ variable unresolved> ( -- a ) unresolved0> unresolved> !
 
 : unresolved ( n -- a ) unresolved> @ array> ; ?)
 
-
   \ doc{
   \
   \ unresolved ( n -- a )
@@ -509,22 +532,41 @@ variable unresolved> ( -- a ) unresolved0> unresolved> !
   \ variable.  The code was factored to two assembler macros in
   \ order to make it reusable.
 
-need assembler need macro
+need assembler need macro need >amark need >aresolve
 
 macro execute-hl, ( -- )
   0000 b stp,  >amark      \ save the Forth IP
   0000 b ldp#, >amark      \ point IP to phony_compiled_word
-  jphl,                     \ execute the xt in HL
-  >resolve                  \ phony_compiled_word
-  here cell+ ,              \ point to the phony xt following
+  jphl,                    \ execute the xt in HL
+  >resolve                 \ phony_compiled_word
+  here cell+ ,             \ point to the phony xt following
   0000 b ldp#  >aresolve   \ restore the Forth IP
   endm
-  \ Compile an `execute` with the xt hold in HL.
+
+  \ doc{
+  \
+  \ execute-hl, ( -- )
+  \
+  \ Compile an `execute` with the _xt_ hold in the HL register.
+  \ ``execute-hl,`` is used to call Forth words from Z80.
+  \
+  \ See also: `call-xt,`.
+  \
+  \ }doc
 
 macro call-xt, ( xt -- )
   h ldp#,  execute-hl,
   endm
+
+  \ doc{
+  \
+  \ call-xt, ( xt -- )
+  \
   \ Compile a call to _xt_.
-  \ This is the low-level equivalent of `execute`.
+  \ ``call-xt,`` is the low-level equivalent of `execute`.
+  \
+  \ See also: `execute-hl,`.
+  \
+  \ }doc
 
   \ vim: filetype=soloforth
