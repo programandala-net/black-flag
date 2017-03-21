@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201702221550
+  \ Last modified: 201703172146
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -74,19 +74,19 @@ variable see-address  \ in the word being decoded
     ['] ?branch   of  see-branch     endof
     ['] (do)      of  see-branch     endof
     ['] (?do)     of  see-branch     endof
-    ['] (.")      of  see-sliteral   endof
-    [undefined] cslit ?\ ['] cslit   of see-sliteral endof
-    [undefined] -branch ?\ ['] -branch of see-branch   endof
-  endcase ;  -->
+    ['] (.")      of  see-sliteral   endof -->
 
 ( see )
 
-: colon-end? ( xt -- f )
-  dup  ['] exit =  swap ['] (;code) =  or ;
+    [undefined] cslit    ?\ ['] cslit    of see-sliteral endof
+    [undefined] (abort") ?\ ['] (abort") of see-sliteral endof
+    [undefined] -branch  ?\ ['] -branch  of see-branch   endof
+  endcase ;
+
+: colon-end? ( xt -- f ) dup ['] exit = swap ['] (;code) = or ;
   \ Is _xt_ the end of colon definition?
 
-: colon-xt? ( xt -- f )
-  dup c@ $CD = swap 1+ @ docolon = and ;
+: colon-xt? ( xt -- f ) dup c@ $CD = swap 1+ @ docolon = and ;
   \ Is _xt_ a colon definition?
   \ First, its first byte must be $CD (the Z80 call opcode);
   \ second, its jump address must be the colon interpreter.
@@ -141,7 +141,7 @@ defer .see-body-name ( pfa -- )
   \ see-body ( pfa -- )
   \
   \ Decode the colon word's definition whose body is _pfa_.
-  \ This word is a factor of `see`.
+  \ ``see-body`` is a factor of `see`.
   \
   \ See also: `see-body-from`, `see-xt`.
   \
@@ -161,8 +161,8 @@ defer .see-body-name ( pfa -- )
   \
   \ see ( "name" -- )
   \
-  \ Decode the word's definition _name_.
-  \ At the moment this word works only with colon definitions.
+  \ Decode the word's definition _name_.  At the moment ``see``
+  \ works only with colon definitions.
   \
   \ Origin: Forth-94 (TOOLS), Forth-2012 (TOOLS).
   \
@@ -187,9 +187,9 @@ get-current  also forth definitions
   \ see-body-from ( a -- )
   \
   \ Decode the colon word's definition from _a_, which is part
-  \ of its body. This word is useful to decode words that use
-  \ `exit` in the midle of the definition, because `see` stops
-  \ at the first `exit` found.
+  \ of its body. ``see-body-from`` is useful to decode words
+  \ that use `exit` in the midle of the definition, because
+  \ `see` stops at the first `exit` found.
   \
   \ See also: `see-body`, `see-xt`.
   \
@@ -212,8 +212,8 @@ get-current  also forth definitions
   \
   \ see-xt ( xt -- )
   \
-  \ Decode the word's definition _xt_.
-  \ At the moment this word works only with colon definitions.
+  \ Decode the word's definition _xt_.  At the moment
+  \ ``see-xt`` works only with colon definitions.
   \
   \ The listing can be paused with the space bar, then stopped
   \ with the return key or resumed with any other key.
@@ -286,5 +286,10 @@ previous set-current
   \ useful when they have leading or trailing spaces.
   \
   \ 2017-02-17: Update cross references.
+  \
+  \ 2017-03-13: Improve documentation.
+  \
+  \ 2017-03-17: Support `(abort")`, provided it is defined when
+  \ `see` is compiled.
 
   \ vim: filetype=soloforth

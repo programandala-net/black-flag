@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201702272232
+  \ Last modified: 201703192301
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -23,7 +23,356 @@
   \ retain every copyright, credit and authorship notice, and
   \ this license.  There is no warranty.
 
-( default-udg-chars udg> udg! udg: )
+( /udg /udg* udg-width udg> udg! udg: )
+
+[unneeded] /udg ?\ 8 cconstant /udg
+
+  \ doc{
+  \
+  \ /udg ( -- b )
+  \
+  \ _b_ is the size of a UDG (User Defined Graphic), in bytes.
+  \
+  \ See also: `udg-width`, `udg!`.
+  \
+  \ }doc
+
+[unneeded] /udg* ?\ need 8* need alias ' 8* alias /udg*
+
+  \ doc{
+  \
+  \ /udg* ( n1 -- n2 )
+  \
+  \ Multiply _n1_ by the `/udg`, resulting _n2_. Used by
+  \ `udg>`.
+  \
+  \ ``/udg*`` is an `alias` of `8*`.
+  \
+  \ }doc
+
+[unneeded] udg-width ?\ 8 cconstant udg-width
+
+  \ doc{
+  \
+  \ udg-width ( -- b )
+  \
+  \ _b_ is the width of a UDG (User Defined Graphic), in
+  \ pixels.
+  \
+  \ See also: `/udg`, `udg!`.
+  \
+  \ }doc
+
+[unneeded] udg> ?( need /udg* need get-udg
+
+: udg> ( n -- a ) /udg* get-udg + ; ?)
+
+  \ doc{
+  \
+  \ udg> ( c -- a )
+  \
+  \ Convert UDG number _n_ (0..255) to the address _a_ of its
+  \ bitmap, pointed by `os-udg`.
+  \
+  \ See also: `udg!`, `udg:`, `/udg*`, `get-udg`.
+  \
+  \ }doc
+
+[unneeded] udg! ?( need udg>
+
+: udg! ( b0..b7 c -- ) udg> dup 7 + ?do i c! -1 +loop ; ?)
+
+  \ doc{
+  \
+  \ udg! ( b0..b7 c -- )
+  \
+  \ Store the 8-byte bitmap _b0..b7_ into UDG _c_ (0..255) of
+  \ the UDG font pointed by `os-udg`.  _b0_ is the first (top)
+  \ scan.  _b7_ is the last (bottom) scan.
+  \
+  \ See also: `udg:`, `udg>`.
+  \
+  \ }doc
+
+[unneeded] udg: ?( need udg! ?(
+
+: udg: ( b0..b7 c "name" -- ) dup cconstant udg! ; ?)
+
+  \ doc{
+  \
+  \ udg: ( b0..b7 c "name" -- )
+  \
+  \ Create a `cconstant` _name_ for UDG char _c_ (0..255) and
+  \ store the 8-byte bitmap _b0..b7_ into that UDG char.  _b0_
+  \ is the first (top) scan.  _b7_ is the last (bottom) scan.
+  \
+  \ See also: `udg!`, `udg>`.
+  \
+  \ }doc
+
+( udg-group )
+
+need udg-scan>number need udg> need /udg need /udg*
+need parse-name-thru need j need anon
+
+here anon> ! 3 cells allot
+
+: udg-group ( width height c "name..." -- )
+  3 set-anon
+    \ Set the anonymous local variables:
+    \   [ 0 ] anon = _c_
+    \   [ 1 ] anon = height
+    \   [ 2 ] anon = width
+  [ 1 ] anon @ /udg* 0 ?do
+    [ 2 ] anon @ 0 ?do
+      parse-name-thru udg-scan>number
+      j /udg /mod [ 2 ] anon @ * i + /udg* +
+        \ Calculate the offset from the address of _c_ in
+        \ the UDG font, to store the scan _b_.
+      [ 0 ] anon @ udg> + c!
+        \ Store _b_ at the proper address in the UDG font,
+        \ i.e. the address of _c_ plus the offset.
+      loop loop ;
+
+  \ doc{
+  \
+  \ udg-group ( c -- )
+  \
+  \ Parse a group of UDG definitions organized in _width_
+  \ columns and _height_ rows, and store them starting from UDG
+  \ character _c_ (0..255).  The maximum _width_ is 7 (imposed
+  \ by the size of Forth source blocks). _height_ has no
+  \ maximum, as the UDG block can ocuppy more than one Forth
+  \ block (provided the Forth block have no index line, i.e.
+  \ `load-app` is used to load the source).
+  \
+  \ The scans can be formed by binary digits, by the characters
+  \ hold in `udg-blank` and `udg-dot`, or any combination of
+  \ both notations.
+  \
+  \ Usage example:
+
+  \ ----
+  \ 5 1 140 udg-group
+  \
+  \ ..XXXX.. ..XXXX.. ..XXXX.. ..XXXX.. ..XXXX..
+  \ .XXXXXX. .XXXXXX. .XXXXXX. .XXXXXX. .X.XXXX.
+  \ XXXXXXXX XXXXXXXX XXXXXXXX X.XXXXXX X.XXXXXX
+  \ XXXXXXXX XXXXXXXX X.XXXXXX X.XXXXXX XXXXXXXX
+  \ XXXXXXXX X.XXXXXX X.XXXXXX XXXXXXXX XXXXXXXX
+  \ XX..XXXX XX.XXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+  \ .XXXXXX. .XXXXXX. .XXXXXX. .XXXXXX. .XXXXXX.
+  \ ..XXXX.. ..XXXX.. ..XXXX.. ..XXXX.. ..XXXX..
+  \ ----
+  \
+  \ See also: `udg-block`.
+  \
+  \ }doc
+
+( udg-scan>number )
+
+need binary
+
+create udg-blank '.' c,  create udg-dot 'X' c,
+
+  \ doc{
+  \
+  \ udg-blank  ( -- ca )
+  \
+  \ A character variable that holds the characted used by
+  \ `grid` and `g` as a grid blank. By default it's '.'.
+  \
+  \ See also: `udg-dot`, `udg-scan>binary`.
+  \
+  \ }doc
+
+  \ doc{
+  \
+  \ udg-dot  ( -- ca )
+  \
+  \ A character variable that holds the characted used by
+  \ `grid` and `g` as a grid blank. By default it's 'X'.
+  \
+  \ See also: `udg-blank`, `udg-scan>binary`.
+  \
+  \ }doc
+
+: udg-scan>binary ( ca len -- )
+  bounds ?do i c@ dup udg-blank c@ =
+                  if   drop '0' i c!
+                  else udg-dot c@ = if '1' i c! then
+                  then loop ;
+
+  \ doc{
+  \
+  \ udg-scan>binary ( ca len -- )
+  \
+  \ Convert the characters `udg-blank` and `udg-dot` found in
+  \ UDG scan string _ca len_ to '0' and '1' respectively.
+  \
+  \ See also: `udg-scan>number?`.
+  \
+  \ }doc
+
+: udg-scan>number? ( ca len -- n true | false )
+  2dup udg-scan>binary base @ >r binary number? r> base ! ;
+
+  \ doc{
+  \
+  \ udg-scan>number? ( ca len -- n true | false )
+  \
+  \ Is UDG scan string _ca len_ a valid binary number?
+  \ The string is processed by `udg-scan>binary` first.
+  \
+  \ See also: `udg-scan>binary`, `udg-scan>number`.
+  \
+  \ }doc
+
+: udg-scan>number ( ca len -- n )
+  >stringer udg-scan>number? 0= #-290 ?throw ;
+
+  \ doc{
+  \
+  \ udg-scan>number ( ca len -- n )
+  \
+  \ If UDG scan string _ca len_, after being processed by
+  \ `udg-scan>binary`, is a valid binary number, return the
+  \ result _n_.  Otherwise throw exception #-290 (invalid UDG
+  \ scan).
+  \
+  \ See also: `udg-scan>number?`, `udg-block`, `udg-group`.
+  \
+  \ }doc
+
+( parse-udg-block-row )
+
+  \ XXX UNDER DEVELOPMENT -- 2017-03-19
+  \
+  \ A possible factor of `udg-block` to skip invalid UDG scans,
+  \ in order to allow UDG blocks span on several Forth blocks,
+  \ ignoring the index line.
+  \
+  \ But anyway this is not needed when `load-app` is used.
+
+need parse-name-thru
+
+: parse-udg-block-row ( "name..." -- ca len )
+  base @ >r
+  begin
+    begin parse-name-thru 2dup >stringer 2dup udg-scan>binary
+          evaluate
+    while
+  while repeat r> base ! ;
+
+
+: parse-udg-block-row ( len "name..." -- ca len )
+  begin
+    begin dup parse-name-thru rot over <> while 2drop repeat
+    2dup
+  while repeat ;
+
+( udg-block )
+
+need udg-scan>number need udg> need /udg need /udg*
+need udg-width need parse-name-thru need j need anon
+
+here anon> ! 3 cells allot
+
+: udg-block ( width height c "name..." -- )
+  3 set-anon
+    \ Set the anonymous local variables:
+    \   [ 0 ] anon = _c_
+    \   [ 1 ] anon = height
+    \   [ 2 ] anon = width
+  [ 1 ] anon @ /udg* 0 ?do parse-name-thru ( ca len )
+    [ 2 ] anon @ 0 ?do
+      over udg-width udg-scan>number ( ca len b )
+      j /udg /mod [ 2 ] anon @ * i + /udg* +
+        \ Calculate the offset from the address of _c_ in
+        \ the UDG font, to store the scan _b_.
+      [ 0 ] anon @ udg> + c!
+        \ Store _b_ at the proper address in the UDG font,
+        \ i.e. the address of _c_ plus the offset.
+      udg-width /string ( ca' len' ) loop 2drop loop ;
+
+  \ doc{
+  \
+  \ udg-block ( width height c "name..." -- )
+  \
+  \ Parse a UDG block, from UDG character _c_ (0..255). _width_
+  \ and _height_ are in characters.  The maximum _width_ is 7
+  \ (imposed by the size of Forth source blocks). _height_ has
+  \ no maximum, as the UDG block can ocuppy more than one Forth
+  \ block (provided the Forth block have no index line, i.e.
+  \ `load-app` is used to load the source).
+  \
+  \ The scans can be formed by binary digits, by the characters
+  \ hold in `udg-blank` and `udg-dot`, or any combination of
+  \ both notations.
+  \
+  \ Usage example:
+
+  \ ----
+  \ 5 2 140 udg-block
+  \
+  \ ..XXXX....XXXX....XXXX....XXXX....XXXX..
+  \ .XXXXXX..XXXXXX..XXXXXX..XXXXXX..X.XXXX.
+  \ XXXXXXXXXXXXXXXXXXXXXXXXX.XXXXXXX.XXXXXX
+  \ XXXXXXXXXXXXXXXXX.XXXXXXX.XXXXXXXXXXXXXX
+  \ XXXXXXXXX.XXXXXXX.XXXXXXXXXXXXXXXXXXXXXX
+  \ XX..XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  \ .XXXXXX..XXXXXX..XXXXXX..XXXXXX..XXXXXX.
+  \ ..XXXX....XXXX....XXXX....XXXX....XXXX..
+  \ ..XXXX....XXXX....XXXX....XXXX....XXXX..
+  \ .XXXXXX..XXXXXX..XXXXXX..XXXXXX..X.XXXX.
+  \ XXXXXXXXXXXXXXXXXXXXXXXXX.XXXXXXX.XXXXXX
+  \ XXXXXXXXXXXXXXXXX.XXXXXXX.XXXXXXXXXXXXXX
+  \ XXXXXXXXX.XXXXXXX.XXXXXXXXXXXXXXXXXXXXXX
+  \ XX..XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  \ .XXXXXX..XXXXXX..XXXXXX..XXXXXX..XXXXXX.
+  \ ..XXXX....XXXX....XXXX....XXXX....XXXX..
+  \ ----
+
+  \ }doc
+
+( make-block-chars default-udg-chars )
+
+[unneeded] make-block-chars ?( need assembler
+
+code make-block-chars ( a -- )
+  h pop, b push,
+  #128 a ld#,  \ first char is #128
+  rbegin
+    af push, a b ld, 0B3B call, af pop, a inc,
+  #144 cp#, nz? runtil  \ last char is #143
+  b pop, jpnext, end-code ?)
+
+  \ Note: $0B3B is a secondary entry point to the PO-GR-1 ROM
+  \ routine ($0B38), in order to force a non-default value of
+  \ the HL register, which holds the destination address.
+
+  \ doc{
+  \
+  \ make-block-chars ( a -- )
+  \
+  \ Make the bit patterns of the 16 ZX Spectrum block
+  \ characters, originally assigned to character codes
+  \ 128..143, and store them (128 bytes in total) from address
+  \ _a_.
+  \
+  \ ``make-block-chars`` is provided for easier conversion of
+  \ BASIC programs that use the original block characters.
+  \ These characters are part of the ZX Spectrum character set,
+  \ but they are not included in the ROM font. Instead, their
+  \ bitmaps are built on the fly by the BASIC ROM printing
+  \ routine. In Solo Forth there's no such restriction, and
+  \ characters 0..255 can be redefined by the user.
+  \
+  \ ``make-block-chars`` is written in Z80 and uses 18 B of
+  \ code space, but the word `block-chars` is provided as an
+  \ alternative.
+  \
+  \ }doc
 
 [unneeded] default-udg-chars ?( need rom-font need get-udg
 
@@ -46,302 +395,6 @@ move ?)
   \ 144.
   \
   \ See also: `block-chars`, `set-udg`, `rom-font`.
-  \
-  \ }doc
-
-[unneeded] udg> ?( need 8* need get-udg
-: udg> ( n -- a ) 8* get-udg + ; ?)
-
-  \ doc{
-  \
-  \ udg> ( c -- a )
-  \
-  \ Convert UDG number _n_ (0..255) to the address _a_ of its
-  \ bitmap.
-  \
-  \ See also: `udg!`, `udg:`.
-  \
-  \ }doc
-
-[unneeded] udg! ?( need udg>
-: udg! ( b0..b7 c -- ) udg> dup 7 + ?do  i c!  -1 +loop ; ?)
-
-  \ doc{
-  \
-  \ udg! ( b0..b7 c -- )
-  \
-  \ Store the 8-byte bitmap _b0..b7_ into UDG _c_ (0..255).
-  \ _b0_ is the first (top) scan.  _b7_ is the last (bottom)
-  \ scan.
-  \
-  \ See also: `udg:`.
-  \
-  \ }doc
-
-[unneeded] udg: ?( need udg! ?(
-: udg: ( b0..b7 c "name" -- ) dup constant  udg! ; ?)
-
-  \ doc{
-  \
-  \ udg: ( b0..b7 c "name" -- )
-  \
-  \ Create a constant _name_ for UDG char _c_ (0..255) and
-  \ store the 8-byte bitmap _b0..b7_ into that UDG char.  _b0_
-  \ is the first (top) scan.  _b7_ is the last (bottom) scan.
-  \
-  \ See also: `udg!`.
-  \
-  \ }doc
-
-( udg[ )
-
-need get-udg need binary
-
-variable udg0  variable current-udg  variable current-scan
-  \ XXX TODO -- rename (to prevent name clashes) and document
-
-: udg[ ( b -- )
-  dup udg0 !  current-udg !  current-scan off  binary ;
-
-  \ doc{
-  \
-  \ udg[ ( c -- )
-  \
-  \ Start a set of UDG definitions, from UDG character _c_
-  \ (0..255).
-  \
-  \ Usage example:
-  \
-  \ ----
-  \ 140 udg[  \ define UDG 140..144
-  \
-  \ 00111100 | 00111100 | 00111100 | 00111100 | 00111100 ||
-  \ 01111110 | 01111110 | 01111110 | 01111110 | 01011110 ||
-  \ 11111111 | 11111111 | 11111111 | 10111111 | 10111111 ||
-  \ 11111111 | 11111111 | 10111111 | 10111111 | 11111111 ||
-  \ 11111111 | 10111111 | 10111111 | 11111111 | 11111111 ||
-  \ 11001111 | 11011111 | 11111111 | 11111111 | 11111111 ||
-  \ 01111110 | 01111110 | 01111110 | 01111110 | 01111110 ||
-  \ 00111100 | 00111100 | 00111100 | 00111100 | 00111100 ||]
-  \ ----
-  \
-  \ See also: `|`, `||`, `||]`.
-  \
-  \ }doc
-
-: | ( b -- ) get-udg current-udg @ 8 * current-scan @ + + c!
-               1 current-udg +! ;
-
-  \ doc{
-  \
-  \ | ( b -- )
-  \
-  \ Store scan _b_ into the current UDG being defined.
-  \
-  \ See also: `udg[`, `||`, `||]`.
-  \
-  \ }doc
-
-: || ( b -- ) |  1 current-scan +!  udg0 @ current-udg ! ;
-
-  \ doc{
-  \
-  \ || ( b -- )
-  \
-  \ Store scan _b_ into the current UDG being defined and start
-  \ a new row of scans.
-  \
-  \ See also: `udg[`, `|`, `||]`.
-  \
-  \ }doc
-
-
-: ||] ( b -- ) ||  decimal ;
-
-  \ doc{
-  \
-  \ ||] ( b -- )
-  \
-  \ Store scan _b_ into the current UDG being defined and stop
-  \ defining UDGs.
-  \
-  \ See also: `udg[`, `|`, `||`.
-  \
-  \ }doc
-
-( udg-block[ )
-
-  \ XXX UNDER DEVELOPMENT
-  \ 2016-10-04: Start.
-
-: udg-block[ ( c "ccc" -- )
-  begin   parse-name 2dup s" ]udg-block" compare
-  while   dup 8 mod dup abort" Wrong scan length"
-    udg-block-row[
-  repeat ;
-
-: ]udg-block ;
-
-  \ doc{
-  \
-  \ udg-block[ ( c "ccc" -- )
-  \
-  \ Start a set of UDG definitions that form a sprite, from UDG
-  \ character _c_ (0..255).
-
-  \ Usage example:
-  \
-  \ ----
-  \ 140 udg-block[
-  \
-  \ 0011110000111100001111000011110000111100
-  \ 0111111001111110011111100111111001011110
-  \ 1111111111111111111111111011111110111111
-  \ 1111111111111111101111111011111111111111
-  \ 1111111110111111101111111111111111111111
-  \ 1100111111011111111111111111111111111111
-  \ 0111111001111110011111100111111001111110
-  \ 0011110000111100001111000011110000111100
-  \
-  \ ]udg-block
-  \ ----
-  \
-  \ }doc
-
-( udg-row[ )
-
-need get-udg need evaluate need binary need abort"
-
-8 constant udg-height  8 constant udg-width
-  \ height in bytes (scans)
-  \ width in pixels
-
-variable udg-row-height  variable udg-row-width
-  \ height in scans
-  \ width in characters
-
-variable udg-row-first-udg
-
-: ?block-scan-length ( n -- )
-  dup udg-width mod abort" Wrong block scan length"
-  udg-width / udg-row-width @ ?dup
-  if    <> abort" Wrong block width"
-          \ not the first scan, so check the width
-  else  udg-row-width !  then ;
-          \ first scan, so save the width
-
-: udg-row-current-row ( -- n )
-  udg-row-height @ udg-height / ;
-
-: udg-current-scan ( -- n )
-  udg-row-height @ udg-height mod ;  -->
-
-( udg-row[ )
-
-: >udg-scan ( n -- a )
-  udg-height * udg-current-scan +
-  udg-row-first-udg @ udg-height * +  get-udg + ;
-  \ Convert column _n_ of the current UDG row to address _a_
-  \ of the scan of the current UDG.
-
-: udg-scan! ( b n -- ) >udg-scan c! ;
-  \ Store UDG scan _b_, which is at column _n_ of the current UDG
-  \ block.
-
-: udg-row-scan ( ca len -- )
-  base @ >r binary  dup ?block-scan-length
-  dup udg-width / 0 ?do  over udg-width
-    evaluate i udg-scan!  udg-width /string
-  loop  2drop  r> base !  1 udg-row-height +! ;
-  \ Manage a UDG row scan _ca len_, extracting the individual
-  \ UDG scans from it.
-
-: ]udg-row ( ca len -- )
-  2drop  udg-row-height @ udg-height <>
-  abort" The height of the UDG row is wrong" ;
-  \ End a UDG row. Check its height.
-
-: udg-row-scan? ( ca len -- f ) s" ]udg-row" compare 0<> ;
-  \ Is the string _ca len_ a UDG row scan
-  \ instead of the end of the UDG row?
-
--->
-
-( udg-row[ )
-
-: parse-udg-row-scan ( "ccc" -- ca len )
-  begin   parse-name dup 0=
-  while   2drop refill 0= abort" UDG row scan is missing"
-  repeat ;
-
-: udg-row[ ( c "ccc" -- )
-  udg-row-first-udg !  udg-row-height off  udg-row-width off
-  begin   parse-udg-row-scan 2dup udg-row-scan?
-  while   udg-row-scan
-  repeat  ]udg-row ;
-
-  \ doc{
-  \
-  \ udg-row[ ( c "ccc" -- )
-  \
-  \ Start a UDG row (a graphic formed by a row of UDG). Parse
-  \ its scans, extract the individual UDG scans and store them
-  \ starting from UDG code _c_ (0..255).
-
-  \ Usage example:
-  \
-  \ ----
-  \ 140 udg-row[
-  \
-  \ 0011110000111100001111000011110000111100
-  \ 0111111001111110011111100111111001011110
-  \ 1111111111111111111111111011111110111111
-  \ 1111111111111111101111111011111111111111
-  \ 1111111110111111101111111111111111111111
-  \ 1100111111011111111111111111111111111111
-  \ 0111111001111110011111100111111001111110
-  \ 0011110000111100001111000011110000111100
-  \
-  \ ]udg-row
-  \ ----
-  \
-  \ }doc
-
-( make-block-chars )
-
-need assembler
-
-code make-block-chars ( a -- )
-  h pop, b push,
-  #128 a ld#,  \ first char is #128
-  rbegin
-    af push, a b ld, 0B3B call, af pop, a inc,
-  #144 cp#, nz? runtil  \ last char is #143
-  b pop, jpnext, end-code
-
-  \ Note: $0B3B is a secondary entry point to the PO-GR-1 ROM
-  \ routine ($0B38), in order to force a non-default value of
-  \ the HL register, which holds the destination address.
-
-  \ doc{
-  \
-  \ make-block-chars ( a -- )
-  \
-  \ Make the bit patterns of the 16 ZX Spectrum block
-  \ characters, originally assigned to character codes
-  \ 128..143, and store them (128 bytes in total) from address
-  \ _a_.
-  \
-  \ This word is provided for easier conversion of BASIC
-  \ programs that use the original block characters. These
-  \ characters are part of the ZX Spectrum character set, but
-  \ they are not included in the ROM font. Instead, their
-  \ bitmaps are built on the fly by the BASIC ROM printing
-  \ routine. In Solo Forth there's no such restriction, and
-  \ characters 0..255 can be redefined by the user.
-  \
-  \ This word is written in Z80 and uses 18 B of code space,
-  \ but the word `block-chars` is provided as an alternative.
   \
   \ }doc
 
@@ -383,7 +436,8 @@ $FF $FF $FF $FF $FF $FF $FF $FF #143 udg! #128 udg> 8 erase
   \
   \ }doc
 
-( set-udg get-udg )
+( set-udg get-udg type-udg )
+
 
 [unneeded] set-udg ?( need os-udg
 
@@ -422,11 +476,27 @@ code get-udg ( -- a ) 2A c, os-udg , jppushhl, end-code ?)
   \
   \ }doc
 
-\ (cursor-addr) cursor-addr \
+[unneeded] type-udg
 
-[unneeded] (cursor-addr) ?( need assembler
+?\ : type-udg ( ca len -- ) bounds ?do i c@ emit-udg loop  ;
 
-create (cursor-addr) ( -- a ) asm
+  \ doc{
+  \
+  \ type-udg ( ca len -- )
+  \
+  \ If _len_ is greater than zero, display the UDG character
+  \ string _ca len_. All characters of the string are printed
+  \ with `emit-udg`.
+  \
+  \ See also: `type`.
+  \
+  \ }doc
+
+( xy>scra_ xy>scra )
+
+[unneeded] xy>scra_ ?( need assembler
+
+create xy>scra_ ( -- a ) asm
 
   b a ld, %11000 and#, #64 add#, a d ld, b a ld, %111 and#,
   rrca, rrca, rrca, a e ld, c a ld, e add, a e ld,
@@ -454,7 +524,7 @@ create (cursor-addr) ( -- a ) asm
 
   \ doc{
   \
-  \ (cursor-addr) ( -- a )
+  \ xy>scra_ ( -- a )
   \
   \ Return address _a_ of a Z80 routine that calculates the
   \ screen address correspondent to given cursor coordinates.
@@ -468,16 +538,16 @@ create (cursor-addr) ( -- a ) asm
   \
   \ - DE = screen address
   \
-  \ See also: `cursor-addr`, `(pixel-addr)`.
+  \ See also: `xy>scra`, `gxy>scra_`.
   \
   \ }doc
 
-[unneeded] cursor-addr ?( need assembler need (cursor-addr)
+[unneeded] xy>scra ?( need assembler need xy>scra_
 
-code cursor-addr ( x y -- a )
+code xy>scra ( x y -- a )
 
   h pop, l a ld, h pop, b push, a b ld, l c ld,
-  (cursor-addr) call, exde, b pop, jppushhl, end-code ?)
+  xy>scra_ call, exde, b pop, jppushhl, end-code ?)
 
   \ pop hl
   \ ld a,l
@@ -492,20 +562,20 @@ code cursor-addr ( x y -- a )
 
   \ doc{
   \
-  \ cursor-addr ( x y -- a )
+  \ xy>scra ( x y -- a )
   \
   \ Convert cursor coordinates _x y_ to their correspondent
   \ screen address _a_.
   \
-  \ See also: `(cursor-addr)` , `pixel-addr`.
+  \ See also: `xy>scra_` , `gxy>scra`.
   \
   \ }doc
 
-\ (cursor-addr) cursor-addr \
+( xy>scra_ xy>scra )
 
-[unneeded] (cursor-addr) ?( need assembler
+[unneeded] xy>scra_ ?( need assembler
 
-create (cursor-addr) ( -- a ) asm
+create xy>scra_ ( -- a ) asm
 
   \ XXX TMP --
   \
@@ -536,7 +606,7 @@ create (cursor-addr) ( -- a ) asm
   \ How To Write ZX Spectrum Games – Chapter 9
   \ http://chuntey.arjunnair.in/?p=154
 
-  \ (cursor-addr) ( -- a )
+  \ xy>scra_ ( -- a )
   \
   \ Return address _a_ of a Z80 routine that calculates the
   \ screen address correspondent to given cursor coordinates.
@@ -550,13 +620,13 @@ create (cursor-addr) ( -- a ) asm
   \
   \ - HL = screen address
   \
-  \ See also: `cursor-addr`, `(pixel-addr)`.
+  \ See also: `xy>scra`, `gxy>scra_`.
 
-[unneeded] cursor-addr ?( need assembler need (cursor-addr)
+[unneeded] xy>scra ?( need assembler need xy>scra_
 
-code cursor-addr ( x y -- a )
+code xy>scra ( x y -- a )
 
-  h pop, d pop, l d ld, (cursor-addr) call, jppushhl,
+  h pop, d pop, l d ld, xy>scra_ call, jppushhl,
   end-code ?)
 
   \ pop hl           ; L = y coordinate
@@ -565,27 +635,27 @@ code cursor-addr ( x y -- a )
   \ call cursor_addr
   \ jp push_hl
 
-  \ cursor-addr ( x y -- a )
+  \ xy>scra ( x y -- a )
   \
   \ Convert cursor coordinates _x y_ to their correspondent
   \ screen address _a_.
   \
-  \ See also: `(cursor-addr)` , `pixel-addr`.
+  \ See also: `xy>scra_` , `gxy>scra`.
 
-\ (display-char-bitmap) \
+( display-char-bitmap_ )
 
-[unneeded] (display-char-bitmap) ?(
+[unneeded] display-char-bitmap_ ?(
 
-need assembler need (cursor-addr)
+need assembler need xy>scra_
 
-create (display-char-bitmap) ( -- a ) asm
+create display-char-bitmap_ ( -- a ) asm
 
   \ ; Input:
   \ ;   HL = address of the character bitmap
   \ ;   B = y coordinate (0..23)
   \ ;   C = x coordinate (0..31)
 
-  (cursor-addr) call, 8 b ld#,
+  xy>scra_ call, 8 b ld#,
 
   \   call cursor_addr ; DE = screen address
   \   ld b,8 ; pixels high
@@ -602,7 +672,7 @@ create (display-char-bitmap) ( -- a ) asm
 
   \ doc{
   \
-  \ (display-char-bitmap) ( -- a )
+  \ display-char-bitmap_ ( -- a )
   \
   \ Return address _a_ of a Z80 routine that displays
   \ the bitmap of a character at given cursor coordinates.
@@ -615,25 +685,25 @@ create (display-char-bitmap) ( -- a ) asm
   \
   \ }doc
 
-\ (display-char-bitmap) \
+( display-char-bitmap_ )
 
   \ XXX TMP --
   \
   \ Alternative version that uses the version of
-  \ `(cursor-addr)` that does not use the BC register.
+  \ `xy>scra_` that does not use the BC register.
 
-[unneeded] (display-char-bitmap) ?(
+[unneeded] display-char-bitmap_ ?(
 
-need assembler need (cursor-addr)
+need assembler need xy>scra_
 
-create (display-char-bitmap) ( -- a ) asm
+create display-char-bitmap_ ( -- a ) asm
 
   \ ; Input:
   \ ;   HL = address of the character bitmap
   \ ;   D = y coordinate (0..23)
   \ ;   E = x coordinate (0..31)
 
-  (cursor-addr) call,
+  xy>scra_ call,
 
   \   push hl
   \   call cursor_addr      ; HL = screen address
@@ -653,7 +723,7 @@ create (display-char-bitmap) ( -- a ) asm
 
   end-asm ?)
 
-  \ (display-char-bitmap) ( -- a )
+  \ display-char-bitmap_ ( -- a )
   \
   \ Return address _a_ of a Z80 routine that displays
   \ the bitmap of a character at given cursor coordinates.
@@ -670,7 +740,7 @@ create (display-char-bitmap) ( -- a ) asm
 
 [unneeded] at-xy-display-udg ?(
 
-need assembler need (display-char-bitmap) need os-udg
+need assembler need display-char-bitmap_ need os-udg
 
 unused code at-xy-display-udg ( c x y -- )
 
@@ -683,7 +753,7 @@ unused code at-xy-display-udg ( c x y -- )
   \ ld e,l                    ; E = x coordinate
 
   h pop, b push, d b ld, e c ld, h addp, h addp, h addp,
-  os-udg d ftp, d addp, (display-char-bitmap) call,
+  os-udg d ftp, d addp, display-char-bitmap_ call,
 
   \ pop hl                    ; HL = _c_ (0..255), H must be 0
   \ push bc                   ; save Forth IP
@@ -719,7 +789,7 @@ unused code at-xy-display-udg ( c x y -- )
 
 [unneeded] udg-at-xy-display ?(
 
-need assembler need (display-char-bitmap) need os-udg
+need assembler need display-char-bitmap_ need os-udg
 
 unused code udg-at-xy-display ( x y c -- )
 
@@ -733,7 +803,7 @@ unused code udg-at-xy-display ( x y c -- )
   \ add hl,de       ; HL = address of the bitmap of _c_
 
   d pop, e a ld, d pop, b push, a b ld, e c ld,
-  (display-char-bitmap) call,
+  display-char-bitmap_ call,
 
   \ pop de                    ; E = y coordinate
   \ ld a,e                    ; A = y coordinate
@@ -761,22 +831,6 @@ unused code udg-at-xy-display ( x y c -- )
   \ not changed (only the character bitmap is displayed).
   \
   \ See also: `at-xy-display-udg`.
-  \
-  \ }doc
-
-( type-udg )
-
-: type-udg ( ca len -- ) bounds ?do i c@ emit-udg loop  ;
-
-  \ doc{
-  \
-  \ type-udg ( ca len -- )
-  \
-  \ If _len_ is greater than zero, display the UDG character
-  \ string _ca len_. All characters of the string are printed
-  \ with `emit-udg`.
-  \
-  \ See also: `type`.
   \
   \ }doc
 
@@ -855,5 +909,24 @@ unused code udg-at-xy-display ( x y c -- )
   \
   \ 2017-02-27: Move `get-font` and `rom-font` to the new
   \ module <printing.fonts.fs>.
+  \
+  \ 2017-03-13: Improve documentation.  Update references:
+  \ `(pixel-addr)` to `gxy>scra_`, `pixel-addr` to `gxy>scra`.
+  \ Rename: `cursor-addr` to `xy>scra`, `(cursor-addr)` to
+  \ `xy>scra_`, `(display-char-bitmap)` to
+  \ `display-char-bitmap_`.
+  \
+  \ 2017-03-17: Add `grid`, `end-grid`, `g`... Another tool to
+  \ define UDG grids, before combining all of them into one
+  \ single tool with all the features.
+  \
+  \ 2017-03-18: Start implementation of `udg-block`, which will
+  \ supersede `grid` and `udg-row[`.
+  \
+  \ 2017-03-19: Add `/udg`, `/udg*`, `udg-width`. Finish
+  \ `udg-block`. Add `udg-group`.  Remove `udg[`, `udg-row[`,
+  \ and the experimental `grid`; they are superseded by
+  \ `udg-block` and `udg-group`. Compact the code, saving one
+  \ blocks. Improve documentation.
 
   \ vim: filetype=soloforth

@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201702221550
+  \ Last modified: 201703161628
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -80,10 +80,10 @@ code ms ( u -- )
 
 ( frames@ frames! reset-frames )
 
-need os-frames
 
+[unneeded] frames@ ?( need os-frames
 : frames@ ( -- d )
-  os-frames @ [ os-frames cell+ ] literal c@ ;
+  os-frames @ [ os-frames cell+ ] literal c@ ; ?)
 
   \ doc{
   \
@@ -96,8 +96,9 @@ need os-frames
   \
   \ }doc
 
+[unneeded] frames@ ?( need os-frames
 : frames! ( d -- )
-  [ os-frames cell+ ] literal c! os-frames ! ;
+  [ os-frames cell+ ] literal c! os-frames ! ; ?)
 
   \ doc{
   \
@@ -110,7 +111,8 @@ need os-frames
   \
   \ }doc
 
-: reset-frames ( -- ) 0. frames! ;
+[unneeded] reset-frames
+?\ need frames! : reset-frames ( -- ) 0. frames! ;
 
   \ doc{
   \
@@ -185,7 +187,7 @@ need os-frames
 [unneeded] pause ?( need ?frames
 
 : pause ( u -- )
-  ?dup if  ?frames exit  then  begin  key?  until ; ?)
+  ?dup if ?frames exit then  begin key? until ; ?)
 
   \ doc{
   \
@@ -196,12 +198,15 @@ need os-frames
   \ TV (there are 50 frames per second in in Europe and 60
   \ frames per second in USA), or until a key is pressed.
   \
-  \ This word is a convenience that works like the homonymous
+  \ ``pause`` is a convenience that works like the homonymous
   \ keyword of Sinclair BASIC.
   \
   \ See: `frames`, `?frames`, `os-frames`, `?seconds`.
   \
   \ }doc
+
+  \ XXX TODO -- Rename `pause` to `basic-pause` or something,
+  \ when the multitasking `pause` will be implemented.
 
 ( leapy-year? date set-date get-date )
 
@@ -413,5 +418,10 @@ need get-time need get-date
   \
   \ 2017-02-17: Fix typo in the documentation.  Update cross
   \ references.
+  \
+  \ 2017-03-13: Improve documentation.
+  \
+  \ 2017-03-16: Make `frames@`, `frames!` and `reset-frames`
+  \ individually accessible to `need`.
 
   \ vim: filetype=soloforth
