@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201703212056
+  \ Last modified: 201703291155
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -154,7 +154,7 @@ code rdraw ( gx gy -- )
     \  jr      nc,dl_x_ge_y
     \ ; gy is greater than gx
 
-  c l ld, d push, a xor, a e ld, 00 rl# jr,  rthen
+  c l ld, d push, a xor, a e ld, #0 rl# jr,  rthen
     \  ld      l,c
     \  push    de
     \  xor     a
@@ -171,7 +171,7 @@ code rdraw ( gx gy -- )
     \  push    de
     \  ld      d,$00
 
-  00 l: b h ld, b a ld, rra, -->
+  #0 l: b h ld, b a ld, rra, -->
     \ dl_larger:
     \  ld      h,b
     \  ld      a,b
@@ -179,14 +179,14 @@ code rdraw ( gx gy -- )
 
 ( rdraw )
 
-  rbegin  l add, 01 rl# c? ?jr, h cp, 02 rl# c? ?jr,
+  rbegin  l add, #1 rl# c? ?jr, h cp, #2 rl# c? ?jr,
     \ d_l_loop:
     \  add     a,l
     \  jr      c,d_l_diag
     \  cp      h
     \  jr      c,d_l_hr_vt
 
-  01 l: h sub, a c ld, exx, b pop, b push, 03 rl# jr,
+  #1 l: h sub, a c ld, exx, b pop, b push, #3 rl# jr,
     \ d_l_diag:
     \  sub     h
     \  ld      c,a
@@ -195,16 +195,16 @@ code rdraw ( gx gy -- )
     \  push    bc
     \  jr      d_l_step
 
-  02 l: a c ld, d push, exx, b pop,
+  #2 l: a c ld, d push, exx, b pop,
     \ d_l_hr_vt:
     \  ld      c,a
     \  push    de
     \  exx
     \  pop     bc
 
-  03 l:
+  #3 l:
   os-coords h ftp, b a ld, h add, a b ld, c a ld, a inc, l add,
-  05 rl# c? ?jr,
+  #5 rl# c? ?jr,
   \ XXX z? ?jr, ; XXX TODO -- adapt, integer out of range
     \ d_l_step:
     \  ld      hl,($5c7d) ; coords
@@ -218,7 +218,7 @@ code rdraw ( gx gy -- )
     \  jr      z,report_bc ; XXX TODO -- adapt, integer out of range
 
     \ d_l_plot:
-  04 l: a dec, a c ld,
+  #4 l: a dec, a c ld,
     \  dec     a
     \  ld      c,a
 
@@ -229,7 +229,7 @@ code rdraw ( gx gy -- )
     \  ld      a,c
     \  djnz    d_l_loop
 
-  d pop, ret,  05 l: 04 rl# z? ?jr, b pop, jpnext, end-code
+  d pop, ret,  #5 l: #4 rl# z? ?jr, b pop, jpnext, end-code
     \  pop     de
     \  ret
     \ d_l_range:
@@ -242,8 +242,6 @@ code rdraw ( gx gy -- )
   \ `rdraw` is a modified version of the DRAW-LINE ROM
   \ routine.
 
-  \ doc{
-  \
   \ rdraw ( gx gy -- )
   \
   \ REMARK: ``rdraw`` is under development.
@@ -252,8 +250,6 @@ code rdraw ( gx gy -- )
   \ _gx_ is 0..255; _gy_ is 0..191.
   \
   \ See also: `rdraw176`, `adraw176`.
-  \
-  \ }doc
 
 ( adraw176 )
 
@@ -346,6 +342,190 @@ need x1 need incx need y1 need incy
   \
   \ }doc
 
+( orthodraw )
+
+need assembler need gxy>scra_
+
+code orthodraw ( gx gy gxinc gyinc len -- )
+
+  exx, d pop, e a ld,
+       d pop, e b ld, d pop, e c ld,
+       d pop, e h ld, d pop, e l ld,
+    \   exx               ; save Forth IP
+    \   pop de
+    \   ld a,e            ; A = len
+    \   pop de
+    \   ld b,e            ; B = gyinc
+    \   pop de
+    \   ld c,e            ; C = gxinc
+    \   pop de
+    \   ld h,e            ; H = gy
+    \   pop de
+    \   ld l,e            ; L = gx
+
+  rbegin af push, h push, b push, h b ldp,
+    \ begin:
+    \   push af           ; save registers
+    \   push hl           ;
+    \   push bc           ;
+    \   ld   b,h          ; B = gy
+    \   ld   c,l          ; C = gx
+  5C7D b stp, gxy>scra_ call, 22EC call,
+    \ ld ($5C7D),bc     ; update COORDS
+    \ call pixel_addr   ; HL = screen address
+    \                   ; A = pixel position in HL (0..7)
+    \ call $22EC        ; ROM PLOT-SUB + 7
+
+  b pop, h pop, h a ld, b add, a h ld, l a ld, c add, a l ld,
+    \   pop  bc           ; increments
+    \   pop  hl           ; coordinates
+    \   ld a,h
+    \   add a,b
+    \   ld h,a            ; update coordinate gx
+    \   ld a,l
+    \   add a,c
+    \   ld l,a            ; update coordinate gy
+  af pop, a dec, z? runtil
+    \   pop  af           ;
+    \   dec  a            ;
+    \   jr   nz,begin     ; repeat for all pixels
+  exx, next ix ldp#, jpnext, end-code
+    \ exx               ; restore Forth IP
+    \ ld ix,next        ; restore ix
+    \ _jp_next          ; jp next
+
+  \ doc{
+  \
+  \ orthodraw ( gx gy gxinc gyinc len -- )
+  \
+  \ Draw a line formed by _len_ pixels, starting from _gx gy_
+  \ and using _gxinc gyinc_ as increments to calculate the
+  \ coordinates of every next pixel.
+  \
+  \ The status of `inverse` and `overprint` modes are obeyed;
+  \ the screen attributes and the system graphic coordinates
+  \ are updated.  That's what makes ``orthodraw`` much slower
+  \ than `ortholine`.
+  \
+  \ See also: `adraw176`, `rdraw176`.
+  \
+  \ }doc
+
+  \ Credit:
+  \
+  \ Based on the following code, from the ZX Spectrum 128 ROM 0
+  \ (disassembled by Matthew Wilson, Andrew Owen, Geoff
+  \ Wearmouth, Rui Tunes and Paul Farrow):
+
+  \ ; -----------
+  \ ; Plot a Line
+  \ ; -----------
+  \ ; Entry: H=Line pixel coordinate.
+  \ ;        L=Column pixel coordinate.
+  \ ;        B=Offset to line pixel coordinate ($FF, $00 or $01).
+  \ ;        C=Offset to column pixel coordinate ($FF, $00 or $01).
+  \ ;        A=number of pixels to plot.
+
+  \ L3719:  PUSH AF           ; Save registers.
+  \         PUSH HL           ;
+  \         PUSH DE           ;
+  \         PUSH BC           ;
+
+  \         LD   B,H          ; Coordinates to BC.
+  \         LD   C,L          ;
+  \         RST  28H          ;
+  \         DEFW PLOT_SUB+4   ; $22E9. Plot pixel
+
+  \         POP  BC           ; Restore registers.
+  \         POP  DE           ;
+  \         POP  HL           ;
+  \         POP  AF           ;
+
+  \         ADD  HL,BC        ; Determine coordinates of next pixel.
+  \         DEC  A            ;
+  \         JR   NZ,L3719     ; Repeat for all pixels.
+
+  \         RET               ;
+
+( ortholine )
+
+need assembler need gxy>scra_
+
+code ortholine ( gx gy gxinc gyinc len -- )
+
+  exx, d pop, e a ld,
+       d pop, e b ld, d pop, e c ld,
+       d pop, e h ld, d pop, e l ld,
+    \   exx               ; save Forth IP
+    \   pop de
+    \   ld a,e            ; A = len
+    \   pop de
+    \   ld b,e            ; B = gyinc
+    \   pop de
+    \   ld c,e            ; C = gxinc
+    \   pop de
+    \   ld h,e            ; H = gy
+    \   pop de
+    \   ld l,e            ; L = gx
+
+  rbegin af push, h push, b push, h b ldp,
+    \ begin:
+    \   push af           ; save registers
+    \   push hl           ;
+    \   push bc           ;
+    \   ld   b,h          ; B = gy
+    \   ld   c,l          ; C = gx
+
+  gxy>scra_ call, a b ld, b inc, 1 a ld#, rbegin rrca, rstep
+    \   call pixel_addr   ; HL = screen address
+    \                     ; A = pixel position in HL (0..7)
+    \   ld b,a
+    \   inc b
+    \   ld a,1
+    \ rotate:
+    \   rrca
+    \   djnz rotate
+  m or, a m ld,
+    \   or (hl)           ; combine with byte in the screen
+    \   ld (hl),a         ; update screen
+
+  b pop, h pop, h a ld, b add, a h ld, l a ld, c add, a l ld,
+    \   pop  bc           ; restore registers
+    \   pop  hl
+    \   ld a,h
+    \   add a,b
+    \   ld h,a            ; update coordinate gx
+    \   ld a,l
+    \   add a,c
+    \   ld l,a            ; update coordinate gy
+  af pop, a dec, z? runtil
+    \   pop  af           ;
+    \   dec  a            ;
+    \   jr   nz,begin     ; repeat for all pixels
+  exx, next ix ldp#, jpnext, end-code
+    \ exx               ; restore Forth IP
+    \ ld ix,next        ; restore ix
+    \ _jp_next          ; jp next
+
+  \ doc{
+  \
+  \ ortholine ( gx gy gxinc gyinc len -- )
+  \
+  \ Draw a line formed by _len_ pixels, starting from _gx gy_
+  \ and using _gxinc gyinc_ as increments to calculate the
+  \ coordinates of every next pixel.
+  \
+  \ The status of `inverse` and `overprint` modes is ignored;
+  \ the attributes of the screen are not modified; and the
+  \ system graphic coordinates are not updated. That's what
+  \ makes ``ortholine`` almost twice faster than `orthodraw`.
+  \
+  \ See also: `rline176`.
+  \
+  \ }doc
+
+  \ }doc
+
   \ ===========================================================
   \ Change log
 
@@ -376,5 +556,9 @@ need x1 need incx need y1 need incy
   \
   \ 2017-03-21: Adapt to the new implementation of assembler
   \ labels.
+  \
+  \ 2017-03-25: Change the notation of assembler label numbers.
+  \
+  \ 2017-03-29: Add `orthodraw` and `ortholine`.
 
   \ vim: filetype=soloforth

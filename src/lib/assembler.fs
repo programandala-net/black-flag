@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201703210005
+  \ Last modified: 201703281058
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -149,11 +149,11 @@ C9 m1 ret, CE m4 adc#, D3 m4 out, 41 m3 outbc, D6 m4 sub#, D9
 m1 exx, DB m4 in, 40 m3 inbc, 0DE m4 sbc#, E3 m1 exsp, E6 m4
 and#, E9 m1 jphl, EB m1 exde, EE m4 xor#, F3 m1 di,  F6 m4 or#,
 F9 m1 ldsp, FB m1 ei, FE m4 cp#, 00 m6 rlc, 08 m6 rrc, 10 m6
-rl, 18 m6 rr, 20 m6 sla, 28 m6 sra, 38 m6 srl,  40 m7 bit, 80
-m7 res, C0 m7 set, A0ED m8 ldi, B0ED m8 ldir, A8ED m8 ldd, B8ED
-m8 lddr, 44ED m8 neg, 57ED m8 ldai, 47ED m8 ldia, 56ED m8 im1,
-5EED m8 im2, B1ED m8 cpir, 6FED m8 rld, A0 m2 and, B0 m2 or,
-A8 m2 xor, -->
+rl, 18 m6 rr, 20 m6 sla, 28 m6 sra, 30 m6 sll, 38 m6 srl,  40
+m7 bit, 80 m7 res, C0 m7 set, A0ED m8 ldi, B0ED m8 ldir, A8ED
+m8 ldd, B8ED m8 lddr, 44ED m8 neg, 57ED m8 ldai, 47ED m8 ldia,
+56ED m8 im1, 5EED m8 im2, B1ED m8 cpir, 6FED m8 rld, A0 m2 and,
+B0 m2 or, A8 m2 xor, -->
 
 ( assembler )
 
@@ -198,8 +198,9 @@ D7 m1 prt,   \ rst $16
 
 86 ma addx, 8E ma adcx, 96 ma subx, 9E ma sbcx, A6 ma andx,
 AE ma xorx, B6 ma orx,  BE ma cpx,  34 ma incx, 35 ma decx,
-06 mb rlcx, 0E mb rrcx, 16 mb rlx,  1E mb rrx,  26 mb slax,
-2E mb srax, 3E mb srlx, 46 mc bitx, 86 mc resx, C6 mc setx,
+06 mb rlcx, 0E mb rrcx, 16 mb rlx,  1E mb rrx,
+26 mb slax, 2E mb srax, 36 mb sllx, 3E mb srlx,
+46 mc bitx, 86 mc resx, C6 mc setx,
 
 : ftx, ( disp regpi reg -- ) nip 8* 46 + c, c, ;
 : stx, ( reg disp regpi -- ) drop swap 70 + c, c, ;
@@ -218,6 +219,74 @@ C2 cconstant nz?  CA cconstant z?
 D2 cconstant nc?  DA cconstant c?
 E2 cconstant po?  EA cconstant pe?
 F2 cconstant p?   FA cconstant m?
+
+  \ doc{
+  \
+  \ z? ( -- op )
+  \
+  \ See also: `nz?`, `c?`, `nc?`, `po?`, `pe?`, `p?`, `m?`.
+  \
+  \ }doc
+
+  \ doc{
+  \
+  \ nz? ( -- op )
+  \
+  \ See also: `z?`, `c?`, `nc?`, `po?`, `pe?`, `p?`, `m?`,
+  \ `?ret,`, `?jp,`, `?jr`, `?call`, `rif`, `rwhile`, `runtil`,
+  \ `aif`, `awhile`, `auntil`.
+  \
+  \ }doc
+
+  \ XXX TODO -- Finish documentation.
+
+  \ doc{
+  \
+  \ c? ( -- op )
+  \
+  \ See also: `z?`, `nz?`, `nc?`, `po?`, `pe?`, `p?`, `m?`.
+  \
+  \ }doc
+
+  \ doc{
+  \
+  \ nc? ( -- op )
+  \
+  \ See also: `z?`, `nz?`, `c?`, `po?`, `pe?`, `p?`, `m?`.
+  \
+  \ }doc
+
+  \ doc{
+  \
+  \ po? ( -- op )
+  \
+  \ See also: `z?`, `nz?`, `c?`, `nc?`, `pe?`, `p?`, `m?`.
+  \
+  \ }doc
+
+  \ doc{
+  \
+  \ pe? ( -- op )
+  \
+  \ See also: `z?`, `nz?`, `c?`, `nc?`, `po?`, `p?`, `m?`.
+  \
+  \ }doc
+
+  \ doc{
+  \
+  \ p? ( -- op )
+  \
+  \ See also: `z?`, `nz?`, `c?`, `nc?`, `po?`, `pe?`, `m?`.
+  \
+  \ }doc
+
+  \ doc{
+  \
+  \ m? ( -- op )
+  \
+  \ See also: `z?`, `nz?`, `c?`, `nc?`, `po?`, `pe?`, `p?`.
+  \
+  \ }doc
 
 : jp>jr ( op1 -- op2 )
   dup C3 = if drop 18 exit then dup c? > #-273 ?throw A2 - ;
@@ -280,14 +349,14 @@ F2 cconstant p?   FA cconstant m?
 : rwhile ( op -- orig cs-id ) rif 2+ ;
 
 : (runtil) ( dest cs-id op -- ) , 0B ?pairs <rresolve ;
-  \ Compile a relative conditional jump.
-  \ ``(runtil)`` is common factor of `runtil` and `rstep`.
+  \ Compile a relative conditional jump.  ``(runtil)`` is
+  \ common factor of `runtil`, `ragain` and `rstep`.
 
 : runtil ( dest cs-id op -- ) jp>jr inverse-cond (runtil) ;
   \ End a `rbegin runtil` loop.
 
 : ragain ( dest cs-id -- ) 18 (runtil) ;
-  \ End a `rbegin ragin` loop by compiling `jr`.
+  \ End a `rbegin ragain` loop by compiling a `jr` to _dest_.
   \
   \ Note: $18 is the opcode of `jr`.
 
@@ -323,12 +392,15 @@ assembler-wordlist >order set-current   need inverse-cond
 
 : awhile ( op -- orig cs-id ) aif 2+ ;
 
-: auntil  inverse-cond c, $09 ?pairs <resolve ;
-  \ ( dest cs-id op -- )
-  \ Compile an absolute conditional jump.
+: (auntil) ( dest cs-id op ) c, $09 ?pairs <resolve ;
+  \ Compile an absolute conditional jump.  ``(auntil)`` is
+  \ common factor of `auntil` and `aagain`.
 
-: aagain ( cs-id -- ) $C3 auntil ;
-  \ Compile an absolute jump.
+: auntil ( dest cs-id op -- ) inverse-cond (auntil) ;
+  \ End a `abegin auntil` loop.
+
+: aagain ( dest cs-id -- ) $C3 (auntil) ;
+  \ End a `abegin aagain` loop by compiling a `jp` to _dest_.
   \
   \ Note: $C3 is the opcode of `jp`
 
@@ -347,7 +419,7 @@ set-current set-order
   \ Convert an assembler condition flag (actually, an absolute
   \ jump opcode) to its opposite.
   \
-  \ Examples: `c?` to `nc?`; `nz?` to `z?`, etc.
+  \ Examples: `c?` is converted to `nc?`; `nz?` to `z?`, etc.
   \
   \ }doc
 
@@ -449,7 +521,7 @@ macro execute-hl, ( -- )
   jphl,                    \ execute the xt in HL
   >resolve                 \ phony_compiled_word
   here cell+ ,             \ point to the phony xt following
-  0000 b ldp#  >aresolve   \ restore the Forth IP
+  0000 b ldp#, >aresolve   \ restore the Forth IP
   endm
 
   \ doc{
@@ -463,18 +535,19 @@ macro execute-hl, ( -- )
   \
   \ }doc
 
-macro call-xt, ( xt -- )
-  h ldp#,  execute-hl,
-  endm
+macro call-xt, ( xt -- ) 21 c, , execute-hl, endm
 
   \ doc{
   \
   \ call-xt, ( xt -- )
   \
-  \ Compile a call to _xt_.
-  \ ``call-xt,`` is the low-level equivalent of `execute`.
+  \ Compile a Z80 call to _xt_, by compiling the Z80
+  \ instruction that loads the HL register with _xt_, and then
+  \ executing `execute-hl,` to compile the rest of the
+  \ necessary code.
   \
-  \ See also: `execute-hl,`.
+  \ ``call-xt,`` is the low-level equivalent of `execute`: it's
+  \ used to call a colon word from a code word.
   \
   \ }doc
 
@@ -569,5 +642,13 @@ macro call-xt, ( xt -- )
   \ bytes. Improve documentation.
   \
   \ 2017-03-21: Fix number notation in `?rel`.
+  \
+  \ 2017-03-22: Add undocumented instructions `sll,` and
+  \ `sllx,`.
+  \
+  \ 2017-03-26: Fix `aagain`. Improve documentation.
+  \
+  \ 2017-03-28: Fix code typo in `execute-hl`. Rewrite
+  \ `call-xt,` with Z80 opcodes. Improve documentation.
 
   \ vim: filetype=soloforth
