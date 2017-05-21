@@ -1,12 +1,13 @@
 ( black-flag )
 
-  \ Black Flag
+  \ This file is part of Black Flag
+  \ http://programandala.net/en.program.black_flag.html
 
   \ ============================================================
   \ Description
 
-  \ A simulation and adventure game for the ZX Spectrum 128
-  \ written in Forth with Solo Forth
+  \ Black Flag is a simulation and adventure game for the ZX
+  \ Spectrum 128 written in Forth with Solo Forth
   \ (http://programandala.net/en.program.solo_forth.html).
 
   \ A remake of Barry Jones' "Jolly Roger" (1984).
@@ -34,14 +35,21 @@
 
 only forth definitions
 
+need printer need order
+
+: section( ( "ccc<paren>" -- )
+  ')' parse 2dup cr type printer
+                 cr type .s terminal ;
+  \ For debugging.
+
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version  ( -- ca len )  s" 0.51.0+201703121709" ;
+: version$  ( -- ca len )  s" 0.52.0+201705220040" ;
 
-cr cr .( Black Flag) cr version type cr
+cr section( Black Flag) cr version$ type cr
 
   \ ============================================================
-  cr .( Requirements)  \ {{{1
+  section( Requirements)  \ {{{1
 
 only forth definitions
 
@@ -53,28 +61,28 @@ only forth definitions
   \ XXX TODO --
 
   \ --------------------------------------------
-  cr .(   -Debugging tools)  \ {{{2
+  section(   -Debugging tools)  \ {{{2
 
 need order  need ~~  need see  need dump  need where
 
   \ --------------------------------------------
-  cr .(   -Definers)  \ {{{2
+  section(   -Definers)  \ {{{2
 
 need alias
 
   \ --------------------------------------------
-  cr .(   -Control structures)  \ {{{2
+  section(   -Control structures)  \ {{{2
 
 need case  need or-of  need j  need 0exit  need default-of
 need do
 
   \ --------------------------------------------
-  cr .(   -Stack manipulation)  \ {{{2
+  section(   -Stack manipulation)  \ {{{2
 
 need >true  need >false
 
   \ --------------------------------------------
-  cr .(   -Math)  \ {{{2
+  section(   -Math)  \ {{{2
 
 need >=  need <=  need under+  need between  need 2/
 need random-range  need randomize0  need -1..1  need d<>
@@ -84,12 +92,12 @@ need odd?
   \ cr .(   -Memory)  \ {{{2
 
   \ --------------------------------------------
-  cr .(   -Time)  \ {{{2
+  section(   -Time)  \ {{{2
 
 need frames@  need ms  need seconds  need ?seconds
 
   \ --------------------------------------------
-  cr .(   -Data and strings)  \ {{{2
+  section(   -Data and strings)  \ {{{2
 
 need 2avariable  need avariable    need cavariable  need value
 
@@ -104,16 +112,17 @@ need set-esc-order  need esc-standard-chars-wordlist
 need esc-block-chars-wordlist  need esc-udg-chars-wordlist
 
   \ --------------------------------------------
-  cr .(   -Printing and graphics)  \ {{{2
+  section(   -Printing and graphics)  \ {{{2
 
-need window  need set-window  need wcls  need wtype
+need window  need wcls  need wltype
 need whome
 
 need tab  need type-center-field  need at-x  need row
 need rows  need columns  need last-column
 need inverse  need tabulate
 need rom-font
-need set-udg  need get-udg  need set-font  need get-font
+need set-udg  need get-udg  need /udg
+need set-font  need get-font
 
 need black   need blue    need red  need green
 need cyan    need yellow  need white
@@ -128,7 +137,7 @@ need plot176  ' plot176  alias plot
   \ XXX TMP --
 
   \ --------------------------------------------
-  cr .(   -Keyboard)  \ {{{2
+  section(   -Keyboard)  \ {{{2
 
 need key-left  need key-right  need key-down  need key-up
 
@@ -136,7 +145,7 @@ need get-inkey ' get-inkey alias inkey
   \ XXX TMP --
 
   \ --------------------------------------------
-  cr .(   -Sound)  \ {{{2
+  section(   -Sound)  \ {{{2
 
 need beep
 
@@ -148,12 +157,12 @@ need beep
 game-wordlist  dup >order set-current
 
   \ ============================================================
-  cr .( Debugging tools [1])  \ {{{1
+  section( Debugging tools [1])  \ {{{1
 
 :  ~~h  ( -- )  2 border key drop 1 border  ;
   \ Break point.
 
-'q' ~~quit-key !  ~~resume-key on  22 ~~y !  ~~? off
+'q' ~~quit-key c!  $FF ~~resume-key c!  22 ~~y c!  ~~? off
 
 ' default-font ' ~~app-info defer!
   \ Make sure the debug information compiled by `~~` is printed
@@ -165,7 +174,7 @@ game-wordlist  dup >order set-current
 defer .debug-info  ( -- )
 
   \ ============================================================
-  cr .( Constants)  \ {{{1
+  section( Constants)  \ {{{1
 
 15 cconstant sea-length
  9 cconstant sea-breadth
@@ -231,12 +240,12 @@ sea-bottom-y sea-top-y - 1+ cconstant sea-rows
                           5 cconstant treasure-island-rows
 
   \ ============================================================
-  cr .( Variables)  \ {{{1
+  section( Variables)  \ {{{1
 
 variable quit-game         \ flag
 
   \ --------------------------------------------
-  cr .(   -Plot)  \ {{{2
+  section(   -Plot)  \ {{{2
 
 variable crew-loc         \ player position on the island
 variable aboard           \ flag
@@ -270,7 +279,7 @@ variable trades           \ counter
   \ zero.
 
   \ --------------------------------------------
-  cr .(   -Ships)  \ {{{2
+  section(   -Ships)  \ {{{2
 
 variable ship-up      \ flag
 variable ship-x
@@ -283,7 +292,7 @@ variable enemy-ship-y
 variable enemy-ship-loc
 
   \ --------------------------------------------
-  cr .(   -Clues)  \ {{{2
+  section(   -Clues)  \ {{{2
 
 variable found-clues       \ counter
 
@@ -295,10 +304,10 @@ variable direction
 variable pace
 
   \ ============================================================
-  cr .( Arrays)  \ {{{1
+  section( Arrays)  \ {{{1
 
   \ --------------------------------------------
-  cr .(   -Maps)  \ {{{2
+  section(   -Maps)  \ {{{2
 
 /sea     avariable sea
 /island  avariable island
@@ -306,7 +315,7 @@ variable pace
   \ XXX TODO -- character arrays in far memory
 
   \ --------------------------------------------
-  cr .(   -Crew)  \ {{{2
+  section(   -Crew)  \ {{{2
 
 men avariable stamina
   \ XXX TODO -- character array in far memory
@@ -386,7 +395,7 @@ yellow black papery +         3 stamina-attr c!
  green black papery +         4 stamina-attr c!
 
   \ --------------------------------------------
-  cr .(   -Ship damage descriptions)  \ {{{2
+  section(   -Ship damage descriptions)  \ {{{2
 
 0
   np@ far," hundiéndose"            \ worst: sinking
@@ -404,7 +413,7 @@ far>sconstants damage-level$  ( n -- ca len )
        1- cconstant max-damage-level
 
   \ --------------------------------------------
-  cr .(   -Village names)  \ {{{2
+  section(   -Village names)  \ {{{2
 
   \ The names of the villages are Esperanto compound words
   \ whose pronunciation topically resembles African languages,
@@ -425,7 +434,7 @@ far>sconstants village$  ( n -- ca len )
       constant villages
 
   \ --------------------------------------------
-  cr .(   -Cardinal points)  \ {{{2
+  section(   -Cardinal points)  \ {{{2
 
 0
   np@ far," oeste"
@@ -435,7 +444,7 @@ far>sconstants village$  ( n -- ca len )
 far>sconstants cardinal$  ( n -- ca len )  drop
 
   \ --------------------------------------------
-  cr .(   -Hands)  \ {{{2
+  section(   -Hands)  \ {{{2
 
 0
   np@ far," derecha"    \ right
@@ -443,7 +452,7 @@ far>sconstants cardinal$  ( n -- ca len )  drop
 far>sconstants hand$  ( n -- ca len )  drop
 
   \ ============================================================
-  cr .( Functions)  \ {{{1
+  section( Functions)  \ {{{1
 
 22528 constant attributes
   \ Address of the screen attributes.
@@ -539,12 +548,12 @@ far>sconstants number$  ( n -- ca len )  drop
   \ Damage description
 
   \ ============================================================
-  cr .( UDGs and fonts)  \ {{{1
+  section( UDGs and fonts)  \ {{{1
 
 768 constant /font
   \ Bytes for font (characters 32..127, 8 bytes each).
 
-16 8 * constant /spanish-chars
+16 /udg * constant /spanish-chars
   \ Bytes needed by the 16 Spanish chars UDG set
 
 rom-font value graph1-font
@@ -554,11 +563,11 @@ rom-font value twisty-font
        0 value sticks-font-es-udg
        0 value twisty-font-es-udg
 
-here 165 128 - 8 * allot
+here 165 128 - /udg * allot
   \ Reserve data space for the block chars (128..143) and the
   \ BASIC UDG (144..164).
 
-128 8 * - dup constant graph-udg  set-udg
+128 /udg * - dup constant graph-udg  set-udg
   \ Point to UDG 0.
 
 need block-chars
@@ -601,26 +610,26 @@ esc-udg-chars-wordlist 3 set-esc-order
   \ Set the second graphic font and the graphic UDG set.
 
   \ ============================================================
-  cr .( Windows)  \ {{{1
+  section( Windows)  \ {{{1
 
-2 3 28 19 window intro-window
+2 3 28 19 window constant intro-window
 
-1 17 30 3 window message-window
+1 17 30 3 window constant message-window
 
-0 21 32 3 window panel-window
+0 21 32 3 window constant panel-window
 
-16 6 11 4 window native-window
+16 6 11 4 window constant native-window
 
-7 12 10 7 window sailor-window
+7 12 10 7 window constant sailor-window
 
 12 cconstant sailor-window-cols
 
-7 12 sailor-window-cols 7 window sailor-window
+7 12 sailor-window-cols 7 window constant sailor-window
 
-5 3 22 20 window the-end-window
+5 3 22 20 window constant the-end-window
 
   \ ============================================================
-  cr .( Screen)  \ {{{1
+  section( Screen)  \ {{{1
 
 : init-screen  ( -- )
   default-colors  black border  blackout  graphics-1  ;
@@ -641,25 +650,25 @@ far-banks 3 + c@ cconstant screen-backup-bank
   screen-backup-bank bank screen-backup screen move-screen  ;
 
   \ ============================================================
-  cr .( Text output)  \ {{{1
+  section( Text output)  \ {{{1
 
 : native-says  ( ca len -- )
   get-fonts 2>r
-  native-font native-window set-window
-  [ yellow papery ] cliteral attr! wcls wtype
+  native-font native-window current-window !
+  [ yellow papery ] cliteral attr! wcls wltype
   2r> set-fonts  ;
 
 : wipe-message  ( -- )
-  message-window set-window
+  message-window current-window !
   [ white black papery + ] cliteral attr!  wcls  ;
 
-: message  ( ca len -- )  text-font wipe-message wtype  ;
+: message  ( ca len -- )  text-font wipe-message wltype  ;
 
   \ ============================================================
   \ cr .( Sound )  \ {{{1
 
   \ ============================================================
-  cr .( User input)  \ {{{1
+  section( User input)  \ {{{1
 
 : get-digit  ( n1 n2 -- n3 )
   begin   2dup key '0' - dup >r -rot between 0=
@@ -670,7 +679,7 @@ far-banks 3 + c@ cconstant screen-backup-bank
   \ XXX TODO -- better sound for fail
 
   \ ============================================================
-  cr .( Command panel)  \ {{{1
+  section( Command panel)  \ {{{1
 
 21 constant panel-y
  3 constant panel-rows
@@ -742,6 +751,9 @@ far-banks 3 + c@ cconstant screen-backup-bank
   dup native-supplies = if  >true exit  then
       >false  ;
 
+  \ XXX TODO -- Use `?dup ?exit` instead of `if >true` and
+  \ write a wrapper word to do `nip` after the call.
+
 : feasible-sea-attack?  ( -- f )
   ship-loc @ sea @ dup >r 13 <
                            r@ shark = or
@@ -804,7 +816,7 @@ white black papery + constant panel-attr
 : panel  ( -- )  wipe-panel panel-commands  ;
 
   \ ============================================================
-  cr .( Landscape graphics)  \ {{{1
+  section( Landscape graphics)  \ {{{1
 
 variable west-cloud-x  4 constant /west-cloud
 variable east-cloud-x  3 constant /east-cloud
@@ -871,10 +883,10 @@ cyan dup papery + brighty constant sunny-sky-attr
 : sea-and-sky  ( -- )  graphics-1 (sea-and-sky)  ;
 
   \ ============================================================
-  cr .( Sea graphics)  \ {{{1
+  section( Sea graphics)  \ {{{1
 
   \ --------------------------------------------
-  cr .(   -Palms)  \ {{{2
+  section(   -Palms)  \ {{{2
 
 : palm-top  ( x y -- x' y' )
   2dup    at-xy ." OPQR"
@@ -898,7 +910,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   \ Print palm model 2 at characters coordinates _x y_.
 
   \ --------------------------------------------
-  cr .(   -Islands)  \ {{{2
+  section(   -Islands)  \ {{{2
 
 : .big-island5  ( -- )
   [ green blue papery + ] cliteral attr!
@@ -992,7 +1004,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   \ XXX TODO -- factor
 
   \ --------------------------------------------
-  cr .(   -Reefs)  \ {{{2
+  section(   -Reefs)  \ {{{2
 
 : .south-reef  ( -- )
   [ black blue papery + ] cliteral attr!
@@ -1016,7 +1028,7 @@ cyan dup papery + brighty constant sunny-sky-attr
    sail-west? 0= if  .west-reef    then  ;
 
   \ --------------------------------------------
-  cr .(   -Ships)  \ {{{2
+  section(   -Ships)  \ {{{2
 
 : .ship-up  ( x y -- )
   2dup    at-xy .\" \A\B\C"
@@ -1105,7 +1117,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   sea-and-sky .ship  ship-loc @ sea @ sea-picture  ;
 
   \ ============================================================
-  cr .( Crew stamina)  \ {{{1
+  section( Crew stamina)  \ {{{1
 
 : dead?  ( n -- f )  stamina @ 0=  ;
   \ Is man _n_ dead?
@@ -1127,7 +1139,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   \ A random man _n_ is dead.
 
   \ ============================================================
-  cr .( Run aground)  \ {{{1
+  section( Run aground)  \ {{{1
 
 100 constant max-damage
 
@@ -1169,7 +1181,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   \ inform about them
 
   \ ============================================================
-  cr .( Reports)  \ {{{1
+  section( Reports)  \ {{{1
 
 white black papery + constant report-attr
 
@@ -1256,7 +1268,7 @@ s" Condición" far>sconstant "condition"$
   \ XXX TODO -- draw a ruler above "Total"
 
   \ ============================================================
-  cr .( Ship battle)  \ {{{1
+  section( Ship battle)  \ {{{1
 
 : miss-boat  ( -- )
   s" Por suerte el disparo no ha dado en el blanco." message  ;
@@ -1516,7 +1528,7 @@ variable victory
   feasible-sea-attack? dup 0exit attack-ship  ;
 
   \ ============================================================
-  cr .( Island map)  \ {{{1
+  section( Island map)  \ {{{1
 
 : erase-island  ( -- )  0 island /island cells erase  ;
 
@@ -1565,7 +1577,7 @@ variable victory
   erase-island make-coast populate-island  ;
 
   \ ============================================================
-  cr .( Treasure quest)  \ {{{1
+  section( Treasure quest)  \ {{{1
 
           1 4 2constant path-range
           1 4 2constant tree-range
@@ -1597,7 +1609,8 @@ sailor-window-cols 2+ 8 * 4 +
   sailor-speech-balloon captain-speech-balloon  ;
 
 : sailor-says  ( ca len -- )
-  text-font white attr! sailor-window set-window wcls wtype  ;
+  text-font white attr!  sailor-window current-window !
+  wcls wltype  ;
 
 : treasure-found  ( -- )
   [ 0 attr-line ] literal [ 3 columns * ] 1literal
@@ -1731,7 +1744,7 @@ sailor-window-cols 2+ 8 * 4 +
   \ draw pictures.
 
   \ ============================================================
-  cr .( Island graphics)  \ {{{1
+  section( Island graphics)  \ {{{1
 
 : wipe-island-scenery  ( -- )
   [ yellow dup papery + ] cliteral color-sea  ;
@@ -1874,7 +1887,7 @@ sailor-window-cols 2+ 8 * 4 +
   current-island-location  ;
 
   \ ============================================================
-  cr .( Events on an island)  \ {{{1
+  section( Events on an island)  \ {{{1
 
 : marsh  ( -- )
   dead name$ s"  se hunde en arenas movedizas." s+ message  ;
@@ -1927,7 +1940,7 @@ here - cell / constant island-events
   island-events random island-events-table array> perform  ;
 
   \ ============================================================
-  cr .( Enter island location)  \ {{{1
+  section( Enter island location)  \ {{{1
 
 : be-hostile-native  ( -- )
   hostile-native crew-loc @ island !  ;
@@ -2000,7 +2013,7 @@ here - cell / constant island-events
   crew-loc @ island @ enter-this-island-location  ;
 
   \ ============================================================
-  cr .( Disembark)  \ {{{1
+  section( Disembark)  \ {{{1
 
 : target-island  ( -- )
   31  8 at-xy ':' emit
@@ -2036,7 +2049,7 @@ here - cell / constant island-events
   feasible-disembark? dup 0exit disembark  ;
 
   \ ============================================================
-  cr .( Storm)  \ {{{1
+  section( Storm)  \ {{{1
 
 2 constant rain-y
 
@@ -2092,7 +2105,7 @@ cyan dup papery + constant stormy-sky-attr
                  +storm damages -storm storm-report panel  ;
 
   \ ============================================================
-  cr .( Ship command)  \ {{{1
+  section( Ship command)  \ {{{1
 
 : to-reef?  ( n -- f )  ship-loc @ + reef?  ;
   \ Does the sea movement offset _n_ leads to a reef?
@@ -2147,7 +2160,7 @@ cyan dup papery + constant stormy-sky-attr
   begin  ?.ship ?storm  inkey ship-command?  until  ;
 
   \ ============================================================
-  cr .( Misc commands on the island)  \ {{{1
+  section( Misc commands on the island)  \ {{{1
 
 : embark  ( -- )
   ship-loc @ visited on  1 day +!  aboard on
@@ -2169,7 +2182,7 @@ cyan dup papery + constant stormy-sky-attr
   \ leads to the sea, or show a warning
 
   \ ============================================================
-  cr .( Clues)  \ {{{1
+  section( Clues)  \ {{{1
 
 : path-clue$  ( -- ca len )
   s" Tomar camino " path @ number$ s+ s" ." s+  ;
@@ -2202,7 +2215,7 @@ create clues  ( -- a )
   2 seconds  s" ¡Buen viaje a isla de tesoro!" native-says  ;
 
   \ ============================================================
-  cr .( Trading)  \ {{{1
+  section( Trading)  \ {{{1
 
 : native-speech-balloon  ( -- )
   black set-ink
@@ -2283,7 +2296,7 @@ variable price  variable offer
   native-says  one-coin-less  ;
 
   \ ============================================================
-  cr .( Attack)  \ {{{1
+  section( Attack)  \ {{{1
 
 : impossible  ( -- )
   s" Lo siento, capitán, no puede hacer eso." message
@@ -2347,7 +2360,7 @@ variable price  variable offer
   3 seconds  ;
 
   \ ============================================================
-  cr .( Command dispatcher on the island)  \ {{{1
+  section( Command dispatcher on the island)  \ {{{1
 
 : walk-north  ( -- )  to-north walk  ;
 : walk-south  ( -- )  to-south walk  ;
@@ -2389,7 +2402,7 @@ variable price  variable offer
   begin  key island-command?  until  ;
 
   \ ============================================================
-  cr .( Setup)  \ {{{1
+  section( Setup)  \ {{{1
 
 : add-row-reefs  ( n1 n0 -- )  ?do  reef i sea !  loop  ;
 
@@ -2473,7 +2486,7 @@ variable price  variable offer
   new-sea new-ship new-crew new-adventure  ;
 
   \ ============================================================
-  cr .( Game over)  \ {{{1
+  section( Game over)  \ {{{1
 
 : really-quit  ( -- )
   \ Confirm the quit
@@ -2488,21 +2501,21 @@ variable price  variable offer
 : sad-end  ( -- )
   text-font [ white red papery + ] cliteral attr!
   0 1 at-xy s" FIN DEL JUEGO" columns type-center-field
-  the-end-window set-window
+  the-end-window current-window !
   [ black yellow papery + ] cliteral attr!
   supplies @ 0= if
-    s" - Las provisiones se han agotado." wtype wcr  then
+    s" - Las provisiones se han agotado." wltype wcr  then
   morale @ 0= if
-    s" - La tripulación se ha amotinado." wtype wcr  then
+    s" - La tripulación se ha amotinado." wltype wcr  then
   ammo @ 0 <= if
-    s" - La munición se ha terminado." wtype wcr  then
+    s" - La munición se ha terminado." wltype wcr  then
   alive @ 0= if
-    s" - Toda tu tripulación ha muerto." wtype wcr  then
+    s" - Toda tu tripulación ha muerto." wltype wcr  then
   max-damage? = if
     s" - El barco está muy dañado y es imposible repararlo."
-    wtype wcr
+    wltype wcr
   then
-  cash @ 0= if  s" - No te queda dinero." wtype  then  ;
+  cash @ 0= if  s" - No te queda dinero." wltype  then  ;
 
 : happy-end  ( -- )
   s" Lo lograste, capitán." message  ;
@@ -2517,7 +2530,7 @@ variable price  variable offer
   \ XXX TODO -- new graphic, based on the cause of the end
 
   \ ============================================================
-  cr .( Intro)  \ {{{1
+  section( Intro)  \ {{{1
 
 : skulls  ( -- )
   ."   nop  nop  nop  nop  nop  nop  "
@@ -2543,11 +2556,11 @@ island-name$ s+ s"  y sigue las pistas hasta el tesoro..." s+
 far>sconstant intro-text-2$
 
 : (intro)  ( -- )
-  skull-border intro-window set-window whome
+  skull-border intro-window current-window ! whome
   get-fonts 2>r text-font
-  intro-text-0$ wtype wcr wcr
-  intro-text-1$ wtype wcr wcr
-  intro-text-2$ wtype wcr wcr
+  intro-text-0$ wltype wcr wcr
+  intro-text-1$ wltype wcr wcr
+  intro-text-2$ wltype wcr wcr
   0 row 2+ at-xy press-any-key$ columns type-center-field
   2r> set-fonts  ;
 
@@ -2561,7 +2574,7 @@ far>sconstant intro-text-2$
   120 ?seconds  ;
 
   \ ============================================================
-  cr .( Main)  \ {{{1
+  section( Main)  \ {{{1
 
 : scenery  ( -- )
   blackout  aboard? if    sea-scenery
@@ -2577,7 +2590,7 @@ far>sconstant intro-text-2$
   init-screen  begin  intro init game the-end  again  ;
 
   \ ============================================================
-  cr .( Debugging tools [2])  \ {{{1
+  section( Debugging tools [2])  \ {{{1
 
 : (.debug-info)  ( -- )
   get-fonts 2>r text-font
@@ -2658,7 +2671,7 @@ variable checkered
 : f   ( -- )  rom-font    set-font  ;
 
   \ ============================================================
-  cr .( Graphics)  \ {{{1
+  section( Graphics)  \ {{{1
 
   \ Credit:
   \
@@ -2669,12 +2682,14 @@ variable checkered
   \ for Alchemist PD, 1995, and packed into a viewer called
   \ "Fontbox I".
 
-here 256 -                dup to graph1-font
-                  /font + dup to graph2-font
-                  /font + dup to sticks-font
-                  /font + dup to twisty-font
-  256 + 128 8 * - /font + dup to sticks-font-es-udg
-         /spanish-chars +     to twisty-font-es-udg
+here
+
+256 -                      dup to graph1-font
+                   /font + dup to graph2-font
+                   /font + dup to sticks-font
+                   /font + dup to twisty-font
+256 + 128 /udg * - /font + dup to sticks-font-es-udg
+          /spanish-chars +     to twisty-font-es-udg
 
   \ Update the font pointers with addresses relative to the
   \ current data pointer, were the fonts are being compiled.

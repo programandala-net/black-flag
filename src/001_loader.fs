@@ -12,9 +12,9 @@
   \ need decode need words need order need dump
   \ XXX TMP -- for debugging
 
-need load-app
+need load-program
 
-load-app black-flag
+load-program black-flag
 
   \ Compile the game.
 
