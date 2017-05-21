@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201702251949
+  \ Last modified: 201705092051
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -25,9 +25,8 @@
 
 ( ud.r u.r ud. holds )
 
-[unneeded] ud.r ?(
-: ud.r ( ud n -- ) >r <# #s #> r> over - 0 max spaces type ;
-?)
+[unneeded] ud.r
+?\ : ud.r ( ud n -- ) >r <# #s #> r> over - 0 max spaces type ;
 
   \ Credit:
   \
@@ -37,11 +36,10 @@
   \
   \ ud.r ( ud n -- )
   \
-  \ Print an usigned double number _ud_ right justified in a
-  \ field of _n_ characters wide. If the number of characters
-  \ required to print _ud_ is greater than _n_, all digits are
-  \ displayed with no leading spaces in a field as wide as
-  \ necessary.
+  \ Display _ud_ right aligned in a field _n_ characters wide.
+  \ If the number of characters required to display _ud_ is
+  \ greater than _n_, all digits are displayed with no leading
+  \ spaces in a field as wide as necessary.
   \
   \ See also: `u.r`, `d.`, `ud.`.
   \
@@ -58,16 +56,16 @@
   \
   \ u.r ( u n -- )
   \
-  \ Print an unsigned number _u_ right justified in a field of
-  \ _n_ characters wide. If the number of characters required
-  \ to print _u_ is greater than _n_, all digits are displayed
-  \ with no leading spaces in a field as wide as necessary.
+  \ Display _u_ right aligned in a field _n_ characters wide.
+  \ If the number of characters required to display _u_ is
+  \ greater than _n_, all digits are displayed with no leading
+  \ spaces in a field as wide as necessary.
   \
   \ Origin: Forth-79 (Reference Word Set)footnote:[In Forth-79,
   \ if the number of characters required to display _u_ is
   \ greater than _n_, no leading spaces are given.], Forth-83
-  \ (Controlled Reference Word)footnote:[In Forth-83, if the
-  \ number of characters required to display _u_ is greater
+  \ (Controlled Reference Word Set)footnote:[In Forth-83, if
+  \ the number of characters required to display _u_ is greater
   \ than _n_, an error condition exists, which depends on the
   \ system.], Forth-94 (CORE EXT), Forth-2012 (CORE EXT).
   \
@@ -86,7 +84,7 @@
   \
   \ ud. ( ud -- )
   \
-  \ Print an usigned double number _ud_.
+  \ Display an usigned double number _ud_.
   \
   \ See also: `ud.r`, `d.`, `u.`.
   \
@@ -104,9 +102,12 @@
   \
   \ holds ( ca len -- )
   \
-  \ Add string _ca len_ to the pictured numeric output string.
+  \ Add string _ca len_ to the pictured numeric output string
+  \ started by `<#`.
   \
   \ Origin: Forth-2012 (CORE EXT).
+  \
+  \ See also: `hold`.
   \
   \ }doc
 
@@ -168,14 +169,16 @@ variable base'  : base> ( -- ) base' @ base ! ; ?)
   \ A temporary variable used by `<hex`, `hex>`, `<bin` and
   \ `bin>`.  to store the current value of `base`.
   \
+  \ See also: `abase`.
+  \
   \ }doc
 
   \ doc{
   \
   \ base> ( -- )
   \
-  \ Restore the previous value of `base` from `base'`. This is
-  \ the word executed by `bin>` and `hex>`.
+  \ Restore the previous value of `base` from `base'`.
+  \ ``base>`` is executed by `bin>` and `hex>`.
   \
   \ }doc
 
@@ -268,7 +271,7 @@ variable base'  : base> ( -- ) base' @ base ! ; ?)
   \
   \ Display _d_ as an unsigned 8-bit hexadecimal number.
   \
-  \ See also: `8bin.`, `16hex.`, `16hex.`, `hex.`, `hex`.
+  \ See also: `8bin.`, `16hex.`, `hex.`, `hex`.
   \
   \ }doc
 
@@ -394,5 +397,11 @@ need base' need base> need binary
   \ library, with `?do`.
   \
   \ 2017-02-25: Improve documentation.
+  \
+  \ 2017-05-05: Improve documentation.
+  \
+  \ 2017-05-07: Improve documentation.
+  \
+  \ 2017-05-09: Fix typo.
 
   \ vim: filetype=soloforth

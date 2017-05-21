@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201704042019
+  \ Last modified: 201705121654
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -55,7 +55,7 @@ code under+ ( n1|u1 x n2|u2 -- n3|u3 x )
 
   \ Origin: Comus.
   \
-  \ See also: `+under`.
+  \ See also: `+under` ,`+`.
   \
   \ }doc
 
@@ -89,7 +89,7 @@ code +under ( n1|u1 n2|u2 x -- n3|u3 x )
 
   \ Origin: Comus.
   \
-  \ See also: `under+`
+  \ See also: `under+`, `+`.
   \
   \ }doc
 
@@ -199,7 +199,12 @@ code +under ( n1|u1 n2|u2 x -- n3|u3 x )
   \
   \ _n3_ is the greatest common divisor of _n1_ and _n2_.
   \
+  \ See also: `/`, `mod`.
+  \
   \ }doc
+
+  \ 2017-05-12: A variant, adapted from LaForth:
+  \ : gcd ( n1 n2 -- n3 ) begin swap over mod 0= until ;
 
 ( odd? even? )
 
@@ -262,12 +267,13 @@ code even? ( n -- f )
 [unneeded] 8* ?(
 
 code 8* ( n1 -- n2 )
-  e1 c, 29 c, 29 c, 29 c, jppushhl, end-code ?)
+  e1 c, 29 c, 29 c, 29 c, E5 c, jpnext, end-code ?)
   \ pop hl
   \ add hl,hl
   \ add hl,hl
   \ add hl,hl
-  \ _jp_pushhl
+  \ push hl
+  \ _jp_next
 
   \ doc{
   \
@@ -287,19 +293,20 @@ code 8* ( n1 -- n2 )
 [unneeded] polarity ?(
 
 code polarity ( n -- -1 | 0 | 1 )
-  D1 c, 78 02 + c,  B0 03 + c,  CA c, ' false ,
+  D1 c, 78 02 + c, B0 03 + c, CA c, ' false ,
     \ pop de
     \ ld a,d
     \ or e
     \ jp z,false_code
-  CB c, 10 03 + c,  ED c, 62 c,
+  CB c, 10 03 + c, ED c, 62 c,
     \ rl d ; set carry if DE -ve
     \ sbc hl,hl ; HL=0 if DE +ve, or -1 if DE -ve
-  78 05 + c,  F6 c, 01 c,  68 07 + c,  jppushhl, end-code ?)
+  78 05 + c, F6 c, 01 c, 68 07 + c, E5 c, jpnext, end-code ?)
     \ ld a,l
     \ or 1
     \ ld l,a ; HL=1 or -1
-    \ jp push_hl
+    \ push hl
+    \ _jp_next
 
   \ Credit:
   \
@@ -425,13 +432,14 @@ code polarity ( n -- -1 | 0 | 1 )
 [unneeded] 0max ?(
 
 code 0max ( n -- n | 0 )
-  E1 c,  CB c, 10 05 + c,  DA c, ' false ,  CB c, 18 05 + c,
+  E1 c, CB c, 10 05 + c, DA c, ' false , CB c, 18 05 + c,
     \ pop hl
     \ rl h ; negative?
     \ jp c,false_
     \ rr h
-  jppushhl, end-code ?)
-    \ jp push_hl
+  E5 c, jpnext, end-code ?)
+    \ push hl
+    \ _jp_next
 
   \ Credit:
   \
@@ -471,13 +479,13 @@ code lshift ( x1 u -- x2 )
   \
   \ lshift ( x1 u -- x2 )
   \
-  \ Perform a logical left shift of _u_ bit-places on _x_,
+  \ Perform a logical left shift of _u_ bit-places on _x1_,
   \ giving _x2_. Put zeroes into the least significant  bits
   \ vacated by the shift.
   \
   \ Origin: Forth-94 (CORE), Forth-2012 (CORE).
   \
-  \ See also: `rshift`, `?shift`.
+  \ See also: `rshift`, `?shift`, `clshift`.
   \
   \ }doc
 
@@ -502,7 +510,7 @@ code rshift ( x1 u -- x2 )
   \
   \ rshift ( x1 u -- x2 )
   \
-  \ Perform a logical right shift of _u_ bit-places on _x_,
+  \ Perform a logical right shift of _u_ bit-places on _x1_,
   \ giving _x2_. Put zeroes into the most significant  bits
   \ vacated by the shift.
   \
@@ -551,6 +559,18 @@ code clshift ( b1 u -- b2 )
     \ add a,a
     \ jp begin
 
+  \ doc{
+  \
+  \ clshift ( b1 u -- b2 )
+  \
+  \ Perform a logical left shift of _u_ bit-places on _b1_,
+  \ giving _b2_. Put zeroes into the least significant  bits
+  \ vacated by the shift.
+  \
+  \ See also: `lshift`.
+  \
+  \ }doc
+
 [unneeded] crshift ?(
 
   \ XXX UNDER DEVELOPMENT -- 2016-05-01
@@ -590,7 +610,7 @@ code bits ( ca len -- u )
     \ Note: `2swap` is needed because `rbegin ragain` and `rif
     \ rthen` are not nested.
 
-  exx, jppushhl, end-code
+  exx, h push, jpnext, end-code
 
   \ Credit:
   \
@@ -617,11 +637,12 @@ code bits ( ca len -- u )
 [unneeded] 2/ ?(
 
 code 2/ ( x1 -- x2 )
-  E1 c, CB c, 2C c, CB c, 1D c, jppushhl, end-code ?)
+  E1 c, CB c, 2C c, CB c, 1D c, E5 c, jpnext, end-code ?)
   \ pop hl
   \ sra h
   \ rr l
-  \ jp push_hl
+  \ push hl
+  \ _jp_next
 
   \ Credit:
   \
@@ -917,7 +938,7 @@ need sqrt need d2* need cell-bits
 
   \ doc{
   \
-  \ /_mod ( n1 n2 -- n3 )
+  \ _mod ( n1 n2 -- n3 )
   \
   \ Divide _n1_ by _n2_ (doing a floored division), giving the
   \ remainder _n3_.
@@ -1045,15 +1066,16 @@ need sqrt need d2* need cell-bits
 [unneeded] split ?(
 
 code split ( x -- b1 b2 )
-  E1 c,
+  E1 c, 16 c, 00 c, 58 05 + c, 68 04 + c, 26 c, 00 c,
     \ pop hl
-  16 c, 00 c,  58 05 + c,  68 04 + c,  26 c, 00 c,
     \ ld d,0
     \ ld e,l
     \ ld l,h
     \ ld h,0
-  C3 c, pushhlde , end-code ?)
-    \ jp push_hlde
+  D5 c, E5 c, jpnext, end-code ?)
+    \ push de
+    \ push hl
+    \ _jp_next
 
   \ Credit:
   \
@@ -1068,19 +1090,20 @@ code split ( x -- b1 b2 )
   \
   \ Origin: IsForth.
   \
-  \ See also: `join`.
+  \ See also: `join`, `flip`.
   \
   \ }doc
 
 [unneeded] join ?(
 
 code join ( b1 b2 -- x )
-  D1 c,  60 03 + c,  D1 c,  68 03 + c, jppushhl, end-code ?)
+  D1 c, 60 03 + c, D1 c, 68 03 + c, E5 c, jpnext, end-code ?)
     \ pop de
     \ ld h,e
     \ pop de
     \ ld l,e
-    \ jp push_hl
+    \ push hl
+    \ _jp_next
 
   \ doc{
   \
@@ -1091,7 +1114,7 @@ code join ( b1 b2 -- x )
   \
   \ Origin: IsForth.
   \
-  \ See also: `split`.
+  \ See also: `split`, `flip`.
   \
   \ }doc
 
@@ -1218,5 +1241,10 @@ code join ( b1 b2 -- x )
   \ to access any of them.  Update needing of `cell-bits`.
   \
   \ 2017-04-04: Improve documentation.
+  \
+  \ 2017-05-05: Improve documentation.
+  \
+  \ 2017-05-09: Remove `jp pushhlde` from `split.  Remove
+  \ `jppushhl,`.
 
   \ vim: filetype=soloforth

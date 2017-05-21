@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201703280051
+  \ Last modified: 201705211923
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -94,7 +94,7 @@
   \
   \ }doc
 
-[unneeded] udg: ?( need udg! ?(
+[unneeded] udg: ?( need udg!
 
 : udg: ( b0..b7 c "name" -- ) dup cconstant udg! ; ?)
 
@@ -121,8 +121,8 @@ here anon> ! 3 cells allot
   3 set-anon
     \ Set the anonymous local variables:
     \   [ 0 ] anon = _c_
-    \   [ 1 ] anon = height
-    \   [ 2 ] anon = width
+    \   [ 1 ] anon = _height_
+    \   [ 2 ] anon = _width_
   [ 1 ] anon @ /udg* 0 ?do
     [ 2 ] anon @ 0 ?do
       parse-name-thru udg-scan>number
@@ -136,15 +136,15 @@ here anon> ! 3 cells allot
 
   \ doc{
   \
-  \ udg-group ( c -- )
+  \ udg-group ( width height c -- )
   \
   \ Parse a group of UDG definitions organized in _width_
   \ columns and _height_ rows, and store them starting from UDG
   \ character _c_ (0..255).  The maximum _width_ is 7 (imposed
   \ by the size of Forth source blocks). _height_ has no
   \ maximum, as the UDG block can ocuppy more than one Forth
-  \ block (provided the Forth block have no index line, i.e.
-  \ `load-app` is used to load the source).
+  \ block (provided the Forth block has no index line, i.e.
+  \ `load-program` is used to load the source).
   \
   \ The scans can be formed by binary digits, by the characters
   \ hold in `udg-blank` and `udg-dot`, or any combination of
@@ -179,8 +179,9 @@ create udg-blank '.' c,  create udg-dot 'X' c,
   \
   \ udg-blank  ( -- ca )
   \
-  \ A character variable that holds the characted used by
-  \ `grid` and `g` as a grid blank. By default it's '.'.
+  \ A character variable. _ca_ is the address of a byte
+  \ containing character used by `grid` and `g` as a grid
+  \ blank. By default it's '.'.
   \
   \ See also: `udg-dot`, `udg-scan>binary`.
   \
@@ -190,8 +191,9 @@ create udg-blank '.' c,  create udg-dot 'X' c,
   \
   \ udg-dot  ( -- ca )
   \
-  \ A character variable that holds the characted used by
-  \ `grid` and `g` as a grid blank. By default it's 'X'.
+  \ A character variable. _ca_ is the address of a byte
+  \ containing the character used by `grid` and `g` as a grid
+  \ blank. By default it's 'X'.
   \
   \ See also: `udg-blank`, `udg-scan>binary`.
   \
@@ -222,6 +224,7 @@ create udg-blank '.' c,  create udg-dot 'X' c,
   \ udg-scan>number? ( ca len -- n true | false )
   \
   \ Is UDG scan string _ca len_ a valid binary number?
+  \ If so, return _n_ and _true_; else return _false_.
   \ The string is processed by `udg-scan>binary` first.
   \
   \ See also: `udg-scan>binary`, `udg-scan>number`.
@@ -237,7 +240,7 @@ create udg-blank '.' c,  create udg-dot 'X' c,
   \
   \ If UDG scan string _ca len_, after being processed by
   \ `udg-scan>binary`, is a valid binary number, return the
-  \ result _n_.  Otherwise throw exception #-290 (invalid UDG
+  \ result _n_.  Otherwise `throw` exception #-290 (invalid UDG
   \ scan).
   \
   \ See also: `udg-scan>number?`, `udg-block`, `udg-group`.
@@ -252,7 +255,7 @@ create udg-blank '.' c,  create udg-dot 'X' c,
   \ in order to allow UDG blocks span on several Forth blocks,
   \ ignoring the index line.
   \
-  \ But anyway this is not needed when `load-app` is used.
+  \ But anyway this is not needed when `load-program` is used.
 
 need parse-name-thru
 
@@ -282,8 +285,8 @@ here anon> ! 3 cells allot
   3 set-anon
     \ Set the anonymous local variables:
     \   [ 0 ] anon = _c_
-    \   [ 1 ] anon = height
-    \   [ 2 ] anon = width
+    \   [ 1 ] anon = _height_
+    \   [ 2 ] anon = _width_
   [ 1 ] anon @ /udg* 0 ?do parse-name-thru ( ca len )
     [ 2 ] anon @ 0 ?do
       over udg-width udg-scan>number ( ca len b )
@@ -303,8 +306,8 @@ here anon> ! 3 cells allot
   \ and _height_ are in characters.  The maximum _width_ is 7
   \ (imposed by the size of Forth source blocks). _height_ has
   \ no maximum, as the UDG block can ocuppy more than one Forth
-  \ block (provided the Forth block have no index line, i.e.
-  \ `load-app` is used to load the source).
+  \ block (provided the Forth block has no index line, i.e.
+  \ `load-program` is used to load the source).
   \
   \ The scans can be formed by binary digits, by the characters
   \ hold in `udg-blank` and `udg-dot`, or any combination of
@@ -331,6 +334,72 @@ here anon> ! 3 cells allot
   \ XX..XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   \ .XXXXXX..XXXXXX..XXXXXX..XXXXXX..XXXXXX.
   \ ..XXXX....XXXX....XXXX....XXXX....XXXX..
+  \ ----
+
+  \ See also: `csprite`.
+  \
+  \ }doc
+
+( csprite )
+
+need udg-scan>number need /udg*
+need udg-width need parse-name-thru need j need anon
+
+here anon> ! 3 cells allot
+
+: csprite ( width height a "name..." -- )
+  3 set-anon
+    \ Set the anonymous local variables:
+    \   [ 0 ] anon = _a_
+    \   [ 1 ] anon = _height_
+    \   [ 2 ] anon = _width_
+  [ 1 ] anon @ /udg* 0 ?do parse-name-thru ( ca len )
+    [ 2 ] anon @ 0 ?do
+      over udg-width udg-scan>number ( ca len b )
+      j [ 2 ] anon @ * i + [ 0 ] anon @ + c! udg-width /string
+    loop 2drop
+  loop ;
+
+  \ doc{
+  \
+  \ csprite ( width height a "name..." -- )
+  \
+  \ Parse a character sprite and store it at _a_. _width_ and
+  \ _height_ are in characters.  The maximum _width_ is 7
+  \ (imposed by the size of Forth source blocks). _height_ has
+  \ no maximum, as the UDG block can ocuppy more than one Forth
+  \ block (provided the Forth block has no index line, i.e.
+  \ `load-program` is used to load the source).
+  \
+  \ The scans can be formed by binary digits, by the characters
+  \ hold in `udg-blank` and `udg-dot`, or any combination of
+  \ both notations.
+  \
+  \ The difference with `udg-block` is ``csprite`` stores the
+  \ graphic by whole scans, not by characters.
+  \
+  \ Usage example:
+
+  \ ----
+  \ create ship-sprite 3 2 * /udg* allot
+  \ 3 2 ship-sprite csprite
+  \
+  \ ..XX.X.X........X.X.XX..
+  \ ..XXX.X.X......X.X.XXX..
+  \ ..XX.....X....X.....XX..
+  \ ...XX.....XXXX.....XX...
+  \ ....XX.....XX.....XX....
+  \ .....XXX........XXX.....
+  \ ......XX........XX......
+  \ .......XX......XX.......
+  \ .......XX......XX.......
+  \ ........XX....XX........
+  \ ........XX....XX........
+  \ X.........XXXX.........X
+  \ X........XXXXXX........X
+  \ .XXXXXXXXXXXXXXXXXXXXXX.
+  \ ..........XXXX..........
+  \ ...........XX...........
   \ ----
 
   \ }doc
@@ -460,9 +529,10 @@ code set-udg ( a -- ) E1 c, 22 c, os-udg , jpnext, end-code ?)
 
 [unneeded] get-udg ?( need os-udg
 
-code get-udg ( -- a ) 2A c, os-udg , jppushhl, end-code ?)
+code get-udg ( -- a ) 2A c, os-udg , E5 c, jpnext, end-code ?)
   \ ld hl, (sys_udg)
-  \ jp pushhl
+  \ push hl
+  \ _jp_next
 
   \ doc{
   \
@@ -684,6 +754,223 @@ unused code udg-at-xy-display ( x y c -- )
   \
   \ }doc
 
+( .nx1-udg )
+
+  \ XXX UNDER DEVELOPMENT
+
+need assembler need os-attr-p need udg> need xy>scra
+
+code (.nx1-udg ( a1 a2 -- )
+
+exx, h pop, d pop, 2 c ld#, rbegin h push, 8 b ld#,
+  \   exx                            ; preserve the Forth IP
+  \   pop hl                         ; screen address
+  \                                  ; of the top left coordinates
+  \                                  ; of the UDG block
+  \   pop de                         ; address of the first UDG
+  \   ld c,2                         ; columns
+  \ dot_nx1_udg.column:
+  \   push hl
+  \   ld b,8                         ; character scans
+
+rbegin d ftap, a m ld, d incp, h inc, rstep
+  \ dot_nx1_udg.char:
+  \   ld a,(de)
+  \   ld (hl),a
+  \   inc de
+  \   inc h                          ; HL = screen address of the next scan
+  \   djnz dot_nx1_udg.char
+
+h pop, h incp, c dec, z? runtil
+  \   pop hl                         ; current screen address
+  \   inc hl                         ; next column
+  \   dec c                          ; decrement column count
+  \   jr nz,dot_nx1_udg.column       ; jump if not zero
+
+h decp, h a ld, 18 and#, a sra, a sra, a sra, 58 add#, a h ld,
+  \   dec hl                         ; screen address of the second column
+  \   ld a,h
+  \   and $18
+  \   sra a
+  \   sra a
+  \   sra a
+  \   add a,$58
+  \   ld h,a                         ; HL = corresponding attribute address
+
+os-attr-p fta, a m ld, h decp, a m ld, exx, jpnext, end-code
+  \   ld a,(sys_attr_p)
+  \   ld (hl),a
+  \   dec hl                         ; previous (left) attribute
+  \   ld (hl),a
+  \   exx                            ; restore the Forth IP
+  \   _jp_next
+
+: .nx1-udg ( c -- ) udg> xy xy>scra (.nx1-udg ;
+
+( .2x1-udg )
+
+  \ XXX UNDER DEVELOPMENT -- Finished, but the speed is just
+  \ 0.99 of the high-level version used in Nuclear Waste
+  \ Invaders.
+
+need assembler need os-attr-p need udg> need xy>scra
+
+unused  \ XXX TMP --
+
+code (.2x1-udg ( a1 a2 -- )
+
+exx, h pop, d pop, 2 c ld#, rbegin h push, 8 b ld#,
+  \   exx                            ; preserve the Forth IP
+  \   pop hl                         ; screen address
+  \                                  ; of the top left coordinates
+  \                                  ; of the UDG block
+  \   pop de                         ; address of the first UDG
+  \   ld c,2                         ; columns
+  \ dot_2x1_udg.column:
+  \   push hl
+  \   ld b,8                         ; character scans
+
+rbegin d ftap, a m ld, d incp, h inc, rstep
+  \ dot_2x1_udg.char:
+  \   ld a,(de)
+  \   ld (hl),a
+  \   inc de
+  \   inc h                          ; HL = screen address of the next scan
+  \   djnz dot_2x1_udg.char
+
+h pop, h incp, c dec, z? runtil
+  \   pop hl                         ; current screen address
+  \   inc hl                         ; next column
+  \   dec c                          ; decrement column count
+  \   jr nz,dot_2x1_udg.column       ; jump if not zero
+
+h decp, h a ld, 18 and#, a sra, a sra, a sra, 58 add#, a h ld,
+  \   dec hl                         ; screen address of the second column
+  \   ld a,h
+  \   and $18
+  \   sra a
+  \   sra a
+  \   sra a
+  \   add a,$58
+  \   ld h,a                         ; HL = corresponding attribute address
+
+os-attr-p fta, a m ld, h decp, a m ld, exx, jpnext, end-code
+  \   ld a,(sys_attr_p)
+  \   ld (hl),a
+  \   dec hl                         ; previous (left) attribute
+  \   ld (hl),a
+  \   exx                            ; restore the Forth IP
+  \   _jp_next
+
+: .2x1-udg ( c -- ) udg> xy xy>scra (.2x1-udg ;
+
+unused - cr .( Data space used by .2x1-udg : ) u.  cr
+  \ XXX TMP --
+  \ XXX REMARK -- 54 B
+
+( .2x1-udg-fast )
+
+  \ XXX UNDER DEVELOPMENT -- Finished, but the speed is just
+  \ 0.97 of the high-level version used in Nuclear Waste
+  \ Invaders.
+
+need assembler need os-attr-p need udg> need xy>scra
+
+unused  \ XXX TMP --
+
+code (.2x1-udg-fast ( a1 a2 -- )
+
+exx, h pop, d pop,
+  \   exx                            ; preserve the Forth IP
+  \   pop hl                         ; screen address
+  \                                  ; of the top left coordinates
+  \                                  ; of the UDG block
+  \   pop de                         ; address of the first UDG
+
+h push, 8 b ld#, rbegin d ftap, a m ld, d incp, h inc, rstep
+  \   push hl
+  \   ld b,8                         ; character scans
+  \ dot_2x1_udg.char1:
+  \   ld a,(de)
+  \   ld (hl),a
+  \   inc de
+  \   inc h                          ; HL = screen address of the next scan
+  \   djnz dot_2x1_udg.char1
+
+h pop, h push,
+  \   pop hl
+  \   push hl
+h incp, 8 b ld#, rbegin d ftap, a m ld, d incp, h inc, rstep
+  \   inc hl
+  \   ld b,8                         ; character scans
+  \ dot_2x1_udg.char2:
+  \   ld a,(de)
+  \   ld (hl),a
+  \   inc de
+  \   inc h                          ; HL = screen address of the next scan
+  \   djnz dot_2x1_udg.char2
+
+h pop, h a ld, 18 and#, a sra, a sra, a sra, 58 add#, a h ld,
+  \   pop hl                         ; screen address of the first column
+  \   ld a,h
+  \   and $18
+  \   sra a
+  \   sra a
+  \   sra a
+  \   add a,$58
+  \   ld h,a                         ; HL = corresponding attribute address
+
+os-attr-p fta, a m ld, h decp, a m ld, exx, jpnext, end-code
+  \   ld a,(sys_attr_p)
+  \   ld (hl),a
+  \   inc hl                         ; next attribute
+  \   ld (hl),a
+  \   exx                            ; restore the Forth IP
+  \   _jp_next
+
+: .2x1-udg-fast ( c -- ) udg> xy xy>scra (.2x1-udg-fast ;
+
+unused - cr .( Data space used by .2x1-udg-fast : ) u.  cr
+  \ XXX TMP --
+  \ XXX REMARK -- 58 B
+
+( .udga )
+
+  \ 2017-05-21
+  \ XXX UNDER DEVELOPMENT
+
+code .udga ( a -- )
+
+d pop, exx,
+  \ pop de
+  \ exx ; save the Forth IP
+  \ ld bc,(sys_s_posn) ; cursor position
+  \
+  \ ld hl,(sys_df_cc) ; current screen address
+
+h push, 8 b ld#, rbegin d ftap, a m ld, d incp, h inc, rstep
+  \   push hl
+  \   ld b,8                         ; character scans
+  \ dot_udga.char:
+  \   ld a,(de)
+  \   ld (hl),a
+  \   inc de
+  \   inc h                          ; HL = screen address of the next scan
+  \   djnz dot_udga.char
+
+  \ ld (sys_df_cc),hl
+exx, jpnext, end-code
+  \ exx ; restore the Forth IP
+  \ _jp_next
+
+  \
+  \ .udga ( a -- )
+  \
+  \ Display the UDG defined at _a_.
+  \
+  \ See also: `emit-udg`.
+  \
+
   \ ===========================================================
   \ Change log
 
@@ -781,5 +1068,17 @@ unused code udg-at-xy-display ( x y c -- )
   \
   \ 2017-03-28: Move `xy>scra` and `xy>scra_` to the
   \ <printing.cursor.fs> module.
+  \
+  \ 2017-04-26: Fix needing of `udg:`.
+  \
+  \ 2017-05-08: Update documentation: `load-app` was renamed to
+  \ `load-program`.
+  \
+  \ 2017-05-09: Remove `jppushhl,`
+  \
+  \ 2017-05-19: Fix and improve documentation. Add `.2x1-udg`
+  \ and draft of `.nx1-udg`.
+  \
+  \ 2017-05-21: Add draft of `.udga`. Add `csprite`.
 
   \ vim: filetype=soloforth

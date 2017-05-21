@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201703132049
+  \ Last modified: 201705071743
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -54,6 +54,7 @@ dup >order set-current case-sensitive @ case-sensitive on
   \
   \ Conversion rules:
 
+  \ [cols="8,8,16"]
   \ |===
   \ | Escaped | Name | ASCII characters
   \
@@ -208,9 +209,10 @@ need parse-esc-string need esc-standard-chars-wordlist
 
 need set-esc-order  esc-standard-chars-wordlist 1 set-esc-order
 
-: s\" ( Interpretation: "ccc<quote>" -- ca len )
-       ( Compilation: "ccc<quote>" -- )
-       ( Run-time: -- ca len )
+: s\"
+  \ Interpretation: ( "ccc<quote>" -- ca len )
+  \ Compilation:    ( "ccc<quote>" -- )
+  \ Run-time:       ( -- ca len )
   parse-esc-string compiling? if  postpone sliteral  then
  ; immediate ?)
 
@@ -218,9 +220,10 @@ need set-esc-order  esc-standard-chars-wordlist 1 set-esc-order
 
   \ doc{
   \
-  \ s\" ( Compilation: "ccc<quote>" -- )
-  \      ( Interpretation: "ccc<quote>" -- ca len )
-  \      ( Run-time: -- ca len )
+  \ s\"
+  \   Compilation:    ( "ccc<quote>" -- )
+  \   Interpretation: ( "ccc<quote>" -- ca len )
+  \   Run-time:       ( -- ca len )
 
   \
   \ Note: When ``s\"`` is loaded, `esc-standard-chars-wordlist`
@@ -243,16 +246,18 @@ need parse-esc-string need esc-standard-chars-wordlist
 
 need set-esc-order  esc-standard-chars-wordlist 1 set-esc-order
 
-: .\" ( Compilation: "ccc<quote>" -- )
-       ( Run-time: -- ca len )
+: .\"
+  \ Compilation: ( "ccc<quote>" -- )
+  \ Run-time:    ( -- ca len )
   compile (.") parse-esc-string s, ; immediate compile-only ?)
 
   \ XXX TODO documentation
 
   \ doc{
   \
-  \ .\" ( Compilation: "ccc<quote>" -- )
-  \      ( Run-time: -- ca len )
+  \ .\"
+  \   Compilation: ( "ccc<quote>" -- )
+  \   Run-time:    (-- ca len )
   \
 
   \ ``.\"`` is an `immediate` and `compile-only` word.
@@ -508,5 +513,9 @@ need parse-char need char>string
   \ 2017-03-12: Update mentions to the `stringer`.
   \
   \ 2017-03-13: Improve documentation.
+  \
+  \ 2017-05-05: Improve documentation.
+  \
+  \ 2017-05-07: Improve documentation.
 
   \ vim: filetype=soloforth

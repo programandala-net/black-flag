@@ -1,9 +1,9 @@
-  \ flow.conditions.zero.fs
+  \ flow.conditionals.zero.fs
   \
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201702280000
+  \ Last modified: 201705211931
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -23,40 +23,52 @@
   \ retain every copyright, credit and authorship notice, and
   \ this license.  There is no warranty.
 
-  \ XXX TODO Compilation stack notation.
-
 ( 0if 0while 0until 0exit )
 
 [unneeded] 0if ?(
-: 0if ( f -- )
+: 0if
+  \ Compilation: ( C: -- orig )
+  \ Run-time:    ( f -- )
   postpone ?branch >mark ; immediate compile-only ?)
 
   \ doc{
   \
-  \ 0if ( f -- )
+  \ 0if
+  \   Compilation: ( C: -- orig )
+  \   Run-time:    ( f -- )
   \
   \ Faster and smaller alternative to the idiom ``0= if``.
   \
   \ ``0if`` is an `immediate` and `compile-only` word.
   \
+  \ See also: `if`, `-if`, `+if`.
+  \
   \ }doc
 
 [unneeded] 0while ?( need 0if need cs-swap
-: 0while ( f -- )
+: 0while
+  \ Compilation: ( C: dest -- orig dest )
+  \ Run-time:    ( f -- )
   postpone 0if  postpone cs-swap ; immediate compile-only ?)
 
   \ doc{
   \
-  \ 0while ( f -- )
+  \ 0while
+  \   Compilation: ( C: dest -- orig dest )
+  \   Run-time:    ( f -- )
   \
   \ Faster and smaller alternative to the idiom `0= while`.
   \
   \ ``0while`` is an `immediate` and `compile-only` word.
   \
+  \ See also: `while`, `-while`, `+while`.
+  \
   \ }doc
 
 [unneeded] 0until ?(
-: 0until ( f -- )
+: 0until
+  \ Compilation: ( C: dest -- )
+  \ Run-time:    ( f -- )
   postpone ?branch <resolve ; immediate compile-only ?)
 
   \ doc{
@@ -67,6 +79,8 @@
   \
   \ ``0until`` is an `immediate` and `compile-only` word.
   \
+  \ See also: `until`, `-until`, `+until`.
+  \
   \ }doc
 
 [unneeded] 0exit ?(
@@ -76,7 +90,7 @@ code 0exit ( f -- ) ( R: nest-sys | -- nest-sys | )
   \ pop hl
   \ ld a,h
   \ or l ; zero?
-  \ jp z,exit_zx ; jump if zero
+  \ jp z,exit_ ; jump if zero
   \ jp next
 
   \ doc{
@@ -86,11 +100,13 @@ code 0exit ( f -- ) ( R: nest-sys | -- nest-sys | )
   \ If _f_ is zero, return control to the calling definition,
   \ specified by _nest-sys_.
   \
-  \ `0exit` is not intended to be used within a do-loop. Use
-  \ `0= if unloop exit then` instead.
+  \ `0exit` is not intended to be used within a `loop`.  Use
+  \ ``0= if unloop exit then`` instead.
   \
-  \ In Solo Forth `0exit` can be used in interpretation mode to
-  \ stop the interpretation of a block.
+  \ ``0exit`` can be used in interpretation mode to stop the
+  \ interpretation of a block.
+  \
+  \ See also: `?exit`, `exit`, `-exit` ,`+exit`.
   \
   \ }doc
 
@@ -112,5 +128,11 @@ code 0exit ( f -- ) ( R: nest-sys | -- nest-sys | )
   \ interpretation.
   \
   \ 2017-02-27: Improve documentation.
+  \
+  \ 2017-05-05: Improve documentation.
+  \
+  \ 2017-05-09: Fix typo.
+  \
+  \ 2017-05-21: Fix typo.
 
   \ vim: filetype=soloforth

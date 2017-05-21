@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201704172318
+  \ Last modified: 201705101727
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -26,7 +26,28 @@
 ( [false] [true] [if] [else] [then] )
 
 [unneeded] [true]  ?\  0 constant [false] immediate
+
+  \ doc{
+  \
+  \ [true]  ( -- true )
+  \
+  \ ``[true]`` is an `immediate` word.
+  \
+  \ See also: `[false]`, `true`.
+  \
+  \ }doc
+
 [unneeded] [false] ?\ -1 constant [true]  immediate
+
+  \ doc{
+  \
+  \ [false]  ( -- false )
+  \
+  \ ``[false]`` is an `immediate` word.
+  \
+  \ See also: `[true]`, `false`.
+  \
+  \ }doc
 
   \ Note: `[if]` uses 132 bytes of data space (not including
   \ `str=`).
@@ -49,11 +70,15 @@
   \ [else] ( "ccc" -- )
   \
   \ Parse and discard space-delimited words from the parse
-  \ area, including nested occurrences of `[if]`-`[then]`, and
-  \ `[if]`-``[else]``-`[then]`, until either the word
+  \ area, including nested occurrences of ``[if] ... [then]``,
+  \ and ``[if] ... [else] ... [then]``, until either the word
   \ ``[else]`` or the  word `[then]` has  been parsed and
   \ discarded. If the  parse area  becomes exhausted, it is
   \ refilled as with `refill`.
+  \
+  \ Origin: Forth-94 (TOOLS EXT), Forth-2012 (TOOLS EXT).
+  \
+  \ See also: `[if]`.
   \
   \ }doc
 
@@ -65,13 +90,14 @@
   \
   \ If _flag_ is true, do nothing. Otherwise, parse and discard
   \ space-delimited words from the parse area, including nested
-  \ occurrences of ``[if]``-`[then]`, and
-  \ ``[if]``-`[else]`-`[then]`, until either the word `[else]`
-  \ or the  word `[then]` has  been parsed and  discarded. If
-  \ the  parse area  becomes exhausted, it is refilled as with
-  \ `refill`.
+  \ occurrences of ``[if] ... [then]``, and ``[if] ... [else]
+  \ ... [then]``, until either the word `[else]` or the  word
+  \ `[then]` has  been parsed and  discarded. If the  parse
+  \ area  becomes exhausted, it is refilled as with `refill`.
   \
   \ ``[if]`` is an `immediate` word.
+  \
+  \ Origin: Forth-94 (TOOLS EXT), Forth-2012 (TOOLS EXT).
   \
   \ See also: `?\`, `?(`.
   \
@@ -86,6 +112,8 @@
   \ Do nothing. ``[then]`` is parsed and recognized by `[if]`.
   \
   \ ``[then]`` is an `immediate` word.
+  \
+  \ Origin: Forth-94 (TOOLS EXT), Forth-2012 (TOOLS EXT).
   \
   \ }doc
 
@@ -181,13 +209,14 @@
 ?\ : >>name ( xtp -- nt ) cell+ cell+ ;
 
 [unneeded] >body
-?\ code >body  E1 c, 23 c, 23 c, 23 c, jppushhl, end-code
+?\ code >body  E1 c, 23 c, 23 c, 23 c, E5 c, jpnext, end-code
   \ ( xt -- pfa )
   \ pop hl
   \ inc hl
   \ inc hl
   \ inc hl
-  \ jp pushhl
+  \ push hl
+  \ _jp_next
 
   \ doc{
   \
@@ -220,13 +249,14 @@
   \ }doc
 
 [unneeded] body>
-?\ code body> E1 c, 2B c, 2B c, 2B c, jppushhl, end-code
+?\ code body> E1 c, 2B c, 2B c, 2B c, E5 c, jpnext, end-code
   \ ( pfa -- xt )
   \ pop hl
   \ dec hl
   \ dec hl
   \ dec hl
-  \ jp pushhl
+  \ push hl
+  \ _jp_next
 
   \ doc{
   \
@@ -266,11 +296,12 @@
 
 [unneeded] [''] ?( need need-here need-here ''
 : ['']  '' postpone literal ; immediate compile-only ?)
-  \ ( Compilation: "name" -- )
+  \ Compilation: ( "name" -- )
 
   \ doc{
   \
-  \ [''] ( Compilation: "name" -- )
+  \ ['']
+  \   Compilation: ( "name" -- )
 
   \
   \ If _name_ is found in the current search order, compile its
@@ -389,12 +420,14 @@ need >>name need name>name need name>>
 
 [unneeded] [comp'] ?( need need-here need-here comp'
 
-: [comp'] ( Compilation: "name" -- ) ( Run-time: -- x xt )
+: [comp'] \ Compilation: ( "name" -- ) Run-time: ( -- x xt )
   comp' postpone 2literal ; immediate compile-only ?)
 
   \ doc{
   \
-  \ [comp'] ( Compilation: "name" -- ) ( Run-time: -- x xt )
+  \ [comp']
+  \   Compilation: ( "name" -- )
+  \   Run-time:    ( -- x xt )
   \
   \ Compilation token _x xt_ represents the compilation
   \ semantics of _name_.
@@ -405,7 +438,7 @@ need >>name need name>name need name>>
   \
   \ }doc
 
-( there ?pairs [compile] smudge smudged )
+( there ?pairs [compile] smudge smudged no-exit )
 
 [unneeded] there ?\ : there ( a -- ) dp ! ;
 
@@ -491,6 +524,55 @@ need >>name need name>name need name>>
   \ Origin: fig-Forth.
   \
   \ See also: `smudged`.
+  \
+  \ }doc
+
+[unneeded] no-exit ?\ : no-exit ( -- ) cell negate allot ;
+
+  \ Credit:
+  \
+  \ Code from Pygmy Forth's `recover`:
+  \
+  \ Copyright (c) 2004 Frank C. Sergeant
+  \ Freely available under a modified BSD/MIT/X license.
+  \ Details at http://pygmy.utoh.org/license.html.
+
+  \ doc{
+  \
+  \ no-exit  ( -- )
+  \
+  \ Recover the data-space cell used by the `exit` compiled by
+  \ the `;` of the latest colon definition. ``no-exit`` can be
+  \ used after a colon definition that contains and end-less
+  \ loop, or exits only through an explicit `exit`, `quit` or
+  \ other means. In such cases the `exit` compiled by `;` can
+  \ never be reached, so its space is wasted. 
+  \
+  \ Usage examples:
+
+  \ ----
+  \ : forever ( -- )
+  \   begin ." Forever! " again ; no-exit
+  \
+  \ : maybe-forever ( -- )
+  \   begin ." Forever? " break-key? until quit ; no-exit
+  \ ----
+
+  \ The same effect can be achieved by replacing `;` with `[`
+  \ and `finish-code`:
+
+  \ ----
+  \ : forever ( -- )
+  \   begin ." Forever!" again [ finish-code
+  \
+  \ : maybe-forever ( -- )
+  \   begin ." Forever? " break-key? until quit [ finish-code
+  \ ----
+
+  \ `finish-code` is factor of `;`. It's not an `immediate`
+  \ word, so `[` is needed to enter interpretation `state`.
+
+  \ Origin: Pygmy Forth's ``recover``.
   \
   \ }doc
 
@@ -817,7 +899,7 @@ variable warnings  warnings on
   \ Alternative action for the deferred word `warn`.  If the
   \ contents of the user variable `warnings` is not zero and
   \ the word name _ca len_ is already defined in the current
-  \ compilation word list, print throw error #-257, without
+  \ compilation word list, display `throw` error #-257, without
   \ actually throwing an error.
   \
   \ See: `warnings`, `warn-throw`, `warn.message`, `?warn`.
@@ -838,7 +920,7 @@ variable warnings  warnings on
   \ Alternative action for the deferred word `warn`.  If the
   \ contents of the user variable `warnings` is not zero and
   \ the word name _ca len_ is already defined in the current
-  \ compilation word list, print a warning message.
+  \ compilation word list, display a warning message.
   \
   \ See: `warnings`, `warn.throw`, `warn-throw`, `?warn`.
   \
@@ -1063,5 +1145,13 @@ variable warnings  warnings on
   \
   \ 2017-04-17: Fix and improve documentation. Improve needing
   \ of `[if]`, `[else]`, `[then]`.
+  \
+  \ 2017-04-27: Improve documentation.
+  \
+  \ 2017-05-07: Improve documentation.
+  \
+  \ 2017-05-09: Remove `jppushhl,`.
+  \
+  \ 2017-05-10: Add `no-exit`.
 
   \ vim: filetype=soloforth
