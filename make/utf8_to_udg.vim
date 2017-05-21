@@ -1,24 +1,21 @@
 " utf8_to_udg.vim
 
-" This file is part of Bandera Negra
-" http://programandala.net/
+" This file is part of Black Flag
+" http://programandala.net/en.program.black_flag.html
 
-" Last modified 201702021206
+" Last modified 201704180050
+" See change log at the end of the file
 
 " ==============================================================
 " Description
 
-" This program converts the
+" This program converts the UTF-8 characters in the sources to ZX Spectrum
+" User Defined Graphic codes.
 
 " ==============================================================
 " Author
 
 " Marcos Cruz (programandala.net), 2016
-
-" ==============================================================
-" History
-
-" 2017-02-02: Start.
 
 " ==============================================================
 " Spanish characters
@@ -59,3 +56,9 @@ echo "Converting Esperanto UTF-8 characters to ZX Spectrum UDG"
 %s/ŝ/\=nr2char(137)/gIe
 %s/Ŭ/\=nr2char(138)/gIe
 %s/ŭ/\=nr2char(139)/gIe
+
+" ==============================================================
+" Change log
+
+" 2017-02-02: Start.
+

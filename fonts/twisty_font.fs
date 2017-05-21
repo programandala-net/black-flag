@@ -3,9 +3,9 @@
 \ twisty_font.fs
 
 \ This file is part of Black Flag
-\ http://programandala.net/
+\ http://programandala.net/en.program.black_flag.html
 
-\ Last modified: 201702021603
+\ Last modified: 201704180050
 
 \ ==============================================================
 \ Description

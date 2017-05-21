@@ -1,11 +1,11 @@
 \ jolly_roger_graph_font_1_sprites.fs
 
 \ This file is part of Black Flag
-\ http://programandala.net/
+\ http://programandala.net/en.program.black_flag.html
 
 \ XXX UNDER DEVELOPMENT
 
-\ Last modified: 201702021219
+\ Last modified: 201704180049
 
 \ ==============================================================
 \ Description
