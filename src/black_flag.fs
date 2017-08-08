@@ -44,7 +44,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.53.0+201705220101" ;
+: version$ ( -- ca len ) s" 0.53.0+201708081953" ;
 
 cr section( Black Flag) cr version$ type cr
 
