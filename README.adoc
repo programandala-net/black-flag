@@ -1,6 +1,6 @@
 == Black Flag 
 :author: Marcos Cruz (programandala.net)
-:revdate: 2017-04-18
+:revdate: 2017-11-21
 :linkattrs:
 
 == Description
@@ -72,6 +72,25 @@ Solo Forth.
 // image::screenshots/black_flag_native.png[Native]
 // image::screenshots/black_flag_village.png[Village]
 // image::screenshots/black_flag_trade.png[Trade]
+
+== How to compile and run
+
+. Make sure the required programs, listed in the header of the
+  <Makefile> file, are installed on your system.
+. Type `make` in the project directory to build the
+  <disk_2_black_flag.mgt> disk image.
+. Start a ZX Spectrum 128 emulator with the Plus D interface.
+. Enter 128 BASIC.
+. Insert the Solo Forth's <disk_0_boot.mgt> disk image into drive 1.
+. Type `run` to load G+DOS and Solo Forth from drive 1.
+. Insert the <disk_2_black_flag.mgt> disk image into drive 1.
+. Type `1 load` to load block 1 from the current drive. This will
+  start the compilation. Messages will be shown during the process.
+. Set your emulator to its maximum speed and wait. When the
+  compilation is finished, the screen is cleared and a message is
+  displayed.
+. Type `run` to start the game.
+. Save a SZX snapshot with your emulator.
 
 == Brief history
 
