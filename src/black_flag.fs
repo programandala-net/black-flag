@@ -44,7 +44,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.53.0+201708081953" ;
+: version$ ( -- ca len ) s" 0.53.0+201711281213" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -94,7 +94,7 @@ need odd?
   \ --------------------------------------------
   section(   -Time)  \ {{{2
 
-need frames@  need ms  need seconds  need ?seconds
+need ticks  need ms  need seconds  need ?seconds
 
   \ --------------------------------------------
   section(   -Data and strings)  \ {{{2
@@ -1368,8 +1368,8 @@ variable victory
   enemy-ship-y +!
 
   [ white blue papery + ] cliteral attr!
-  enemy-ship-x @    enemy-ship-y @ 2dup 2dup at-xy  ."  ab "
-                                   1+        at-xy  ."  90 "
+  enemy-ship-x @    enemy-ship-y @ 2dup 2dup at-xy ."  ab "
+                                   1+        at-xy ."  90 "
   [ yellow blue papery + ] cliteral attr!
   enemy-ship-x @ 1- enemy-ship-y @ 2+        at-xy ."  678 "
                                    2dup  1-  at-xy ."    "
@@ -2145,7 +2145,7 @@ cyan dup papery + constant stormy-sky-attr
   \ XXX TODO -- use execution table instead? better yet:
   \ `thiscase` structure.
 
-: .ship? ( -- f ) frames@ drop 1024 mod 0= ;
+: .ship? ( -- f ) ticks drop 1024 mod 0= ;
 
 : ?.ship ( -- ) .ship? if .ship then ;
 
