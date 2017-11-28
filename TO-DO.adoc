@@ -1,11 +1,11 @@
 = To-Do list of Black Flag
 :author: Marcos Cruz (programandala.net)
-:revdate: 2017-02-04
+:revdate: 2017-11-28
 
 .2017-02-04:
 
-Fix the crashes when entering the island locations than have 3 palms.
-The problem seem related to the fact that there's no event in those
+Fix the crashes when entering the island locations that have 3 palms.
+The problem seems related to the fact that there's no event in those
 locations, and the stack gets unbalanced.
 
 .2017-02-02, 2017-02-04:
@@ -65,10 +65,10 @@ Move the `name` double-cell array to far memory.
 
 Add 128K sound effects.
 
-.2017-01-21:
+.2017-01-21, 2017-11-28:
 
-Wait for the space key after the reports, to prevent the key to
-activate a command after returning to the panel.
+Wait for the space key after the reports, to prevent the key from
+activating a new panel command?
 
 .2017-01-12:
 

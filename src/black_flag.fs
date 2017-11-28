@@ -44,7 +44,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.53.0+201711281213" ;
+: version$ ( -- ca len ) s" 0.53.1+201711281640" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -54,7 +54,7 @@ cr section( Black Flag) cr version$ type cr
 only forth definitions
 
   \ --------------------------------------------
-  \ cr .(   -Assembler)  \ {{{2
+  \ section(   -Assembler)  \ {{{2
 
   \ need transient
   \ 2000 2000 transient  need assembler  end-transient
@@ -89,7 +89,7 @@ need random-range  need randomize0  need -1..1  need d<>
 need odd?
 
   \ --------------------------------------------
-  \ cr .(   -Memory)  \ {{{2
+  \ section(   -Memory)  \ {{{2
 
   \ --------------------------------------------
   section(   -Time)  \ {{{2
@@ -140,6 +140,7 @@ need plot176  ' plot176  alias plot
   section(   -Keyboard)  \ {{{2
 
 need key-left  need key-right  need key-down  need key-up
+need new-key-
 
 need get-inkey ' get-inkey alias inkey
   \ XXX TMP --
@@ -159,7 +160,7 @@ game-wordlist  dup >order set-current
   \ ============================================================
   section( Debugging tools [1])  \ {{{1
 
-:  ~~h ( -- ) 2 border key drop 1 border ;
+:  ~~h ( -- ) 2 border new-key- 1 border ;
   \ Break point.
 
 'q' ~~quit-key c!  $FF ~~resume-key c!  22 ~~y c!  ~~? off
@@ -397,7 +398,7 @@ yellow black papery +         3 stamina-attr c!
   section(   -Ship damage descriptions)  \ {{{2
 
 0
-  np@ far," hundiéndose"            \ worst: sinking
+  np@ far," hundiéndose"          \ worst: sinking
   np@ far," a punto de hundirse"
   np@ far," haciendo agua"
   np@ far," destrozado"
@@ -664,7 +665,7 @@ far-banks 3 + c@ cconstant screen-backup-bank
 : message ( ca len -- ) text-font wipe-message wltype ;
 
   \ ============================================================
-  \ cr .( Sound ) \ {{{1
+  \ section( Sound ) \ {{{1
 
   \ ============================================================
   section( User input)  \ {{{1
@@ -1195,7 +1196,7 @@ s" Pulsa una tecla" far>sconstant press-any-key$
 : end-report ( -- )
   set-report-color
   0 row 2+ at-xy press-any-key$ columns type-center-field
-  key drop  restore-screen ;
+  new-key-  restore-screen ;
   \ Common task at the end of all reports.
 
 : .datum ( a -- ) tabulate @ 2 .r cr cr ;
@@ -2523,7 +2524,7 @@ variable price  variable offer
   graphics-1  16 1 do  27 i palm2  1 i palm2  7 +loop
   success? if happy-end else sad-end then
   s" Pulsa una tecla para ver tus puntos" message
-  key drop 200 30 beep score-report ;
+  new-key- 200 30 beep score-report ;
   \ XXX TODO -- new graphic, based on the cause of the end
 
   \ ============================================================
@@ -2656,7 +2657,7 @@ variable checkered
 
 : .damages ( -- )
   max-damage 1+ 0 ?do
-    cr i . i damage ! damage-index . damage$ type  key drop
+    cr i . i damage ! damage-index . damage$ type new-key-
   loop ;
 
 : ini ( -- ) init-screen init ;
