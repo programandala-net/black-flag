@@ -1,6 +1,11 @@
 = To-Do list of Black Flag
 :author: Marcos Cruz (programandala.net)
-:revdate: 2017-11-28
+:revdate: 2017-11-29
+
+.2017-11-29:
+
+Check `score +!`: it should not be used in `update-score`; beside,
+it's used already in some events.
 
 .2017-02-04:
 

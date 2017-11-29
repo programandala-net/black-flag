@@ -5,7 +5,8 @@
 \ This file is part of Black Flag
 \ http://programandala.net/en.program.black_flag.html
 
-\ Last modified: 201704180050
+\ Last modified: 201711291417
+\ See change log at the end of the file.
 
 \ ==============================================================
 \ Description
@@ -17,19 +18,6 @@
 
 \ The twisty font was designed by Paul Howard for Alchemist PD,
 \ 1995, and packed into a viewer called "Fontbox I".
-
-\ ==============================================================
-\ History
-
-\ 2017-01-08: Create this file from the original TAP using a
-\ FantomoUDG converter
-\ (http://programandala.net/en.program.fantomoudg.html).
-\
-\ 2017-02-02: Make the file executable for Gforth and prepare it
-\ to convert the UDG data to bytes stored with `c,`, which is
-\ the compact format used in the final source. Redesign
-\ character 96 (the GBP sign in the ZX Spectrum character set)
-\ as a backtick, its original shape in ASCII.
 
 \ ==============================================================
 
@@ -1096,3 +1084,18 @@ udg
 udg
 
 bye
+
+\ ==============================================================
+\ Change log
+
+\ 2017-01-08: Create this file from the original TAP using a
+\ FantomoUDG converter
+\ (http://programandala.net/en.program.fantomoudg.html).
+\
+\ 2017-02-02: Make the file executable for Gforth and prepare it
+\ to convert the UDG data to bytes stored with `c,`, which is
+\ the compact format used in the final source. Redesign
+\ character 96 (the GBP sign in the ZX Spectrum character set)
+\ as a backtick, its original shape in ASCII.
+\
+\ 2017-11-29: Move change log.

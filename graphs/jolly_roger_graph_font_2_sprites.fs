@@ -5,7 +5,8 @@
 
 \ XXX UNDER DEVELOPMENT
 
-\ Last modified: 201704180050
+\ Last modified: 201711291416
+\ See change log at the end of the file.
 
 \ ==============================================================
 \ Description
@@ -18,21 +19,6 @@
 \ This is the second graphic font included in the original game
 \ "Jolly Roger", written by Barry Jones and published by Video
 \ Vault ltd. in 1984.
-
-\ ==============================================================
-\ History
-
-\ 2017-01-08: Create this file from the original TAP using a
-\ FantomoUDG converter
-\ (http://programandala.net/en.program.fantomoudg.html).  Edit
-\ it to start combining the original graphic characters into
-\ blocks and sprites.  The final goal is to create a single
-\ source of graphics, easy to edit as text and to convert
-\ automatically to Forth source.
-\
-\ 2017-01: Combine UDG into blocks and describe them.
-\
-\ 2017-02-02: Update file header.
 
 \ ==============================================================
 
@@ -913,3 +899,19 @@
 01000010
 00111100
 
+\ ==============================================================
+\ Change log
+
+\ 2017-01-08: Create this file from the original TAP using a
+\ FantomoUDG converter
+\ (http://programandala.net/en.program.fantomoudg.html).  Edit
+\ it to start combining the original graphic characters into
+\ blocks and sprites.  The final goal is to create a single
+\ source of graphics, easy to edit as text and to convert
+\ automatically to Forth source.
+\
+\ 2017-01: Combine UDG into blocks and describe them.
+\
+\ 2017-02-02: Update file header.
+\
+\ 2017-11-29: Move change log.
