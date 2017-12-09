@@ -10,7 +10,9 @@
   \ Spectrum 128 written in Forth with Solo Forth
   \ (http://programandala.net/en.program.solo_forth.html).
 
-  \ A remake of Barry Jones' "Jolly Roger" (1984).
+  \ Black Flag is a remake of Barry Jones' "Jolly Roger"
+  \ (1984),
+  \ <http://www.worldofspectrum.org/infoseekid.cgi?id=0002639>.
 
   \ ============================================================
   \ Authors
@@ -44,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.53.1+201711281640" ;
+: version$ ( -- ca len ) s" 0.54.0+201712090144" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -86,7 +88,7 @@ need >true  need >false
 
 need >=  need <=  need under+  need between  need 2/
 need random-range  need randomize0  need -1..1  need d<>
-need odd?
+need odd? need */
 
   \ --------------------------------------------
   \ section(   -Memory)  \ {{{2
@@ -1196,7 +1198,7 @@ s" Pulsa una tecla" far>sconstant press-any-key$
 : end-report ( -- )
   set-report-color
   0 row 2+ at-xy press-any-key$ columns type-center-field
-  new-key-  restore-screen ;
+  new-key- restore-screen ;
   \ Common task at the end of all reports.
 
 : .datum ( a -- ) tabulate @ 2 .r cr cr ;
@@ -1246,10 +1248,10 @@ s" Condición" far>sconstant "condition"$
 
 : update-score ( -- )
   found-clues @ 1000 *
-  day        @  200 * +
+  day         @  200 * +
   sunk-ships  @ 1000 * +
-  trades     @  200 * +
-               4000 success? and +
+  trades      @  200 * +
+                4000 success? and +
              score +! ;
 
 : score-report ( -- )
@@ -1262,7 +1264,7 @@ s" Condición" far>sconstant "condition"$
   ." Pistas"          tab found-clues @ 4 .r ."  x 1000" cr cr
   ." Tesoro"          tab 4000          4 .r             cr cr
   update-score
-  ." Total"           tab ."       "
+  ." Total"           tab ."        "
                       score @ 4 .r  end-report ;
   \ XXX TODO -- add subtotals (use constants)
   \ XXX TODO -- draw a ruler above "Total"
@@ -1868,7 +1870,7 @@ sailor-window-cols 2+ 8 * 4 +
       \ XXX TODO -- print dubloons here
     hostile-native  of  14 5 palm2 25 8 palm2 .native  endof
     just-3-palms-1  of  ~~ 25 8 palm2
-    ~~ 4 8 palm2 ~~ 16 5 palm2   ~~ endof
+                           4 8 palm2 16 5 palm2   ~~ endof
     snake of
       13 5 palm2 5 6 palm2 18 8 palm2 23 8 palm2 .snake
                                                           endof
@@ -2096,7 +2098,7 @@ cyan dup papery + constant stormy-sky-attr
 
 : storm-report ( -- )
   s" Cuando la mar y el cielo se calman, "
-  s" compruebas el estado del barco: " s+ damage$ s+ s" ." s+
+  s" compruebas es estado del barco:" s+ damage$ s+ s" ." s+
   message ;
 
 : storm ( -- ) stormy-sky wipe-panel storm-warning
@@ -2590,9 +2592,10 @@ far>sconstant intro-text-2$
 
 : (.debug-info) ( -- )
   get-fonts 2>r text-font
-  home aboard? if   ship-loc ? ship-loc @ sea
-               else crew-loc ? crew-loc @ island
-               then ? .s  2r> set-fonts ;
+  home aboard? if     ." SHIP:"  ship-loc ? ship-loc @ sea
+               else   ." LAND:"  crew-loc ? crew-loc @ island
+               then ? ." Stack:" .s last-column column - spaces
+            2r> set-fonts ;
 
 ' (.debug-info) ' .debug-info defer!
 
@@ -2604,7 +2607,7 @@ variable checkered
 
 : checkered! ( f -- ) 0= checkered ! ;
 
-: -checkered ( -- ) checkered @ checkered! ;
+: -checkered ( -- ) checkered@ checkered! ;
 
 : ship-here? ( col row -- f ) sea-length * + ship-loc @ = ;
 

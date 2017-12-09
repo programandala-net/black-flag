@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201705071821
+  \ Last modified: 201712080122
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -35,7 +35,7 @@
   \ If not compiling, `throw` exception #-14 ("interpreting a
   \ compile-only word").
   \
-  \ See also: `compile-only`, `?executing`.
+  \ See: `compile-only`, `?executing`.
   \
   \ }doc
 
@@ -49,7 +49,7 @@
   \ If not executing, `throw` exception #-263 ("execution
   \ only").
   \
-  \ See also: `?compiling`.
+  \ See: `?compiling`.
   \
   \ }doc
 
@@ -65,8 +65,8 @@
 
 [defined] abort-message ?\ 2variable abort-message
 
-: (abort") ( x -- )
-  r> count rot if  abort-message 2! -2 throw  then + >r ;
+: (abort") ( x -- ) r> count rot if   abort-message 2! -2 throw
+                                 then + >r ;
 
   \ doc{
   \
@@ -78,7 +78,7 @@
   \ ``(abort")`` is the run-time procedure compiled by
   \ `abort"`.
   \
-  \ See also: `throw`.
+  \ See: `throw`.
   \
   \ }doc
 
@@ -102,14 +102,14 @@
   \ Word Set), Forth-94 (EXCEPTION EXT), Forth-2012 (EXCEPTION
   \ EXT).
   \
-  \ See also: `abort-message`, `abort`, `throw`, `warning"`.
+  \ See: `abort-message`, `abort`, `throw`, `warning"`.
   \
   \ }doc
 
 [unneeded] warning?( ?( need string-parameter
 
-: (warning") ( f -- )
-  string-parameter rot if  type  else  2drop  then ;
+: (warning") ( f -- ) string-parameter rot if   type
+                                           else 2drop then ;
 
   \ doc{
   \
@@ -169,13 +169,13 @@
   \ the library.
 
   \ ----
-  \ -n1 =  -90..-1        \ Standard error codes
-  \        -300..-256     \ Solo Forth error codes
-  \        -1024..-1000   \ G+DOS error codes
-  \ +n2 =  1..146
+  \ -n1 =    -90 ..   -1 \ Standard error codes
+  \         -300 .. -256 \ Solo Forth error codes
+  \        -1024 ..-1000 \ G+DOS error codes
+  \ +n2 =      1 ..  146
   \ ----
 
-  \ See also: `error>line`.
+  \ See: `error>line`.
   \
   \ }doc
 
@@ -190,7 +190,7 @@
   \ Convert error code _-n1_ to line _n2_ relative to the block
   \ that contains the error messages.
   \
-  \ See also: `error>ordinal`.
+  \ See: `error>ordinal`.
   \
   \ }doc
 
@@ -206,14 +206,17 @@ s" Standard error codes" located errors-block !
   \ A variable. _a_ is the address of a cell containing the
   \ block that holds the error messages.
   \
-  \ See also: `.throw-message`.
+  \ The variable is initialized during compilation with the
+  \ first block that contains "Standard error codes" in its
+  \ first line.
+  \
+  \ See: `.throw-message`.
   \
   \ }doc
 
 : .throw-message ( n -- )
-  errors-block @
-  if    cr error>line errors-block @ .line space
-  else  .throw#  then ;
+  errors-block @ if   cr error>line errors-block @ .line space
+                 else .throw# then ;
 
 ' .throw-message ' .throw defer!
 
@@ -227,20 +230,20 @@ s" Standard error codes" located errors-block !
   \ messages are hold. If `errors-block` contains zero, only
   \ the error number is displayed.
   \
-  \ See also: `error>line`.
+  \ See: `error>line`.
   \
   \ }doc
 
 ( catch )
 
 : catch ( xt -- exception# | 0 )
-  sp@ >r          ( xt ) \ save data stack pointer
-  catcher @ >r    ( xt ) \ save previous catcher
-  rp@ catcher !   ( xt ) \ set current catcher
-  execute         ( )    \ `execute` returns if no `throw`
-  r> catcher !    ( )    \ restore previous catcher
-  r> drop         ( )    \ discard saved stack pointer
-  0 ;             ( 0 )  \ normal completion, no error
+  sp@ >r        ( xt ) \ save data stack pointer
+  catcher @ >r  ( xt ) \ save previous catcher
+  rp@ catcher ! ( xt ) \ set current catcher
+  execute       ( )    \ `execute` returns if no `throw`
+  r> catcher !  ( )    \ restore previous catcher
+  r> drop       ( )    \ discard saved stack pointer
+  0 ;           ( 0 )  \ normal completion, no error
 
   \ Credit:
   \
@@ -266,7 +269,7 @@ s" Standard error codes" located errors-block !
   \
   \ Origin: Forth-94 (EXCEPTION), Forth-2012 (EXCEPTION).
   \
-  \ See also: `catcher`.
+  \ See: `catcher`.
   \
   \ }doc
 
@@ -313,6 +316,9 @@ s" Standard error codes" located errors-block !
   \ 2017-05-05: Improve documentation.
   \
   \ 2017-05-07: Improve documentation.
+  \
+  \ 2017-12-08: Update source style (spacing). Improve
+  \ documentation.
 
   \ vim: filetype=soloforth
 
