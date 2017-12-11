@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.54.1+201712112110" ;
+: version$ ( -- ca len ) s" 0.55.0+201712120026" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -87,7 +87,7 @@ need >true  need >false
   section(   -Math)  \ {{{2
 
 need >=  need <=  need under+  need between  need 2/
-need random-range  need randomize0  need -1..1  need d<>
+need random-between  need randomize0  need -1..1  need d<>
 need odd? need */
 
   \ --------------------------------------------
@@ -824,8 +824,8 @@ variable west-cloud-x  4 constant /west-cloud
 variable east-cloud-x  3 constant /east-cloud
 
 : new-clouds ( -- )
-   1  9 random-range west-cloud-x !
-  13 21 random-range east-cloud-x ! ;
+   1  9 random-between west-cloud-x !
+  13 21 random-between east-cloud-x ! ;
 
 : sun ( -- )
   26 dup 0 at-xy ." AB"  1 at-xy ." CD" ;
@@ -854,7 +854,7 @@ variable east-cloud-x  3 constant /east-cloud
 : wave-coords ( -- x y )
   [ columns /wave - ] cliteral random
   [ sea-top-y       ] cliteral
-  [ sea-bottom-y    ] cliteral random-range ;
+  [ sea-bottom-y    ] cliteral random-between ;
   \ Return random coordinates _x y_ for a sea wave.
 
 : at-wave-coords ( -- ) wave-coords  at-xy ;
@@ -1146,7 +1146,7 @@ cyan dup papery + brighty constant sunny-sky-attr
 100 constant max-damage
 
 : damaged ( min max -- )
-  random-range damage +!  damage @ max-damage min damage ! ;
+  random-between damage +!  damage @ max-damage min damage ! ;
   \ Increase the ship damage with random value in a range.
 
 : max-damage? ( -- f ) damage @ max-damage = ;
@@ -1166,7 +1166,7 @@ cyan dup papery + brighty constant sunny-sky-attr
 : run-aground-damages ( -- )
   10 29 damaged injured drop  dead drop
     \ XXX TODO -- random number of dead and injured
-  -4 -1 random-range morale+! ;
+  -4 -1 random-between morale+! ;
 
 : run-aground ( -- )
   wipe-message  \ XXX TODO -- remove?
@@ -1279,7 +1279,7 @@ s" Condición" far>sconstant "condition"$
   s" La bala alcanza su objetivo. "
   s" Esto desmoraliza a la tripulación." s+ message
   -2 morale+!
-  3 4 random-range 1 ?do  injured drop  loop ;
+  3 4 random-between 1 ?do  injured drop  loop ;
   \ XXX TODO -- inform about how many injured?
 
 : do-attack-boat ( -- )
@@ -1349,7 +1349,7 @@ variable victory
 
 : .wave ( -- )
   graphics-1 [ cyan blue papery + ] cliteral attr!
-  11 30 random-range 1 20 random-range at-xy ." kl" ;
+  11 30 random-between 1 20 random-between at-xy ." kl" ;
 
 : (move-enemy-ship) ( -- )
   graphics-1
@@ -1475,7 +1475,7 @@ variable victory
 : battle-init-enemy-ship ( -- )
   20 enemy-ship-x ! 6 enemy-ship-y ! ;
   \   20 random 1+    enemy-ship-x !
-  \  11 30 random-range enemy-ship-y ! ;
+  \  11 30 random-between enemy-ship-y ! ;
   \ XXX TODO --
 
 : deck ( -- )
@@ -1557,20 +1557,20 @@ variable victory
                       make-south-coast make-east-coast ;
 
 : location-random-type ( -- n )
-  dubloons-found just-3-palms-2 random-range ;
+  dubloons-found just-3-palms-2 random-between ;
 
 : populate-island ( -- )
   23 7 do  i island @ coast <>
            if location-random-type i island ! then
   loop
-  native-village  19 22 random-range island !
-  native-ammo     13 16 random-range island !
-  native-supplies  7 10 random-range island ! ;
+  native-village  19 22 random-between island !
+  native-ammo     13 16 random-between island !
+  native-supplies  7 10 random-between island ! ;
   \ XXX TODO -- improve: adapt to any size:
   \ choose any free non-coast location
 
 : set-crew-loc ( -- )
-  7 10 random-range crew-loc ! ;
+  7 10 random-between crew-loc ! ;
   \ XXX TODO -- improve: choose a random location on the coast,
   \ except the village
 
@@ -1915,7 +1915,7 @@ sailor-window-cols 2+ 8 * 4 +
   \ XXX TODO -- only if supplies are not enough
 
 : money ( -- )
-  2 5 random-range dup .dubloons dup cash+!
+  2 5 random-between dup .dubloons dup cash+!
   s" Encuentras " rot coins$ s+ s" ." s+ message ;
   \ XXX TODO -- factor: repeated in `enter-this-island-location`
 
@@ -1966,7 +1966,7 @@ here - cell / constant island-events
 
   dubloons-found of
 
-    1 2 random-range >r
+    1 2 random-between >r
     s" Encuentras " r@ coins$ s+ s" ." s+ message
     r@ cash+!
     r> .dubloons
@@ -2041,7 +2041,7 @@ here - cell / constant island-events
   on-treasure-island? if   enter-treasure-island
                       else enter-ordinary-island then ;
 
-: disembark ( -- ) -2 -1 random-range supplies+!
+: disembark ( -- ) -2 -1 random-between supplies+!
                    wipe-message wipe-panel
                    disembarking-scene enter-island ;
 
@@ -2249,12 +2249,12 @@ variable price  variable offer
   native-tells-clue  4 seconds  embark ;
 
 : new-price ( -- )
-  3 8 random-range dup price ! coins$ 2dup uppers1
+  3 8 random-between dup price ! coins$ 2dup uppers1
   s"  ser nuevo precio, blanco." s+ native-says ;
   \ The native decides a new price.
 
 : lower-price ( -- )
-  -3 -2 random-range price +!
+  -3 -2 random-between price +!
   s" Bueno, tú darme... " price @ coins$ s+
   s"  y no hablar más." s+ native-says
   make-offer offer @ price @ >= if   accepted-offer
@@ -2277,7 +2277,7 @@ variable price  variable offer
 
 : trade ( -- )
   init-trade  s" Yo vender pista de tesoro a tú." native-says
-  5 9 random-range price !
+  5 9 random-between price !
   s" Precio ser " price @ coins$ s+ s" ." s+ native-says
   \ XXX TODO -- pause or join:
   1 seconds  s" ¿Qué dar tú, blanco?" native-says  make-offer
@@ -2331,7 +2331,7 @@ variable price  variable offer
 
 : dead-native-has-dubloons ( -- )
   -native
-  2 3 random-range r>
+  2 3 random-between r>
   s" Encuentras " r@ coins$ s+
   s"  en el cuerpo del nativo muerto." s+ message r> cash+! ;
 
@@ -2428,9 +2428,9 @@ variable price  variable offer
 
 : populate-sea ( -- )
   /sea sea-length - sea-length 1+ do
-    i reef? 0= if 2 21 random-range i sea ! then
+    i reef? 0= if 2 21 random-between i sea ! then
   loop
-  treasure-island 94 104 random-range sea ! ;
+  treasure-island 94 104 random-between sea ! ;
   \ XXX TODO -- 21 is shark; these are picture types
 
 : -/sea ( a -- ) 0 swap /sea cells erase ;
@@ -2441,16 +2441,16 @@ variable price  variable offer
 : new-sea ( -- ) empty-sea add-reefs populate-sea ;
 
 : new-ship ( -- )
-  32 42 random-range ship-loc !  9 ship-y !  4 ship-x !
+  32 42 random-between ship-loc !  9 ship-y !  4 ship-x !
   ship-up off ;
 
 : init-clues ( -- )
-       path-range random-range      path !
-       tree-range random-range      tree !
-    village-range random-range   village !
-       turn-range random-range      turn !
-  direction-range random-range direction !
-       pace-range random-range      pace ! ;
+       path-range random-between      path !
+       tree-range random-between      tree !
+    village-range random-between   village !
+       turn-range random-between      turn !
+  direction-range random-between direction !
+       pace-range random-between      pace ! ;
   \ XXX TODO -- use `random` for 0..x
   \ XXX TODO -- convert all ranges to 0..x
   \ XXX TODO -- use constant for ranges and reuse them as
@@ -2463,7 +2463,7 @@ variable price  variable offer
   score off  sunk-ships off  trades off ;
 
 : unused-name ( -- n )
-  0  begin  drop  0 [ stock-names 1- ] 1literal random-range
+  0  begin  drop  0 [ stock-names 1- ] 1literal random-between
      dup used-name @ 0= until ;
   \ Return the random identifier _n_ of an unused name.
 
