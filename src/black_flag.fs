@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.54.0+201712090144" ;
+: version$ ( -- ca len ) s" 0.54.1+201712112110" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -2148,7 +2148,7 @@ cyan dup papery + constant stormy-sky-attr
   \ XXX TODO -- use execution table instead? better yet:
   \ `thiscase` structure.
 
-: .ship? ( -- f ) ticks drop 1024 mod 0= ;
+: .ship? ( -- f ) ticks 1024 mod 0= ;
 
 : ?.ship ( -- ) .ship? if .ship then ;
 
@@ -2157,7 +2157,7 @@ cyan dup papery + constant stormy-sky-attr
 : ?storm ( -- ) storm? if storm then ;
 
 : ship-command ( -- )
-  begin  ?.ship ?storm  inkey ship-command?  until ;
+  begin ?.ship ?storm inkey ship-command? until ;
 
   \ ============================================================
   section( Misc commands on the island)  \ {{{1
@@ -2398,8 +2398,7 @@ variable price  variable offer
   \ If character _c_ is a valid command on the island, execute
   \ it and return true; else return false.
 
-: island-command ( -- )
-  begin  key island-command?  until ;
+: island-command ( -- ) begin key island-command? until ;
 
   \ ============================================================
   section( Setup)  \ {{{1
