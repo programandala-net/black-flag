@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.55.0+201712120026" ;
+: version$ ( -- ca len ) s" 0.56.0+201712120116" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -142,7 +142,7 @@ need plot176  ' plot176  alias plot
   section(   -Keyboard)  \ {{{2
 
 need key-left  need key-right  need key-down  need key-up
-need new-key-
+need new-key-  need -keys
 
 need get-inkey ' get-inkey alias inkey
   \ XXX TMP --
@@ -2570,7 +2570,7 @@ far>sconstant intro-text-2$
 : intro ( -- )
   blackout black attr!  (intro)
   [ white brighty ] cliteral paint-screen
-  120 ?seconds ;
+  -keys 120 ?seconds ;
 
   \ ============================================================
   section( Main)  \ {{{1
