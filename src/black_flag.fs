@@ -23,7 +23,7 @@
 
   \ Remake in Forth:
   \
-  \ Copyright (C) 2011,2014,2015,2016,2017 Marcos Cruz
+  \ Copyright (C) 2011,2014,2015,2016,2017,2018 Marcos Cruz
   \ (programandala.net)
 
   \ ============================================================
@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.56.0+201712120116" ;
+: version$ ( -- ca len ) s" 0.57.0+201801031726" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -805,7 +805,7 @@ far-banks 3 + c@ cconstant screen-backup-bank
 
 : wipe-panel ( -- )
   [ panel-y attr-line    ] literal
-  [ panel-rows columns * ] 1literal erase ;
+  [ panel-rows columns * ] xliteral erase ;
 
 white black papery + constant panel-attr
 
@@ -873,7 +873,7 @@ cyan dup papery + brighty constant sunny-sky-attr
 
 : color-sea ( c -- )
   [ sea-top-y attr-line ] literal
-  [ sea-rows columns *  ] 1literal rot fill ;
+  [ sea-rows columns *  ] xliteral rot fill ;
   \ Color the sea with attribute _c_.
 
 : wipe-sea ( -- ) [ blue dup papery + ] cliteral color-sea ;
@@ -1541,7 +1541,7 @@ variable victory
   \ be coast.
 
 : make-north-coast ( -- )
-  [ /island island-length - ] 1literal island-length
+  [ /island island-length - ] xliteral island-length
   (make-coast) ;
 
 : make-south-coast ( -- ) 0 island-length (make-coast) ;
@@ -1614,9 +1614,9 @@ sailor-window-cols 2+ 8 * 4 +
   wcls wltype ;
 
 : treasure-found ( -- )
-  [ 0 attr-line ] literal [ 3 columns * ] 1literal
+  [ 0 attr-line ] literal [ 3 columns * ] xliteral
   [ cyan dup papery + brighty ] cliteral fill
-  [ 4 attr-line ] literal [ 18 columns * ] 1literal
+  [ 4 attr-line ] literal [ 18 columns * ] xliteral
   [ yellow dup papery + ] literal fill
     \ XXX TODO -- factor the coloring
     \ XXX TODO -- use constants
@@ -1651,7 +1651,7 @@ sailor-window-cols 2+ 8 * 4 +
 
 : wipe-treasure-island ( -- )
   [ treasure-island-top-y attr-line ] literal
-  [ treasure-island-rows columns *  ] 1literal
+  [ treasure-island-rows columns *  ] xliteral
   [ yellow dup papery +             ] cliteral fill ;
 
 : paths-to-choose ( -- )
@@ -1728,7 +1728,7 @@ sailor-window-cols 2+ 8 * 4 +
   \ XXX TODO -- add range to the message
 
 : clear-for-quest ( -- )
-  [ 8 attr-line ] literal [ 14 columns * ] 1literal erase ;
+  [ 8 attr-line ] literal [ 14 columns * ] xliteral erase ;
 
 : quest ( -- )
   clear-for-quest
@@ -2410,18 +2410,18 @@ variable price  variable offer
 
 : add-south-reefs ( -- )
   [ sea-breadth 1- sea-length * dup sea-length + ]
-  1literal 1literal add-row-reefs ;
+  xliteral xliteral add-row-reefs ;
 
 : add-col-reefs ( n1 n0 -- )
   ?do  reef i sea !  sea-length +loop ;
 
 : add-east-reefs ( -- )
-  [ sea-breadth 2- sea-length * 1+ ] 1literal sea-length
+  [ sea-breadth 2- sea-length * 1+ ] xliteral sea-length
   add-col-reefs ;
 
 : add-west-reefs ( -- )
   [ sea-length 2* 1-  /sea sea-length - ]
-  1literal 1literal add-col-reefs ;
+  xliteral xliteral add-col-reefs ;
 
 : add-reefs ( -- ) add-north-reefs add-south-reefs
                      add-east-reefs add-west-reefs ;
@@ -2463,7 +2463,7 @@ variable price  variable offer
   score off  sunk-ships off  trades off ;
 
 : unused-name ( -- n )
-  0  begin  drop  0 [ stock-names 1- ] 1literal random-between
+  0  begin  drop  0 [ stock-names 1- ] xliteral random-between
      dup used-name @ 0= until ;
   \ Return the random identifier _n_ of an unused name.
 
