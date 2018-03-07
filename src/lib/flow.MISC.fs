@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201712111905
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -15,7 +15,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -26,12 +26,13 @@
 
 ( +perform base-execute call don't executions )
 
-[unneeded] +perform ( a n -- )
+unneeding +perform
+
 ?\ : +perform ( a n -- ) cells + perform ;
 
   \ doc{
   \
-  \ +perform ( a n -- )
+  \ +perform ( a n -- ) "plus-perform"
   \
   \ Execute the execution token pointed by an offset of _n_
   \ cells from base address _a_, i.e., execute the contents of
@@ -39,11 +40,12 @@
   \
   \ If the execution token is zero, do nothing.
   \
-  \ See: `perform`, `execute`.
+  \ See: `perform`, `execute`, `array>`.
   \
   \ }doc
 
-[unneeded] base-execute
+unneeding base-execute
+
 ?\ : base-execute ( xt n -- ) base @ >r execute r> base ! ;
 
   \ Credit:
@@ -59,7 +61,7 @@
   \
   \ }doc
 
-[unneeded] call ?(
+unneeding call ?(
 
 code call ( a -- )
   E1 c, C5 c, CD c, >mark C1 c, DD c, 21 c, next , jpnext,
@@ -84,7 +86,7 @@ code call ( a -- )
   \
   \ }doc
 
-[unneeded] don't ?(
+unneeding don't ?(
 
 : don't ( n1 n2 -- | n1 n2 )
   2dup = if 2drop unnest unnest then ; compile-only ?)
@@ -94,8 +96,7 @@ code call ( a -- )
   \ don't ( n1 n2 -- | n1 n2 )
   \
   \ If _n1_ equals _n2_, remove them and exit the definition
-  \ that called ``don't``, else leave the _n1_ and _n2_ on the
-  \ stack.
+  \ that called ``don't``, else leave _n1 n2_ on the stack.
   \
   \ ``don't`` is a `compile-only` word.
   \
@@ -114,7 +115,7 @@ code call ( a -- )
   \
   \ }doc
 
-[unneeded] executions ?( need 2rdrop
+unneeding executions ?( need 2rdrop
 
   \ Credit:
   \
@@ -136,7 +137,7 @@ code call ( a -- )
 
 ( ?repeat 0repeat recurse ?? )
 
-[unneeded] ?repeat ?( need cs-dup need 0until
+unneeding ?repeat ?( need cs-dup need 0until
 
 : ?repeat
   \ Compilation: ( dest -- dest )
@@ -149,7 +150,7 @@ code call ( a -- )
 
   \ doc{
   \
-  \ ?repeat
+  \ ?repeat "question-repeat"
   \   Compilation: ( dest -- dest )
   \   Run-time:    ( f -- )
 
@@ -166,11 +167,11 @@ code call ( a -- )
   \ : test ( -- )
   \     begin
   \       ...
-  \     flag ?repeat  \ Go back to `begin` if flag is non-zero
+  \     flag ?repeat  \ Go back to ``begin`` if flag is non-zero
   \       ...
-  \     flag 0repeat  \ Go back to `begin` if flag is zero
+  \     flag 0repeat  \ Go back to ``begin` if flag is zero
   \       ...
-  \     flag until    \ Go back to `begin` if flag is false
+  \     flag until    \ Go back to ``begin`` if flag is false
   \     ...
   \   ;
   \ ----
@@ -179,7 +180,7 @@ code call ( a -- )
   \
   \ }doc
 
-[unneeded] 0repeat ?( need cs-dup
+unneeding 0repeat ?( need cs-dup
 
 : 0repeat
   \ Compilation: ( dest -- dest )
@@ -192,7 +193,9 @@ code call ( a -- )
 
   \ doc{
   \
-  \ 0repeat Compilation: ( dest -- dest ) Run-time:    ( f -- )
+  \ 0repeat "zero-repeat"
+  \   Compilation: ( dest -- dest )
+  \   Run-time:    ( f -- )
   \
   \ An alternative exit point for `begin` ... `until` loops: If
   \ _f_ is zero, continue execution at `begin`, otherwise
@@ -219,7 +222,7 @@ code call ( a -- )
   \
   \ }doc
 
-[unneeded] recurse
+unneeding recurse
 
 ?\ : recurse ( -- ) latestxt compile, ; immediate compile-only
 
@@ -237,7 +240,7 @@ code call ( a -- )
   \
   \ }doc
 
-[unneeded] ?? ?(
+unneeding ?? ?(
 
 : ?? \ Compilation: ( "name" -- ) Runtime: ( f -- )
   postpone if
@@ -296,7 +299,7 @@ code call ( a -- )
 
   \ doc{
   \
-  \ ??
+  \ ?? "question-question"
   \   Compilation: ( "name" -- )
   \   Run-time:    ( f -- )
   \
@@ -328,7 +331,7 @@ code call ( a -- )
   \ Factoring", by Richard Astle, published on Forth Dimensions
   \ (volume 17, number 4, page 19, 1995-11).
 
-[unneeded] retry ?( need name>body
+unneeding retry ?( need name>body
 
 : retry ( -- )
   latest name>body postpone again ; immediate compile-only ?)
@@ -345,7 +348,7 @@ code call ( a -- )
   \
   \ }doc
 
-[unneeded] ?retry ?( need retry
+unneeding ?retry ?( need retry
 
 : ?retry
   \ Compilation: ( -- )
@@ -355,9 +358,9 @@ code call ( a -- )
 
   \ doc{
   \
-  \ ?retry
-  \   \ Compilation: ( -- )
-  \   \ Run-time:    ( f -- )
+  \ ?retry "question-retry"
+  \   Compilation: ( -- )
+  \   Run-time:    ( f -- )
   \
   \ Do a conditional branch to the start of the word.
   \
@@ -367,7 +370,7 @@ code call ( a -- )
   \
   \ }doc
 
-[unneeded] ?leave ?(
+unneeding ?leave ?(
 
 code ?leave ( f -- ) ( R: loop-sys -- | loop-sys )
   E1 c, 78 04 + c, B0 05 + c, C2 c, ' leave , jpnext,
@@ -380,7 +383,7 @@ code ?leave ( f -- ) ( R: loop-sys -- | loop-sys )
 
   \ doc{
   \
-  \ ?leave ( f -- ) ( R: loop-sys -- | loop-sys )
+  \ ?leave ( f -- ) ( R: loop-sys -- | loop-sys ) "question-leave"
   \
   \ If _f_ is non-zero, discard the loop-control parameters for
   \ the current nesting level and continue execution
@@ -391,9 +394,22 @@ code ?leave ( f -- ) ( R: loop-sys -- | loop-sys )
   \
   \ }doc
 
-( cond thens )
+( cond thens orif andif )
 
-[unneeded] cond ?( need cs-mark need thens
+  \ Credit of the `cond thens` structure, `orif` and `andif`:
+  \
+  \ Subject: Re: Multiple WHILE's
+  \ From: Wil Baden <neil...@earthlink.net>
+  \ Newsgroups: comp.lang.forth
+  \ Message-ID: <260620020959020469%neilbawd@earthlink.net>
+  \ Date: Wed, 26 Jun 2002 16:58:18 GMT
+  \
+  \ The usage of `cs-mark` and `cs-test` was borrowed from:
+  \
+  \ Control-Flow Stack Extensions
+  \ http://dxforth.netbay.com.au/cfsext.html
+
+unneeding cond ?( need cs-mark need thens
 
 : cond
   \ Compilation: ( C: -- cs-mark )
@@ -415,7 +431,7 @@ code ?leave ( f -- ) ( R: loop-sys -- | loop-sys )
   \
   \ ``cond`` is an `immediate` and `compile-only` word.
   \
-  \ Usage example:
+  \ Generic usage example:
 
   \ ----
   \ : test ( x -- )
@@ -427,11 +443,25 @@ code ?leave ( f -- ) ( R: loop-sys -- | loop-sys )
   \   thens ;
   \ ----
 
-  \ See: `case`, `cs-mark`.
+  \ Note: The tested value must be preserved and discarded by
+  \ the application. Example:
+
+  \ ----
+  \ : test ( ca len -- )
+  \   cond
+  \     2dup s" first"  str= if 2drop ." unua"  else
+  \     2dup s" second" str= if 2drop ." dua"   else
+  \     2dup s" third"  str= if 2drop ." tria"  else
+  \     2dup s" fourth" str= if 2drop ." kvara" else
+  \     type ." ?"
+  \   thens ;
+  \ ----
+
+  \ See: `case`, `cs-mark`, `andif`, `orif`.
   \
   \ }doc
 
-[unneeded] thens ?( need cs-test
+unneeding thens ?( need cs-test
 
 : thens
   \ Compilation: ( C: cs-mark orig#1 .. orig#n -- )
@@ -455,24 +485,91 @@ code ?leave ( f -- ) ( R: loop-sys -- | loop-sys )
   \
   \ ``thens`` is a factor of `endcase` and other control
   \ structures, but it's also the end of the `cond` ..
-  \ ``thens`` structure.
+  \ ``thens`` structure. See `cond` for an usage example.
   \
-  \ See: `cs-mark`, `cs-test`.
+  \ See: `cs-mark`, `cs-test`, `andif`, `orif`.
   \
   \ }doc
 
-  \ Credit of the `cond thens` structure:
+unneeding andif ?(
+
+: andif
+  \ Compilation: ( C: -- orig )
+  \ Run-time:    ( f -- )
+  postpone dup postpone if postpone drop
+  ; immediate compile-only ?)
+
+  \ doc{
   \
-  \ Subject: Re: Multiple WHILE's
-  \ From: Wil Baden <neil...@earthlink.net>
-  \ Newsgroups: comp.lang.forth
-  \ Message-ID: <260620020959020469%neilbawd@earthlink.net>
-  \ Date: Wed, 26 Jun 2002 16:58:18 GMT
+  \ andif "and-if"
+  \   Compilation: ( C: -- orig )
+  \   Run-time:    ( f -- )
   \
-  \ The usage of `cs-mark` and `cs-test` was borrowed from:
+  \ Short-circuit `and` variant of `if`.
   \
-  \ Control-Flow Stack Extensions
-  \ http://dxforth.netbay.com.au/cfsext.html
+  \ ``andif`` is an `immediate` and `compile-only` word.
+  \
+  \ Usage example:
+
+  \ ----
+  \ : the-end? ( -- f ) cond  won-battle?     andif
+  \                           found-treasure? andif
+  \                           kill-dragon?    andif
+  \                     thens ;
+  \ ----
+
+  \ Compare with the following equivalent code, where all three
+  \ conditions are always checked:
+
+  \ ----
+  \ : the-end? ( -- f ) won-battle?
+  \                     found-treasure? and
+  \                     kill-dragon?    and ;
+  \ ----
+
+  \ See: `orif`, `cond`, `thens`.
+  \
+  \ }doc
+
+unneeding orif ?(
+
+: orif
+  \ Compilation: ( C: -- orig )
+  \ Run-time:    ( f -- )
+  postpone dup postpone 0= postpone if postpone drop
+  ; immediate compile-only ?)
+
+  \ doc{
+  \
+  \ orif "or-if"
+  \   Compilation: ( C: -- orig )
+  \   Run-time:    ( f -- )
+  \
+  \ Short-circuit `or` variant of `if`.
+  \
+  \ ``orif`` is an `immediate` and `compile-only` word.
+  \
+  \ Usage example:
+
+  \ ----
+  \ : is-alphanum? ( c -- f ) cond  dup is-lower? orif
+  \                                 dup is-upper? orif
+  \                                 dup is-digit?
+  \                           thens nip ;
+  \ ----
+
+  \ Compare with the following equivalent code, where all three
+  \ conditions are always checked:
+
+  \ ----
+  \ : is-alphanum? ( c -- f ) dup  is-lower?
+  \                           over is-upper? or
+  \                           swap is-digit? or ;
+  \ ----
+
+  \ See: `andif`, `cond`, `thens`.
+  \
+  \ }doc
 
   \ ===========================================================
   \ Change log
@@ -548,5 +645,19 @@ code ?leave ( f -- ) ( R: loop-sys -- | loop-sys )
   \ `cs-test`. Update the change log with the old changes of
   \ the former modules. Rewrite `?repeat`. Add `0repeat`.
   \ Improve documentation.
+  \
+  \ 2018-01-03: Fix documentation layout.
+  \
+  \ 2018-01-04: Improve documentation. Add `andif` and `orif`.
+  \
+  \ 2018-02-01: Improve documentation of `cond` and `thens`.
+  \
+  \ 2018-02-04: Fix documentation layout. Improve
+  \ documentation: add pronunciation to words that need it.
+  \
+  \ 2018-03-01: Fix undesired links in documentation of
+  \ `0repeat`.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

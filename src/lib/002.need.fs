@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201712092301
+  \ Last modified: 201803052146
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -23,7 +23,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -39,7 +39,7 @@
   \
   \ ``contains`` is defined also in <strings.misc.fsb>, because
   \ it can not be loaded by the applications from this block
-  \ (because `[unneeded]` is not defined at this point).
+  \ (because `unneeding` is not defined at this point).
   \ That's why `contains` is not included in the block header.
 
 variable default-first-locatable  variable first-locatable
@@ -129,13 +129,15 @@ defer unlocated ( block -- )
   \ ----------------------------
     \ XXX INFORMER -- alternative options for debugging
 
-  ?dup 0= if  drop false exit  then
+  ?dup 0= #-32 ?throw
   delimited last-locatable @ 1+  first-locatable @
   default-first-locatable @  first-locatable !
   ?do  0 i line>string 2over contains \ i home . \ XXX INFORMER
        if  2drop i unloop exit  then  break-key? #-28 ?throw
        i unlocated  loop  2drop 0 ;
-  \ Note: Error #-28 is "user interrupt".
+  \ Note:
+  \ Error #-32 is "invalid name argument".
+  \ Error #-28 is "user interrupt".
 
   \ doc{
   \
@@ -175,7 +177,7 @@ defer located ( ca len -- block | false ) -->
   \
   \ }doc
 
-( ?located reneeded reneed needed-word [needed] [unneeded] )
+( ?located reneeded reneed needed-word unneeding )
 
 2variable needed-word  0. needed-word 2!
 
@@ -226,7 +228,7 @@ defer reneeded ( ca len -- )
   \
   \ }doc
 
-defer reneed ( "name" -- ) defer needed ( ca len -- )
+defer reneed ( "name" -- )  defer needed ( ca len -- )
 
   \ doc{
   \
@@ -276,36 +278,20 @@ defer reneed ( "name" -- ) defer needed ( ca len -- )
   \
   \ }doc
 
-: [needed] ( "name" -- f )
+: unneeding ( "name" -- f )
   parse-name needed-word 2@ 2dup or
-  if  compare 0= exit  then  2drop 2drop true ; immediate
+  if compare 0<> exit then 2drop 2drop false ;
 
   \ doc{
   \
-  \ [needed] ( "name" -- f )
-  \
-  \ Parse _name_.  If there's no unresolved `need`, `needed`,
-  \ `reneed` or `reneeded`, return _true_.  Otherwise, if _name_
-  \ is the needed word specified by the last execution of
-  \ `need` or `needed`, return _true_, else return _false_.
-  \
-  \ ``[needed]`` is an `immediate` word.
-  \
-  \ }doc
-
-: [unneeded] ( "name" -- f )
-  postpone [needed] 0= ; immediate
-
-  \ doc{
-  \
-  \ [unneeded] ( "name" -- f )
+  \ unneeding ( "name" -- f )
   \
   \ Parse _name_.  If there's no unresolved `need`, `needed`,
   \ `reneed` or `reneeded`, return _false_.  Otherwise, if _name_
   \ is the needed word specified by the last execution of
   \ `need` or `needed`, return _false_, else return _true_.
   \
-  \ ``[unneeded]`` is an `immediate` word.
+  \ See: `needing`.
   \
   \ }doc
 
@@ -405,7 +391,7 @@ blk @ 1+ dup default-first-locatable !  first-locatable !
 
 ( use-default-need use-default-located use-no-index )
 
-[unneeded] use-default-need ?(
+unneeding use-default-need ?(
 
 : use-default-need ( -- )
   ['] locate-reneeded ['] reneeded  defer!
@@ -425,11 +411,10 @@ blk @ 1+ dup default-first-locatable !  first-locatable !
   \
   \ }doc
 
-[unneeded] use-default-located ?(
+unneeding use-default-located ?(
 
-: use-default-located ( -- )
-  ['] (located) ['] located defer!
-  ['] drop ['] unlocated defer! ; ?)
+: use-default-located ( -- ) ['] (located) ['] located defer!
+                             ['] drop ['] unlocated defer! ; ?)
 
   \ doc{
   \
@@ -443,7 +428,7 @@ blk @ 1+ dup default-first-locatable !  first-locatable !
   \
   \ }doc
 
-[unneeded] use-default-located ?(
+unneeding use-default-located ?(
 
 need use-default-need need  use-default-located
 
@@ -465,9 +450,24 @@ need use-default-need need  use-default-located
   \
   \ }doc
 
-( locate need-from need-here )
+( needing locate need-from need-here )
 
-[unneeded] locate ?(
+: needing ( "name" -- f ) unneeding 0= ;
+
+  \ doc{
+  \
+  \ needing ( "name" -- f )
+  \
+  \ Parse _name_.  If there's no unresolved `need`, `needed`,
+  \ `reneed` or `reneeded`, return _true_.  Otherwise, if _name_
+  \ is the needed word specified by the last execution of
+  \ `need` or `needed`, return _true_, else return _false_.
+  \
+  \ See: `unneeding`.
+  \
+  \ }doc
+
+unneeding locate ?(
 : locate ( "name" -- block | false )
   parse-name >stringer located ; ?)
 
@@ -486,7 +486,7 @@ need use-default-need need  use-default-located
   \
   \ }doc
 
-[unneeded] need-from ?( need locate
+unneeding need-from ?( need locate
 : need-from ( "name" -- )
   locate ?located first-locatable ! ; ?)
 
@@ -528,12 +528,12 @@ need use-default-need need  use-default-located
 
   \ }doc
 
-[unneeded] need-here ?(
+unneeding need-here ?(
 
 : need-here ( "name" -- )
   parse-name needed-word 2@ 2>r
   new-needed-word  2dup needed-word 2! undefined?
-  if  blk @ load  else  2drop  then  2r> needed-word 2! ; ?)
+  if blk @ load else 2drop then 2r> needed-word 2! ; ?)
 
   \ doc{
   \
@@ -548,20 +548,20 @@ need use-default-need need  use-default-located
   \
   \ }doc
 
-( (.info checkpoint )
+  \ ( (.info checkpoint )
 
-  \ XXX TMP -- 2017-02-12, for debugging
+  \   \ XXX TMP -- 2017-02-12, for debugging
 
-need get-drive
+  \ need get-drive
 
-: (.info ( -- ) get-drive dup ." Drive " .
-                1 = if  ." CHANGED!" quit  then ;
+  \ : (.info ( -- ) get-drive dup ." Drive " .
+  \                 1 = if  ." CHANGED!" quit  then ;
 
-' (.info ' .info defer!
+  \ ' (.info ' .info defer!
 
-: checkpoint ( n -- )
-  2 border cr ." Check point " . (.info key drop
-  0 border ;
+  \ : checkpoint ( n -- )
+  \   2 border cr ." Check point " . (.info key drop
+  \   0 border ;
 
   \ ===========================================================
   \ Change log
@@ -692,5 +692,18 @@ need get-drive
   \ 2017-04-16: Improve documentation.
   \
   \ 2017-12-09: Improve documentation of variables.
+  \
+  \ 2018-01-21: Fix layout of one-liner.
+  \
+  \ 2018-01-24: Improve error checking in `(locate)`.
+  \
+  \ 2018-02-14: Comment out `(.info` and `checkpoint`, saving
+  \ one block.
+  \
+  \ 2018-03-01: Make `[needed]` optional. Improve
+  \ documentation.
+  \
+  \ 2018-03-05: Rename `[unneeded]` `unneeding`; rename
+  \ `[needed]` `needing`; make both words non-immediate.
 
   \ vim: filetype=soloforth

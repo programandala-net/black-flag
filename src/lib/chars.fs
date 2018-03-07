@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201709091049
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -14,7 +14,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -27,11 +27,11 @@
 
 ( ascii-char? control-char? )
 
-[unneeded] ascii-char? ?\ : ascii-char? ( c -- f ) 127 < ;
+unneeding ascii-char? ?\ : ascii-char? ( c -- f ) 127 < ;
 
   \ doc{
   \
-  \ ascii-char? ( c -- f )
+  \ ascii-char? ( c -- f ) "ascii-char-question"
   \
   \ Is character _c_ an ASCII character, i.e. in the range
   \ 0..126?
@@ -40,11 +40,11 @@
   \
   \ }doc
 
-[unneeded] control-char? ?\ : control-char? ( c -- f ) bl < ;
+unneeding control-char? ?\ : control-char? ( c -- f ) bl < ;
 
   \ doc{
   \
-  \ control-char? ( c -- f )
+  \ control-char? ( c -- f ) "control-char-question"
   \
   \ Is character _c_ a control character, i.e. in the range
   \ 0..31?
@@ -55,13 +55,13 @@
 
 ( printable-ascii-char? >printable-ascii-char )
 
-[unneeded] printable-ascii-char? ?(  need within
+unneeding printable-ascii-char? ?(  need within
 
 : printable-ascii-char? ( c -- f ) bl 127 within ; ?)
 
   \ doc{
   \
-  \ printable-ascii-char? ( c -- f )
+  \ printable-ascii-char? ( c -- f ) "printable-ascii-char-question"
   \
   \ Is _c_ a printable ASCII character, i.e. in the range
   \ 32..126?
@@ -70,7 +70,7 @@
   \
   \ }doc
 
-[unneeded] >printable-ascii-char ?(
+unneeding >printable-ascii-char ?(
 
 need printable-ascii-char?
 
@@ -121,5 +121,10 @@ need printable-ascii-char?
   \ not 127.
   \
   \ 2017-09-09: Improve and fix documentation.
+  \
+  \ 2018-02-05: Improve documentation: add pronunciation to
+  \ words that need it.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201705091519
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -14,7 +14,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -23,14 +23,15 @@
   \ retain every copyright, credit and authorship notice, and
   \ this license.  There is no warranty.
 
-( ud* d* )
+( ud* d* dxor dor dand d10* )
+
+unneeding ud*
+
+?\ : ud* ( ud1 u2 -- ud3 ) dup >r um* drop  swap r> um* rot + ;
 
   \ Credit:
   \
   \ Code of `ud*` from Z88 CamelForth.
-
-[unneeded] ud*
-?\ : ud* ( ud1 u2 -- ud3 ) dup >r um* drop  swap r> um* rot + ;
 
   \ doc{
   \
@@ -42,7 +43,8 @@
   \
   \ }doc
 
-[unneeded] d* ?(
+unneeding d* ?(
+
 : d* ( d|ud1 d|ud2 -- d|ud3 )
   >r swap >r 2dup um* rot r> * + rot r> * + ; ?)
 
@@ -93,6 +95,72 @@
   \   >r swap >r            ( d1lo d2lo ) ( R: d2hi d1hi )
   \   2dup um* 2swap        ( d1lo*d2lo d1lo d2lo )
   \   r> * swap r> * + + ; ( d1*d2 ) ( R: )
+
+unneeding dxor
+
+?\ : dxor ( xd1 xd2 -- xd3 ) rot xor -rot xor swap ;
+
+  \ doc{
+  \
+  \ dxor ( xd1 xd2 -- xd3 )
+  \
+  \ _xd3_ is the bit-by-bit exclusive-or of _xd1_ and _xd2_.
+  \
+  \ See: `xor`, `dor`, `dand`.
+  \
+  \ }doc
+
+unneeding dor
+
+?\ : dor ( xd1 xd2 -- xd3 ) rot or -rot or swap ;
+
+  \ doc{
+  \
+  \ dor ( xd1 xd2 -- xd3 )
+  \
+  \ _xd3_ is the bit-by-bit inclusive-or of _xd1_ and _xd2_.
+  \
+  \ See: `or`, `dxor`, `dand`.
+  \
+  \ }doc
+
+unneeding dand
+
+?\ : dand ( xd1 xd2 -- xd3 ) rot and -rot and swap ;
+
+  \ doc{
+  \
+  \ dand ( xd1 xd2 -- xd3 )
+  \
+  \ _xd3_ is the bit-by-bit logical "and" of _xd1_ and _xd2_.
+  \
+  \ See: `and`, `dor`, `dxor`.
+  \
+  \ }doc
+
+  \ Credit:
+  \
+  \ Code of `dxor`, `dor` and `dand` written by Everett F.
+  \ Carter, published on Forth Dimensions (volume 16, number 2,
+  \ page 17, 1994-08).
+
+unneeding d10*
+
+?\ : d10* ( ud1 -- ud2 ) d2* 2dup d2* d2* d+ ;
+
+  \ Credit:
+  \
+  \ Code of `d10*` from Pygmy Forth.
+
+  \ doc{
+  \
+  \ d10* ( ud1 -- ud2 )
+  \
+  \ Multiply _ud1_ per 10, resulting _ud2_.
+  \
+  \ See: `d2*`, `d*`, `2*`, `8*`.
+  \
+  \ }doc
 
 ( du/mod )
 
@@ -155,7 +223,7 @@ need tum* need t+ need t- need tum/ need d2* need lshift
   \
   \ Code from DZX-Forth.
 
-[unneeded] d0= ?(
+unneeding d0= ?(
 
 code d0= ( d -- f )
   E1 c, D1 c, 19 c, 78 04 + c, B0 05 + c,
@@ -187,7 +255,7 @@ code d0= ( d -- f )
   \
   \ }doc
 
-[unneeded] d0< ?\ : d0< ( d -- f ) nip 0< ;
+unneeding d0< ?\ : d0< ( d -- f ) nip 0< ;
 
   \ doc{
   \
@@ -199,10 +267,10 @@ code d0= ( d -- f )
   \
   \ }doc
 
-[unneeded] d< ?( need 2nip
+unneeding d< ?( need 2nip
 
 : d< ( d1 d2 -- f )
-  rot 2dup = if  2drop u< exit  then  2nip > ; ?)
+  rot 2dup = if 2drop u< exit then 2nip > ; ?)
 
   \ doc{
   \
@@ -218,14 +286,13 @@ code d0= ( d -- f )
   \
   \ }doc
 
-[unneeded] du< ?(
+unneeding du< ?(
 
   \ XXX TODO rewrite in Z80
 
 : du< ( ud1 ud2 -- f )
-  rot swap 2dup
-  u<  if  2drop 2drop true   exit  then
-  -   if  2drop       false  exit  then  u< ; ?)
+  rot swap 2dup u< if 2drop 2drop true  exit then
+                -  if 2drop       false exit then u< ; ?)
 
   \ doc{
   \
@@ -243,7 +310,7 @@ code d0= ( d -- f )
 
 ( d= d<> dmin dmax )
 
-[unneeded] d= ?\ need d<> : d= ( xd1 xd2 -- f ) d<> 0= ;
+unneeding d= ?\ need d<> : d= ( xd1 xd2 -- f ) d<> 0= ;
   \ XXX TODO -- rewrite in Z80
 
   \ doc{
@@ -256,7 +323,8 @@ code d0= ( d -- f )
   \
   \ }doc
 
-[unneeded] d<>
+unneeding d<>
+
 ?\ : d<> ( xd1 xd2 -- f ) rot <> if 2drop true exit then <> ;
   \ XXX TODO -- rewrite in Z80
 
@@ -271,9 +339,10 @@ code d0= ( d -- f )
   \
   \ }doc
 
-[unneeded] dmin ?(
+unneeding dmin ?(
+
 : dmin ( d1 d2 -- d3 )
-  2over 2over d< 0= if  2swap  then  2drop ; ?)
+  2over 2over d< 0= if 2swap then 2drop ; ?)
   \ XXX TODO -- use `d>` when available
 
   \ Credit:
@@ -294,9 +363,10 @@ code d0= ( d -- f )
   \
   \ }doc
 
-[unneeded] dmax ?(
+unneeding dmax ?(
+
 : dmax ( d1 d2 -- d1 | d2 )
-  2over 2over d< if  2swap  then  2drop ; ?)
+  2over 2over d< if 2swap then 2drop ; ?)
 
   \ Credit:
   \
@@ -318,7 +388,7 @@ code d0= ( d -- f )
 
 ( d- d2* d2/ )
 
-[unneeded] d- ?( code d- ( d1|ud1 d2|ud2 -- d3|ud3 )
+unneeding d- ?( code d- ( d1|ud1 d2|ud2 -- d3|ud3 )
 
   D1 c, D9 c, D1 c, D9 c, E1 c, D9 c, E1 c,
   \ de pop            \ DE=d2hi
@@ -351,18 +421,18 @@ code d0= ( d -- f )
   \
   \ }doc
 
-[unneeded] d2* ?( code d2* ( xd1 -- xd2 )
+unneeding d2* ?( code d2* ( xd1 -- xd2 )
 
-  D1 c, E1 c,  29 c,  CB c, 13 c,  CB c, 12 c,  EB c,
+  D1 c, E1 c, 29 c, CB c, 13 c, CB c, 12 c, EB c, D5 c, E5 c,
     \ pop de
     \ pop hl
     \ add hl,hl
     \ rl e
     \ rl d
     \ ex de,hl
-  D5 c, E5 c, jpnext, end-code ?)
     \ push de
     \ push hl
+  jpnext, end-code ?)
     \ _jp_next
 
   \ Credit:
@@ -382,7 +452,7 @@ code d0= ( d -- f )
   \
   \ }doc
 
-[unneeded] d2/ ?( code d2/ ( xd1 -- xd2 )
+unneeding d2/ ?( code d2/ ( xd1 -- xd2 )
 
   E1 c, D1 c, CB c, 2C c, CB c, 1C c, CB c, 1D c,
     \ pop hl
@@ -415,87 +485,27 @@ code d0= ( d -- f )
   \
   \ }doc
 
-( dxor dor dand d10* )
+( m+ m*/ )
 
-  \ Credit:
-  \
-  \ Code of `dxor`, `dor` and `dand` written by Everett F.
-  \ Carter, published on Forth Dimensions (volume 16, number 2,
-  \ page 17, 1994-08).
-
-[unneeded] dxor
-?\ : dxor ( xd1 xd2 -- xd3 ) rot xor -rot xor swap ;
-
-  \ doc{
-  \
-  \ dxor ( xd1 xd2 -- xd3 )
-  \
-  \ _xd3_ is the bit-by-bit exclusive-or of _xd1_ and _xd2_.
-  \
-  \ See: `xor`, `dor`, `dand`.
-  \
-  \ }doc
-
-[unneeded] dor
-?\ : dor ( xd1 xd2 -- xd3 ) rot or -rot or swap ;
-
-  \ doc{
-  \
-  \ dor ( xd1 xd2 -- xd3 )
-  \
-  \ _xd3_ is the bit-by-bit inclusive-or of _xd1_ and _xd2_.
-  \
-  \ See: `or`, `dxor`, `dand`.
-  \
-  \ }doc
-
-[unneeded] dand
-?\ : dand ( xd1 xd2 -- xd3 ) rot and -rot and swap ;
-
-  \ doc{
-  \
-  \ dand ( xd1 xd2 -- xd3 )
-  \
-  \ _xd3_ is the bit-by-bit logical "and" of _xd1_ and _xd2_.
-  \
-  \ See: `and`, `dor`, `dxor`.
-  \
-  \ }doc
-
-[unneeded] d10*
-?\ : d10* ( ud1 -- ud2 ) d2* 2dup d2* d2* d+ ;
-
-  \ Credit:
-  \
-  \ Code of `d10*` from Pygmy Forth.
-
-  \ doc{
-  \
-  \ d10* ( ud1 -- ud2 )
-  \
-  \ Multiply _ud1_ per 10, resulting _ud2_.
-  \
-  \ See: `d2*`, `d*`, `2*`, `8*`.
-  \
-  \ }doc
-
-( m+ )
+unneeding m+ ?( need assembler
 
   \ Credit:
   \
   \ Code adapted from Z88 CamelForth.
 
-need assembler
-
 code m+ ( d1|ud1 n -- d2|ud2 )
-  exx,    \ save the Forth IP
-  b pop,  \ n
-  d pop,  \ d1 hi cell
-  h pop,  \ d1 lo cell
-  b addp, h push,
-  c? rif  d inc, rthen  d push,
-  exx,    \ restore the Forth IP
-  jpnext, end-code
+  exx, b pop, d pop, h pop,
+  b addp, h push, c? rif d inc, rthen d push,
+  exx, jpnext, end-code ?)
+
+    \ exx,    \ save the Forth IP
+    \ b pop,  \ n
+    \ d pop,  \ d1 hi cell
+    \ h pop,  \ d1 lo cell
+    \ b addp, h push,
+    \ c? rif  d inc, rthen  d push,
+    \ exx,    \ restore the Forth IP
+    \ jpnext, end-code
 
   \ doc{
   \
@@ -516,15 +526,14 @@ code m+ ( d1|ud1 n -- d2|ud2 )
   \
   \ }doc
 
-( m*/ )
-
+unneeding m*/ ?(
 
 : m*/ ( d1 n1 +n2 -- d2 )
   >r s>d >r abs -rot s>d r> xor r> swap >r >r dabs
   rot tuck um* 2swap um* swap
   >r 0 d+ r> -rot i um/mod -rot r> um/mod -rot r>
-  if    if  1 0 d+  then  dnegate
-  else  drop  then ;
+  if   if 1 0 d+ then dnegate
+  else drop then ; ?)
 
   \ Credit:
   \
@@ -573,7 +582,7 @@ need 2nip need cell-bits
       \ cr .s ." d<"  \ XXX INFORMER
       2dup 2>r d2* d- -1 m+ 2r>  1 m+
     then
-  loop  2rot 2drop ;
+  loop 2rot 2drop ;
 
 : dsqrt ( d1 -- d2 ) (dsqrt) 2nip ;
 
@@ -628,5 +637,10 @@ need 2nip need cell-bits
   \ 2017-05-09: Remove `jp pushhlde` from `d2*` and `d2/`. Fix
   \ `d2/` (the high and low parts of the result were in wrong
   \ order).  Remove `jppushhl,`.
+  \
+  \ 2018-02-14: Compact the code, saving two blocks. Update
+  \ source style (remove double spaces).
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

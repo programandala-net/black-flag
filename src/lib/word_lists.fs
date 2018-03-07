@@ -3,13 +3,18 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201712152211
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
   \ Description
 
   \ Words related to word lists.
+
+  \ ===========================================================
+  \ Author
+
+  \ Marcos Cruz (programandala.net), 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -20,13 +25,13 @@
 
 ( wordlist>link wordlist>name wordlist-name@ wordlist-name! )
 
-[unneeded] wordlist>link
+unneeding wordlist>link
 
 ?\ need alias  ' cell+ alias wordlist>link ( wid -- a )
 
   \ doc{
   \
-  \ wordlist>link ( wid -- a )
+  \ wordlist>link ( wid -- a ) "wordlist-to-link"
   \
   \ Return the link field address _a_ of word-list identifier
   \ _wid_, which holds the word-list identifier of the previous
@@ -36,13 +41,13 @@
   \
   \ }doc
 
-[unneeded] wordlist>name
+unneeding wordlist>name
 
 ?\ : wordlist>name ( wid -- a ) cell+ cell+ ;
 
   \ doc{
   \
-  \ wordlist>name ( wid -- a )
+  \ wordlist>name ( wid -- a ) "wordlist-to-name"
   \
   \ Return the address _a_ which holds the _nt_ of word-list
   \ identifier _wid_ (or zero if the word list has no
@@ -52,13 +57,13 @@
   \
   \ }doc
 
-[unneeded] wordlist-name@ ?( need wordlist>name
+unneeding wordlist-name@ ?( need wordlist>name
 
 : wordlist-name@ ( wid -- nt|0 ) wordlist>name @ ; ?)
 
   \ doc{
   \
-  \ wordlist-name@ ( wid -- nt|0 )
+  \ wordlist-name@ ( wid -- nt|0 ) "wordlist-name-fetch"
   \
   \ Fetch from the word-list identifier _wid_ its associated
   \ name _nt_, or zero if the word list has no associated name.
@@ -67,13 +72,13 @@
   \
   \ }doc
 
-[unneeded] wordlist-name! ?( need wordlist>name
+unneeding wordlist-name! ?( need wordlist>name
 
 : wordlist-name! ( nt wid -- ) wordlist>name ! ; ?)
 
   \ doc{
   \
-  \ wordlist-name! ( nt wid -- )
+  \ wordlist-name! ( nt wid -- ) "wordlist-name-store"
   \
   \ Store _nt_ as the name associated to the word list
   \ identified by _wid_.  _nt_ is stored into the name field of
@@ -85,7 +90,7 @@
 
 ( +order -order )
 
-[unneeded] +order
+unneeding +order
 
 ?\ need -order  : +order ( wid -- ) dup -order >order ;
 
@@ -97,7 +102,7 @@
 
   \ doc{
   \
-  \ +order ( wid -- )
+  \ +order ( wid -- ) "plus-order"
   \
   \ Remove all instances of the word list identified by _wid_
   \ from the search order, then add it to the top.
@@ -106,7 +111,7 @@
   \
   \ }doc
 
-[unneeded] -order ?( need n>r need under+
+unneeding -order ?( need n>r need under+
 
 variable -order-wid
   \ XXX TMP -- used as a local
@@ -126,7 +131,7 @@ variable -order-wid
 
   \ doc{
   \
-  \ -order ( wid -- )
+  \ -order ( wid -- ) "minus-order"
   \
   \ Remove all instances of word list identified by _wid_ from
   \ the search order.
@@ -137,7 +142,7 @@ variable -order-wid
 
 ( wordlist-of latest>wordlist wordlist>vocabulary vocabulary )
 
-[unneeded] wordlist-of
+unneeding wordlist-of
 
 ?\ need >body  : wordlist-of ( "name" -- wid ) ' >body @ ;
 
@@ -154,13 +159,13 @@ variable -order-wid
   \
   \ }doc
 
-[unneeded] latest>wordlist  ?( need wordlist-name!
+unneeding latest>wordlist  ?( need wordlist-name!
 
 : latest>wordlist ( wid -- ) latest swap wordlist-name! ; ?)
 
   \ doc{
   \
-  \ latest>wordlist ( wid -- )
+  \ latest>wordlist ( wid -- ) "latest-to-wordlist"
   \
   \ Associate the latest name to the word list identified by
   \ _wid_.
@@ -170,14 +175,14 @@ variable -order-wid
   \
   \ }doc
 
-[unneeded] wordlist>vocabulary ?( need latest>wordlist
+unneeding wordlist>vocabulary ?( need latest>wordlist
 
 : wordlist>vocabulary ( wid "name" -- )
   create dup , latest>wordlist dovocabulary ; ?)
 
   \ doc{
   \
-  \ wordlist>vocabulary ( wid "name" -- )
+  \ wordlist>vocabulary ( wid "name" -- ) "wordlist-to-vocabulary"
   \
   \ Create a vocabulary _name_ for the word list identified by
   \ _wid_.
@@ -187,7 +192,7 @@ variable -order-wid
   \
   \ }doc
 
-[unneeded] vocabulary ?( need wordlist>vocabulary
+unneeding vocabulary ?( need wordlist>vocabulary
 
 : vocabulary ( "name" -- ) wordlist wordlist>vocabulary ; ?)
 
@@ -210,7 +215,7 @@ variable -order-wid
 
 ( seal trail find-name-in find swap-current search-wordlist )
 
-[unneeded] seal ?\ : seal ( -- ) 1 #order ! ;
+unneeding seal ?\ : seal ( -- ) 1 #order ! ;
 
   \ doc{
   \
@@ -227,7 +232,7 @@ variable -order-wid
   \
   \ }doc
 
-[unneeded] trail ?\ : trail ( -- nt ) context @ @ ;
+unneeding trail ?\ : trail ( -- nt ) context @ @ ;
 
   \ doc{
   \
@@ -240,7 +245,7 @@ variable -order-wid
   \
   \ }doc
 
-[unneeded] find-name-in
+unneeding find-name-in
 
 ?\ : find-name-in ( ca len wid -- nt | 0 ) @ find-name-from ;
 
@@ -257,7 +262,7 @@ variable -order-wid
   \
   \ }doc
 
-[unneeded] find ?(
+unneeding find ?(
 
 : find ( ca -- ca 0 | xt 1 | xt -1 )
   dup count find-name dup
@@ -280,7 +285,7 @@ variable -order-wid
   \
   \ }doc
 
-[unneeded] swap-current ?(
+unneeding swap-current ?(
 
 : swap-current ( wid1 -- wid2 )
   get-current swap set-current ; ?)
@@ -301,7 +306,7 @@ variable -order-wid
   \
   \ }doc
 
-[unneeded] search-wordlist ?(
+unneeding search-wordlist ?(
 
 : search-wordlist ( ca len wid -- 0 | xt 1 | xt -1 )
   @ find-name-from dup 0= ?exit  name>immediate? 0= 1 or ; ?)
@@ -372,5 +377,10 @@ variable -order-wid
   \ 2017-12-15: Remove remaining `exit` at the end of
   \ conditional interpretation.  Improve documentation,
   \ needings and layout.
+  \
+  \ 2018-02-05: Improve documentation: add pronunciation to
+  \ words that need it.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

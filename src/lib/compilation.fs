@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201801031735
+  \ Last modified: 201803062140
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -14,7 +14,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -25,11 +25,11 @@
 
 ( [false] [true] [if] )
 
-[unneeded] [true] ?\ 0 constant [false] immediate
+unneeding [true] ?\ 0 constant [false] immediate
 
   \ doc{
   \
-  \ [true]  ( -- true )
+  \ [true]  ( -- true ) "bracket-true"
   \
   \ ``[true]`` is an `immediate` word.
   \
@@ -37,11 +37,11 @@
   \
   \ }doc
 
-[unneeded] [false] ?\ -1 constant [true] immediate
+unneeding [false] ?\ -1 constant [true] immediate
 
   \ doc{
   \
-  \ [false]  ( -- false )
+  \ [false]  ( -- false ) "bracket-false"
   \
   \ ``[false]`` is an `immediate` word.
   \
@@ -49,7 +49,7 @@
   \
   \ }doc
 
-[unneeded] [if] ?(
+unneeding [if] ?(
 
   \ Note: `[if]` uses 120 bytes of data space.
 
@@ -65,7 +65,7 @@
 
   \ doc{
   \
-  \ [else] ( "ccc" -- )
+  \ [else] ( "ccc" -- ) "bracket-else"
   \
   \ Parse and discard space-delimited words from the parse
   \ area, including nested occurrences of ``[if] ... [then]``,
@@ -84,7 +84,7 @@
 
   \ doc{
   \
-  \ [if] ( f "ccc" -- )
+  \ [if] ( f "ccc" -- ) "bracket-if"
   \
   \ If _flag_ is true, do nothing. Otherwise, parse and discard
   \ space-delimited words from the parse area, including nested
@@ -105,7 +105,7 @@
 
   \ doc{
   \
-  \ [then] ( -- )
+  \ [then] ( -- ) "bracket-then"
   \
   \ Do nothing. ``[then]`` is parsed and recognized by `[if]`.
   \
@@ -117,27 +117,36 @@
 
 ( body>name name>body link>name name>link name<name name>name )
 
-[unneeded] body>name ?( need body> need >name
+unneeding body>name ?( need body> need >name
 
 : body>name ( dfa -- nt ) body> >name ; ?)
 
   \ doc{
   \
-  \ body>name ( dfa -- nt )
+  \ body>name ( dfa -- nt|0 ) "body-to-name"
   \
-  \ Get _nt_ from its _dfa_.
+  \ Try to find the name token _nt_ of the word represented by
+  \ data field address _dfa_. Return 0 if it fails.
+  \
+  \ NOTE: ``body>name`` searches all word lists, from newest to
+  \ oldest; and the searching of every word list is done also
+  \ from the newest to the oldest definition.  The first header
+  \ whose execution token pointer contains the _xt_ associated
+  \ to _dfa_ is a match.  Therefore, when a word has additional
+  \ headers created by `alias` or `synonym`, the _nt_ of its
+  \ latest alias or synonym is found first.
   \
   \ See: `name>body`, `link>name`, `>name`.
   \
   \ }doc
 
-[unneeded] name>body
+unneeding name>body
 
 ?\ need >body : name>body ( nt -- dfa ) name> >body ;
 
   \ doc{
   \
-  \ name>body ( nt -- dfa )
+  \ name>body ( nt -- dfa ) "name-to-body"
   \
   \ Get _dfa_ from its _nt_.
   \
@@ -145,13 +154,13 @@
   \
   \ }doc
 
-[unneeded] link>name
+unneeding link>name
 
 ?\ need alias ' cell+ alias link>name ( nt -- dfa )
 
   \ doc{
   \
-  \ link>name ( lfa -- nt )
+  \ link>name ( lfa -- nt ) "link-to-name"
   \
   \ Get _nt_ from its _lfa_.
   \
@@ -159,13 +168,13 @@
   \
   \ }doc
 
-[unneeded] name>link
+unneeding name>link
 
 ?\ need alias ' cell- alias name>link ( nt -- lfa )
 
   \ doc{
   \
-  \ name>link ( nt -- lfa )
+  \ name>link ( nt -- lfa ) "name-to-link"
   \
   \ Convert _nt_ into its corresponding _lfa_.
   \
@@ -174,13 +183,13 @@
   \
   \ }doc
 
-[unneeded] name<name
+unneeding name<name
 
 ?\ need name>link : name<name ( nt1 -- nt2 ) name>link far@ ;
 
   \ doc{
   \
-  \ name<name ( nt1 -- nt2 )
+  \ name<name ( nt1 -- nt2 ) "name-from-name"
   \
   \ Get the previous _nt2_ from _nt1_, i.e. _nt2_ is the
   \ word that was defined before _nt1_.
@@ -189,13 +198,13 @@
   \
   \ }doc
 
-[unneeded] name>name
+unneeding name>name
 
 ?\ need >>name : name>name ( nt1 -- nt2 ) name>str + >>name ;
 
   \ doc{
   \
-  \ name>name ( nt1 -- nt2 )
+  \ name>name ( nt1 -- nt2 ) "name-to-name"
   \
   \ Get the next _nt2_ from _nt1_, i.e. _nt2_ is the word that
   \ was defined after _nt1_.
@@ -213,13 +222,13 @@
 
 ( >>link name>> >>name >body body> '' [''] )
 
-[unneeded] >>link
+unneeding >>link
 
 ?\ need alias ' cell+ alias >>link ( xtp -- lfa )
 
   \ doc{
   \
-  \ >>link ( xtp -- lfa )
+  \ >>link ( xtp -- lfa ) "to-to-link"
   \
   \ Convert _xtp_ into its corresponding _lfa_.
   \
@@ -227,13 +236,13 @@
   \
   \ }doc
 
-[unneeded] name>>
+unneeding name>>
 
 ?\ : name>> ( nt -- xtp ) cell- cell- ;
 
   \ doc{
   \
-  \ name>> ( nt -- xtp )
+  \ name>> ( nt -- xtp ) "name-from-from"
   \
   \ Convert _nt_ into its corresponding _xtp_.
   \
@@ -241,13 +250,13 @@
   \
   \ }doc
 
-[unneeded] >>name
+unneeding >>name
 
 ?\ : >>name ( xtp -- nt ) cell+ cell+ ;
 
   \ doc{
   \
-  \ >>name ( xtp -- nt )
+  \ >>name ( xtp -- nt ) "to-to-name"
   \
   \ Convert _xtp_ into its corresponding _nt_.
   \
@@ -255,7 +264,7 @@
   \
   \ }doc
 
-[unneeded] >body
+unneeding >body
 
 ?\ code >body  E1 c, 23 c, 23 c, 23 c, E5 c, jpnext, end-code
   \ ( xt -- dfa )
@@ -268,7 +277,7 @@
 
   \ doc{
   \
-  \ >body  ( xt -- dfa )
+  \ >body  ( xt -- dfa ) "to-body"
   \
   \ Convert _xt_ into its corresponding _dfa_.
   \
@@ -296,7 +305,7 @@
   \
   \ }doc
 
-[unneeded] body>
+unneeding body>
 
 ?\ code body> E1 c, 2B c, 2B c, 2B c, E5 c, jpnext, end-code
   \ ( dfa -- xt )
@@ -309,7 +318,7 @@
 
   \ doc{
   \
-  \ body>  ( dfa -- xt )
+  \ body> ( dfa -- xt ) "body-from"
   \
   \ Convert _dfa_ into its correspoding _xt_.
   \
@@ -317,14 +326,14 @@
   \
   \ }doc
 
-[unneeded] '' ?( need need-here need-here name>>
+unneeding '' ?( need need-here need-here name>>
 
 : '' ( "name" -- xtp ) defined dup ?defined name>> ; ?)
 
   \ doc{
   \
   \
-  \ '' ( "name" -- xtp )
+  \ '' ( "name" -- xtp ) "tick-tick"
   \
   \ If _name_ is found in the current search order, return its
   \ execution-token pointer _xtp_, else throw an exception.
@@ -343,7 +352,7 @@
   \
   \ }doc
 
-[unneeded] [''] ?( need need-here need-here ''
+unneeding [''] ?( need need-here need-here ''
 
 : ['']  '' postpone literal ; immediate compile-only ?)
   \ Compilation: ( "name" -- )
@@ -351,7 +360,7 @@
   \ doc{
   \
   \ ['']
-  \   Compilation: ( "name" -- )
+  \   Compilation: ( "name" -- ) "bracket-tick-tick"
 
   \
   \ If _name_ is found in the current search order, compile its
@@ -366,7 +375,7 @@
 
 ( >name )
 
-[unneeded] >name ?(
+unneeding >name ?(
 
 need array> need name>> need name<name need wordlist>link
 
@@ -382,7 +391,7 @@ need array> need name>> need name<name need wordlist>link
 
   \ doc{
   \
-  \ >name ( xt -- nt | 0 )
+  \ >name ( xt -- nt | 0 ) "to-name"
   \
   \ Try to find the name token _nt_ of the word represented by
   \ execution token _xt_. Return 0 if it fails.
@@ -405,7 +414,7 @@ need array> need name>> need name<name need wordlist>link
 
 ( >name/order [defined] [undefined] )
 
-[unneeded] >name/order ?(
+unneeding >name/order ?(
 
 need array> need name>> need name<name
 
@@ -419,7 +428,7 @@ need array> need name>> need name<name
 
   \ doc{
   \
-  \ >name/order ( xt -- nt | 0 )
+  \ >name/order ( xt -- nt | 0 ) "to-name-slash-order"
   \
   \ Try to find the name token _nt_ of the word represented by
   \ execution token _xt_, in the current search `order`. Return
@@ -440,13 +449,13 @@ need array> need name>> need name<name
   \
   \ }doc
 
-[unneeded] [defined]
+unneeding [defined]
 
 ?\ : [defined] ( "name" -- f ) defined 0<> ; immediate
 
   \ doc{
   \
-  \ [defined] ( "name" -- f )
+  \ [defined] ( "name" -- f ) "bracket-defined"
   \
   \ Parse _name_. Return a true flag if _name_ is the name of a
   \ word that can be found in the current search order; else
@@ -460,14 +469,14 @@ need array> need name>> need name<name
   \
   \ }doc
 
-[unneeded] [undefined] ?( need [defined]
+unneeding [undefined] ?( need [defined]
 
 : [undefined] ( "name" -- f )
   postpone [defined] 0= ; immediate ?)
 
   \ doc{
   \
-  \ [undefined] ( "name" -- f )
+  \ [undefined] ( "name" -- f ) "bracket-undefined"
   \
   \ Parse _name_. Return a false flag if _name_ is the name of a
   \ word that can be found in the current search order; else
@@ -483,7 +492,7 @@ need array> need name>> need name<name
 
 ( >oldest-name )
 
-[unneeded] >oldest-name ?(
+unneeding >oldest-name ?(
 
 need array> need name>> need name<name need wordlist>link
 
@@ -501,7 +510,7 @@ need array> need name>> need name<name need wordlist>link
 
   \ doc{
   \
-  \ >oldest-name ( xt -- nt | 0 )
+  \ >oldest-name ( xt -- nt | 0 ) "to-oldest-name"
   \
   \ Try to find the oldest name token _nt_ of the word
   \ represented by execution token _xt_, in the current search
@@ -523,7 +532,7 @@ need array> need name>> need name<name need wordlist>link
 
 ( >oldest-name/order )
 
-[unneeded] >oldest-name/order ?(
+unneeding >oldest-name/order ?(
 
 need array> need name>> need name<name
 
@@ -538,7 +547,7 @@ need array> need name>> need name<name
 
   \ doc{
   \
-  \ >oldest-name/order ( xt -- nt | 0 )
+  \ >oldest-name/order ( xt -- nt | 0 ) "to-oldest-name-slash-order"
   \
   \ Try to find the oldest name token _nt_ of the word
   \ represented by execution token _xt_, in the current search
@@ -560,7 +569,7 @@ need array> need name>> need name<name
 
 ( >oldest-name/fast )
 
-[unneeded] >oldest-name/fast ?(
+unneeding >oldest-name/fast ?(
 
 need >>name need name>name need name>>
 
@@ -573,7 +582,7 @@ need >>name need name>name need name>>
 
   \ doc{
   \
-  \ >oldest-name/fast ( xt -- nt | 0 )
+  \ >oldest-name/fast ( xt -- nt | 0 ) "to-oldest-name-slash-fast"
   \
   \ Try to find the name token _nt_ of the word represented by
   \ execution token _xt_. Return 0 if it fails.
@@ -601,14 +610,14 @@ need >>name need name>name need name>>
 
 ( name>interpret name>compile comp' [comp'] )
 
-[unneeded] name>interpret ?(
+unneeding name>interpret ?(
 
 : name>interpret ( nt -- xt | 0 )
   dup name> swap compile-only? 0= and ; ?)
 
   \ doc{
   \
-  \ name>interpret ( nt -- xt | 0 )
+  \ name>interpret ( nt -- xt | 0 ) "name-to-interpret"
   \
   \ Return _xt_ that represents the interpretation semantics of
   \ the word _nt_. If _nt_ has no interpretation semantics,
@@ -620,14 +629,14 @@ need >>name need name>name need name>>
   \
   \ }doc
 
-[unneeded] name>compile ?(
+unneeding name>compile ?(
 
 : (comp') ( nt -- xt )
   immediate? if ['] execute else ['] compile, then ;
 
   \ doc{
   \
-  \ (comp') ( nt -- xt )
+  \ (comp') ( nt -- xt ) "paren-comp-tick"
   \
   \ A factor of `name>compile`. If _nt_ is an `immediate` word,
   \ return the _xt_ of `execute`, else return the _xt_ of
@@ -641,7 +650,7 @@ need >>name need name>name need name>>
 
   \ doc{
   \
-  \ name>compile ( nt -- x xt )
+  \ name>compile ( nt -- x xt ) "name-to-compile"
   \
   \ Compilation token _x xt_ represents the compilation
   \ semantics of the word _nt_. The  returned _xt_ has the
@@ -655,14 +664,14 @@ need >>name need name>name need name>>
   \
   \ }doc
 
-[unneeded] comp' ?( need need-here need-here name>compile
+unneeding comp' ?( need need-here need-here name>compile
 
 : comp' ( "name" -- x xt )
   defined dup ?defined name>compile ; ?)
 
   \ doc{
   \
-  \ comp' ( "name" -- x xt )
+  \ comp' ( "name" -- x xt ) "comp-tick"
   \
   \ Compilation token _x xt_ represents the compilation
   \ semantics of _name_.
@@ -673,14 +682,14 @@ need >>name need name>name need name>>
   \
   \ }doc
 
-[unneeded] [comp'] ?( need need-here need-here comp'
+unneeding [comp'] ?( need need-here need-here comp'
 
 : [comp'] \ Compilation: ( "name" -- ) Run-time: ( -- x xt )
   comp' postpone 2literal ; immediate compile-only ?)
 
   \ doc{
   \
-  \ [comp']
+  \ [comp'] "bracket-comp-tick"
   \   Compilation: ( "name" -- )
   \   Run-time:    ( -- x xt )
   \
@@ -697,7 +706,7 @@ need >>name need name>name need name>>
 
 ( there ?pairs [compile] smudge smudged no-exit )
 
-[unneeded] there ?\ : there ( a -- ) dp ! ;
+unneeding there ?\ : there ( a -- ) dp ! ;
 
   \ doc{
   \
@@ -708,24 +717,24 @@ need >>name need name>name need name>>
   \
   \ }doc
 
-[unneeded] ?pairs ?\ : ?pairs ( x1 x2 -- ) <> #-22 ?throw ;
+unneeding ?pairs ?\ : ?pairs ( x1 x2 -- ) <> #-22 ?throw ;
 
   \ doc{
   \
-  \ ?pairs ( x1 x2 -- )
+  \ ?pairs ( x1 x2 -- ) "question-pairs"
   \
   \ If _x1_ not equals _x2_ throw error #-22 (control structure
   \ mismatch).
   \
   \ }doc
 
-[unneeded] [compile]
+unneeding [compile]
 
 ?\ : [compile] ( "name" -- ) ' compile, ; immediate
 
   \ doc{
   \
-  \ [compile] ( "name" -- )
+  \ [compile] ( "name" -- ) "bracket-compile"
   \
   \ Parse _name_. Find _name_. If _name_ has other than default
   \ compilation semantics, append them to the current
@@ -748,7 +757,7 @@ need >>name need name>name need name>>
   \
   \ }doc
 
-[unneeded] smudged
+unneeding smudged
 
 ?\ : smudged ( nt -- ) dup farc@ smudge-mask xor swap farc! ;
 
@@ -765,7 +774,7 @@ need >>name need name>name need name>>
   \
   \ }doc
 
-[unneeded] smudge
+unneeding smudge
 
 ?\ need smudged  : smudge ( -- ) latest smudged ;
 
@@ -787,7 +796,7 @@ need >>name need name>name need name>>
   \
   \ }doc
 
-[unneeded] no-exit ?\ : no-exit ( -- ) cell negate allot ;
+unneeding no-exit ?\ : no-exit ( -- ) cell negate allot ;
 
   \ Credit:
   \
@@ -838,13 +847,13 @@ need >>name need name>name need name>>
 
 ( ]l ]2l ]xl ]cl save-here restore-here )
 
-[unneeded] ]l
+unneeding ]l
 
 ?\ : ]l ( x -- ) ] postpone literal ; immediate compile-only
 
   \ doc{
   \
-  \ ]l ( x -- )
+  \ ]l ( x -- ) "right-bracket-l"
   \
   \ A short form of the idiom `] literal`.
   \
@@ -854,13 +863,13 @@ need >>name need name>name need name>>
   \
   \ }doc
 
-[unneeded] ]2l
+unneeding ]2l
 
 ?\ : ]2l ( xd -- ) ] postpone 2literal ; immediate compile-only
 
   \ doc{
   \
-  \ ]2l ( xd -- )
+  \ ]2l ( xd -- ) "right-bracket-two-l"
   \
   \ A short form of the idiom `] 2literal`.
   \
@@ -870,13 +879,13 @@ need >>name need name>name need name>>
   \
   \ }doc
 
-[unneeded] ]xl
+unneeding ]xl
 
 ?\ : ]xl ( x -- ) ] postpone xliteral ; immediate compile-only
 
   \ doc{
   \
-  \ ]xl ( x -- )
+  \ ]xl ( x -- ) "right-bracket-x-l"
   \
   \ A short form of the idiom `] xliteral`.
   \
@@ -886,13 +895,13 @@ need >>name need name>name need name>>
   \
   \ }doc
 
-[unneeded] ]cl
+unneeding ]cl
 
 ?\ : ]cl ( x -- ) ] postpone cliteral ; immediate compile-only
 
   \ doc{
   \
-  \ ]cl ( x -- )
+  \ ]cl ( x -- ) "right-bracket-c-l"
   \
   \ A short form of the idiom `] cliteral`.
   \
@@ -902,7 +911,7 @@ need >>name need name>name need name>>
   \
   \ }doc
 
-[unneeded] save-here [unneeded] restore-here and ?( need there
+unneeding save-here unneeding restore-here and ?( need there
 
 variable here-backup
 
@@ -918,7 +927,7 @@ variable here-backup
   \
   \ Code of `possibly` adapted from Wil Baden.
 
-[unneeded] possibly ?(
+unneeding possibly ?(
 
 : possibly ( "name" -- )
   defined ?dup if name> execute then ; ?)
@@ -932,7 +941,7 @@ variable here-backup
   \
   \ }doc
 
-[unneeded] exec ?(
+unneeding exec ?(
 
 : exec ( "name" -- i*x )
   defined ?dup 0= #-13 ?throw name> execute ; ?)
@@ -949,7 +958,7 @@ variable here-backup
   \
   \ }doc
 
-[unneeded] eval ?( need evaluate
+unneeding eval ?( need evaluate
 
 : eval ( i*x "name" -- j*x ) parse-name evaluate ; ?)
 
@@ -968,14 +977,14 @@ variable here-backup
 
 ( [const] [2const] [xconst] [cconst] )
 
-[unneeded] [const] ?( need eval
+unneeding [const] ?( need eval
 
 : [const] ( "name" -- )
   eval postpone literal ; immediate compile-only ?)
 
   \ doc{
   \
-  \ [const] ( "name" -- )
+  \ [const] ( "name" -- ) "bracket-const"
   \
   \ Evaluate _name_. Then compile the single-cell value left on
   \ the stack.
@@ -998,14 +1007,14 @@ variable here-backup
   \
   \ }doc
 
-[unneeded] [2const] ?( need eval
+unneeding [2const] ?( need eval
 
 : [2const] ( "name" -- )
   eval postpone 2literal ; immediate compile-only ?)
 
   \ doc{
   \
-  \ [2const] ( "name" -- )
+  \ [2const] ( "name" -- ) "bracket-two-const"
   \
   \ Evaluate _name_. Then compile the double-cell value left on
   \ the stack.
@@ -1026,14 +1035,14 @@ variable here-backup
   \
   \ }doc
 
-[unneeded] [xconst] ?( need eval
+unneeding [xconst] ?( need eval
 
 : [xconst] ( "name" -- )
   eval postpone xliteral ; immediate compile-only ?)
 
   \ doc{
   \
-  \ [xconst] ( "name" -- )
+  \ [xconst] ( "name" -- ) "bracket-x-const"
   \
   \ Evaluate _name_. Then compile the single-cell value left on
   \ the stack, using `xliteral`.
@@ -1057,14 +1066,14 @@ variable here-backup
   \
   \ }doc
 
-[unneeded] [cconst] ?( need eval
+unneeding [cconst] ?( need eval
 
 : [cconst] ( "name" -- )
   eval postpone cliteral ; immediate compile-only ?)
 
   \ doc{
   \
-  \ [cconst] ( "name" -- )
+  \ [cconst] ( "name" -- ) "bracket-c-const"
   \
   \ Evaluate _name_. Then compile the char left on the stack.
   \
@@ -1105,7 +1114,7 @@ variable warnings  warnings on
 
   \ doc{
   \
-  \ no-warnings? ( -- f )
+  \ no-warnings? ( -- f ) "no-warnings-question"
   \
   \ Are the warnings deactivated?
   \
@@ -1118,7 +1127,7 @@ variable warnings  warnings on
 
   \ doc{
   \
-  \ not-redefined? ( ca len -- ca len xt false | ca len true )
+  \ not-redefined? ( ca len -- ca len xt false | ca len true ) "not-redefined-question"
   \
   \ Is the word name _ca len_ not yet defined in the
   \ compilation word list?
@@ -1134,7 +1143,7 @@ variable warnings  warnings on
 
   \ doc{
   \
-  \ ?warn ( ca len -- ca len | ca len xt )
+  \ ?warn ( ca len -- ca len | ca len xt ) "question-warn"
   \
   \ Check if a warning about the redefinition of the word name
   \ _ca len_ is needed.  If no warning is needed, unnest the
@@ -1152,7 +1161,7 @@ variable warnings  warnings on
 
 ( warn.throw warn.message warn-throw )
 
-[unneeded] warn.throw ?( need ?warn
+unneeding warn.throw ?( need ?warn
 
 : warn.throw ( ca len -- ca len )
   ?warn ( ca len xt ) drop .error-word  #-257 .throw ;
@@ -1161,7 +1170,7 @@ variable warnings  warnings on
 
   \ doc{
   \
-  \ warn.throw ( ca len -- ca len )
+  \ warn.throw ( ca len -- ca len ) "warn-dot-throw"
   \
   \ Alternative action for the deferred word `warn`.  If the
   \ contents of the user variable `warnings` is not zero and
@@ -1173,7 +1182,7 @@ variable warnings  warnings on
   \
   \ }doc
 
-[unneeded] warn.message ?( need ?warn need >name
+unneeding warn.message ?( need ?warn need >name
 
 : warn.message ( ca len -- ca len )
   ?warn ( ca len xt ) ." redefined " >name .name ;
@@ -1182,7 +1191,7 @@ variable warnings  warnings on
 
   \ doc{
   \
-  \ warn.message ( ca len -- ca len )
+  \ warn.message ( ca len -- ca len ) "warn-dot-message"
   \
   \ Alternative action for the deferred word `warn`.  If the
   \ contents of the user variable `warnings` is not zero and
@@ -1193,7 +1202,7 @@ variable warnings  warnings on
   \
   \ }doc
 
-[unneeded] warn-throw ?( need ?warn
+unneeding warn-throw ?( need ?warn
 
 : warn-throw ( ca len -- ca len )
   ?warn ( ca len xt ) #-257 throw ;
@@ -1445,5 +1454,12 @@ variable warnings  warnings on
   \ 2018-01-03: Update `1literal` to `xliteral`. Rename
   \ accordingly: `[1const]` -> `[xconst]`, `]1l` -> `]xl`.
   \ Fix requirement of `>oldest-name`.
+  \
+  \ 2018-02-05: Improve documentation: add pronunciation to
+  \ words that need it.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
+  \
+  \ 2018-03-06: Improve documentation of `body>name`.
 
   \ vim: filetype=soloforth

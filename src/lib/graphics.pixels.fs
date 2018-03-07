@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201707271623
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -14,7 +14,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -34,13 +34,13 @@
 
 ( gxy>scra_ slow-gxy>scra_ fast-gxy>scra_ )
 
-[unneeded] gxy>scra_ [unneeded] slow-gxy>scra_ and ?(
+unneeding gxy>scra_ unneeding slow-gxy>scra_ and ?(
 
 defer gxy>scra_ ( -- a )
 
   \ doc{
   \
-  \ gxy>scra_ ( -- a )
+  \ gxy>scra_ ( -- a ) "g-x-y-to-s-c-r-a"
   \
   \ A deferred word that executes `fast-gxy>scra_` or, by
   \ default, `slow-gxy>scra_`:  Return address _a_ of an
@@ -61,7 +61,7 @@ create slow-gxy>scra_ ( -- a ) asm
 
   \ doc{
   \
-  \ slow-gxy>scra_ ( -- a )
+  \ slow-gxy>scra_ ( -- a ) "slow-g-x-y-to-s-c-r-a"
   \
   \ Return address _a_ of an alternative entry point to the
   \ PIXEL-ADD ROM routine ($22AA), to let the range of the y
@@ -89,7 +89,7 @@ create slow-gxy>scra_ ( -- a ) asm
   \
   \ }doc
 
-[unneeded] fast-gxy>scra_ ?(
+unneeding fast-gxy>scra_ ?(
 
 need gxy>scra_ need assembler
 
@@ -127,7 +127,7 @@ create fast-gxy>scra_ ( -- a ) asm
 
   \ doc{
   \
-  \ fast-gxy>scra_ ( -- a )
+  \ fast-gxy>scra_ ( -- a ) "fast-g-x-y-to-s-c-r-a"
   \
   \ Return address _a_ of a a modified copy of the PIXEL-ADD
   \ ROM routine ($22AA), to let the range of the y coordinate
@@ -159,7 +159,7 @@ create fast-gxy>scra_ ( -- a ) asm
 
 ( gxy176>scra_ gxy176>scra gxy>scra )
 
-[unneeded] gxy176>scra_ ?(
+unneeding gxy176>scra_ ?(
 
   \ XXX UNDER DEVELOPMENT -- 2016-12-26
 
@@ -171,7 +171,7 @@ create gxy176>scra_ ( -- a ) asm
 
   \ doc{
   \
-  \ gxy176>scra_ ( -- a )
+  \ gxy176>scra_ ( -- a ) "g-x-y-176-to-s-c-r-a"
   \
   \ Return address _a_ of a routine that uses an alternative
   \ entry point to the PIXEL-ADD ROM routine ($22AA), to bypass
@@ -192,7 +192,7 @@ create gxy176>scra_ ( -- a ) asm
   \
   \ }doc
 
-[unneeded] gxy176>scra ?( need gxy176>scra_
+unneeding gxy176>scra ?( need gxy176>scra_
 
 code gxy176>scra ( gx gy -- n a )
   E1 c,  D1 c, C5 c, 40 05 + c, 48 03 + c,
@@ -213,7 +213,7 @@ code gxy176>scra ( gx gy -- n a )
 
   \ doc{
   \
-  \ gxy176>scra ( gx gy -- n a )
+  \ gxy176>scra ( gx gy -- n a ) "g-x-y-176-to-s-c-r-a"
   \
   \ Return screen address _a_ and pixel position _n_ (0..7) of
   \ pixel coordinates _gx_ (0..255) and _gy_ (0..175).
@@ -222,7 +222,7 @@ code gxy176>scra ( gx gy -- n a )
   \
   \ }doc
 
-[unneeded] gxy>scra ?( need gxy>scra_
+unneeding gxy>scra ?( need gxy>scra_
 
 code gxy>scra ( gx gy -- n a )
   E1 c,  D1 c, C5 c, 40 05 + c, 48 03 + c, gxy>scra_ call,
@@ -242,7 +242,7 @@ code gxy>scra ( gx gy -- n a )
 
   \ doc{
   \
-  \ gxy>scra ( gx gy -- n a )
+  \ gxy>scra ( gx gy -- n a ) "g-x-y-to-s-c-r-a"
   \
   \ Return screen address _a_ and pixel position _n_ (0..7) of
   \ pixel coordinates _gx_ (0..255) and _gy_ (0..191).
@@ -253,7 +253,7 @@ code gxy>scra ( gx gy -- n a )
 
 ( plot plot176 )
 
-[unneeded] plot ?( need gxy>scra_
+unneeding plot ?( need gxy>scra_
 
 code plot ( gx gy -- )
 
@@ -284,7 +284,7 @@ code plot ( gx gy -- )
   \
   \ }doc
 
-[unneeded] plot176 ?(
+unneeding plot176 ?(
 
 code plot176 ( gx gy -- )
 
@@ -301,7 +301,7 @@ code plot176 ( gx gy -- )
 
   \ doc{
   \
-  \ plot176 ( gx gy -- )
+  \ plot176 ( gx gy -- ) "plot-176"
   \
   \ Set a pixel, changing its attribute on the screen and the
   \ current graphic coordinates, using only the top 176 pixel
@@ -320,7 +320,7 @@ code plot176 ( gx gy -- )
 
 ( set-pixel set-pixel176 )
 
-[unneeded] set-pixel ?( need gxy>scra_ need assembler
+unneeding set-pixel ?( need gxy>scra_ need assembler
 
 code set-pixel ( gx gy -- )
 
@@ -350,7 +350,7 @@ code set-pixel ( gx gy -- )
   \
   \ }doc
 
-[unneeded] set-pixel176 ?( need assembler need gxy176>scra_
+unneeding set-pixel176 ?( need assembler need gxy176>scra_
 
 code set-pixel176 ( gx gy -- )
 
@@ -369,7 +369,7 @@ code set-pixel176 ( gx gy -- )
 
   \ doc{
   \
-  \ set-pixel176 ( gx gy -- )
+  \ set-pixel176 ( gx gy -- ) "set-pixel-176"
   \
   \ Set a pixel without changing its attribute on the screen or
   \ the current graphic coordinates, and using only the top 176
@@ -404,7 +404,7 @@ code set-save-pixel176 ( gx gy -- )
 
   \ doc{
   \
-  \ set-save-pixel176 ( gx gy -- )
+  \ set-save-pixel176 ( gx gy -- ) "set-save-pixel-176"
   \
   \ Set a pixel without changing its attribute on the screen,
   \ and using only the top 176 pixel rows of the screen (the
@@ -419,7 +419,7 @@ code set-save-pixel176 ( gx gy -- )
 
 ( reset-pixel reset-pixel176 )
 
-[unneeded] reset-pixel ?( need gxy>scra_ need assembler
+unneeding reset-pixel ?( need gxy>scra_ need assembler
 
 code reset-pixel ( gx gy -- )
 
@@ -447,7 +447,7 @@ code reset-pixel ( gx gy -- )
   \
   \ }doc
 
-[unneeded] reset-pixel176 ?( need gxy176>scra_ need assembler
+unneeding reset-pixel176 ?( need gxy176>scra_ need assembler
 
 code reset-pixel176 ( gx gy -- )
 
@@ -465,7 +465,7 @@ code reset-pixel176 ( gx gy -- )
 
   \ doc{
   \
-  \ reset-pixel176 ( gx gy -- )
+  \ reset-pixel176 ( gx gy -- ) "reset-pixel-176"
   \
   \ Reset a pixel without its attribute on the screen or the
   \ current graphic coordinates, and using only the top 176
@@ -479,7 +479,7 @@ code reset-pixel176 ( gx gy -- )
 
 ( toggle-pixel toggle-pixel176 )
 
-[unneeded] toggle-pixel ?( need gxy>scra_ need assembler
+unneeding toggle-pixel ?( need gxy>scra_ need assembler
 
 code toggle-pixel ( gx gy -- )
 
@@ -508,7 +508,7 @@ code toggle-pixel ( gx gy -- )
   \
   \ }doc
 
-[unneeded] toggle-pixel176 ?( need gxy176>scra_ need assembler
+unneeding toggle-pixel176 ?( need gxy176>scra_ need assembler
 
 code toggle-pixel176 ( gx gy -- )
 
@@ -526,7 +526,7 @@ code toggle-pixel176 ( gx gy -- )
 
   \ doc{
   \
-  \ toggle-pixel176 ( gx gy -- )
+  \ toggle-pixel176 ( gx gy -- ) "toggle-pixel-176"
   \
   \ Toggle a pixel without changing its attribute on the screen
   \ or the current graphic coordinates, and using only the top
@@ -540,7 +540,7 @@ code toggle-pixel176 ( gx gy -- )
 
 ( get-pixel get-pixel176 )
 
-[unneeded] get-pixel ?( need gxy>scra_ need assembler
+unneeding get-pixel ?( need gxy>scra_ need assembler
 
 code get-pixel ( gx gy -- f )
   h pop, d pop, b push, l b ld, e c ld, gxy>scra_ call,
@@ -551,7 +551,7 @@ code get-pixel ( gx gy -- f )
   b pop,   \ restore the Forth IP
   1 and#, ' true nz? ?jp, ' false jp, end-code ?)
 
-[unneeded] get-pixel176 ?( need gxy176>scra_ need assembler
+unneeding get-pixel176 ?( need gxy176>scra_ need assembler
 
 code get-pixel176 ( gx gy -- f )
   h pop, d pop, b push, l b ld, e c ld, gxy176>scra_ call,
@@ -564,7 +564,7 @@ code get-pixel176 ( gx gy -- f )
 
 ( pixels fast-pixels slow-pixels )
 
-[unneeded] pixels ?\ defer pixels ( -- n )
+unneeding pixels ?\ defer pixels ( -- n )
 
   \ doc{
   \
@@ -578,7 +578,7 @@ code get-pixel176 ( gx gy -- f )
   \
   \ }doc
 
-[unneeded] fast-pixels ?( need assembler need pixels
+unneeding fast-pixels ?( need assembler need pixels
 
 code fast-pixels ( -- n )
 
@@ -633,7 +633,7 @@ code fast-pixels ( -- n )
 
   \ Slower version of `pixels`.
 
-[unneeded] slow-pixels ?( need bits need pixels
+unneeding slow-pixels ?( need bits need pixels
 
 : slow-pixels ( -- n ) 16384 6144 bits ;
 
@@ -654,7 +654,7 @@ code fast-pixels ( -- n )
 
 ( scra>attra gxy>attra x>gx y>gy gx>x gy>y )
 
-[unneeded] scra>attra ?(
+unneeding scra>attra ?(
 
 code scra>attra ( a1 -- a2 )
   E1 c, 7C c, 0F c, 0F c, 0F c, E6 c, 03 c, F6 c, 58 c, 67 c,
@@ -677,14 +677,14 @@ code scra>attra ( a1 -- a2 )
 
   \ doc{
   \
-  \ scra>attra ( a1 -- a2 )
+  \ scra>attra ( a1 -- a2 ) "s-c-r-a-to-a-t-t-r-a"
   \
   \ Convert screen bitmap address _a1_ to its correspondent
   \ attribute address _a2_.
   \
   \ }doc
 
-[unneeded] gxy>attra ?( need gxy>scra need scra>attra
+unneeding gxy>attra ?( need gxy>scra need scra>attra
 
 : gxy>attra ( gx gy -- a ) gxy>scra nip scra>attra ; ?)
 
@@ -692,20 +692,20 @@ code scra>attra ( a1 -- a2 )
 
   \ doc{
   \
-  \ gxy>attra ( gx gy -- a )
+  \ gxy>attra ( gx gy -- a ) "g-x-y-to-a-t-t-r-a"
   \
   \ Convert pixel coordinates _gx gy_ to their correspondent
   \ attribute address _a_.
   \
   \ }doc
 
-[unneeded] x>gx
+unneeding x>gx
 
 ?\ need alias need 8* ' 8* alias x>gx ( x -- gx )
 
   \ doc{
   \
-  \ x>gx ( x -- gx )
+  \ x>gx ( x -- gx ) "x-to-g-x"
   \
   \ Convert column _x_ to graphic x coordinate _gx_.
   \
@@ -713,13 +713,13 @@ code scra>attra ( a1 -- a2 )
   \
   \ }doc
 
-[unneeded] y>gy
+unneeding y>gy
 
 ?\ need rows need 8* : y>gy ( y -- gy ) rows swap - 8* 1- ;
 
   \ doc{
   \
-  \ y>gy ( y -- gy )
+  \ y>gy ( y -- gy ) "y-to-g-y"
   \
   \ Convert row _y_ to graphic y coordinate _gy_.
   \
@@ -727,11 +727,11 @@ code scra>attra ( a1 -- a2 )
   \
   \ }doc
 
-[unneeded] gx>x ?\ : gx>x ( gx -- x ) 8 / ;
+unneeding gx>x ?\ : gx>x ( gx -- x ) 8 / ;
 
   \ doc{
   \
-  \ gx>x ( gx -- x )
+  \ gx>x ( gx -- x ) "g-x-to-x"
   \
   \ Convert graphic x coordinate _gx_ to column _x_.
   \
@@ -739,11 +739,11 @@ code scra>attra ( a1 -- a2 )
   \
   \ }doc
 
-[unneeded] gy>y ?\ : gy>y ( gy -- y ) #191 swap - 8 / ;
+unneeding gy>y ?\ : gy>y ( gy -- y ) #191 swap - 8 / ;
 
   \ doc{
   \
-  \ gy>y ( gy -- y )
+  \ gy>y ( gy -- y ) "g-y-to-y"
   \
   \ Convert graphic y coordinate _gy_ to row _y_.
   \
@@ -878,5 +878,10 @@ need gxy>attra
   \
   \ 2017-07-27: Replace `jp next` with the actual macro
   \ `_jp_next` in Z80 comments.
+  \
+  \ 2018-02-15: Improve documentation: add pronunciation to
+  \ words that need it.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

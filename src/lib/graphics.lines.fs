@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201712101211
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -14,7 +14,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -25,7 +25,7 @@
 
 ( rdraw176 x1 incx y1 incy y )
 
-[unneeded] rdraw176 ?( need assembler
+unneeding rdraw176 ?( need assembler
 
 code rdraw176 ( gx gy -- )
 
@@ -58,7 +58,7 @@ code rdraw176 ( gx gy -- )
 
   \ doc{
   \
-  \ rdraw176 ( gx gy -- )
+  \ rdraw176 ( gx gy -- ) "r-draw-176"
   \
   \ Draw a line relative _gx gy_ to the current coordinates,
   \ using only the top 176 pixel rows of the screen (the lower
@@ -72,14 +72,14 @@ code rdraw176 ( gx gy -- )
   \
   \ }doc
 
-[unneeded] x1 [unneeded] incx
-[unneeded] y1 [unneeded] incy and and and
+unneeding x1 unneeding incx
+unneeding y1 unneeding incy and and and
 
 ?\ 2variable x1  2variable incx  2variable y1  2variable incy
 
   \ doc{
   \
-  \ x1 ( -- a )
+  \ x1 ( -- a ) "x-one"
   \
   \ A double-cell variable used by `adraw176` and `aline176`.
   \
@@ -89,7 +89,7 @@ code rdraw176 ( gx gy -- )
 
   \ doc{
   \
-  \ y1 ( -- a )
+  \ y1 ( -- a ) "y-one"
   \
   \ A double-cell variable used by `adraw176` and `aline176`.
   \
@@ -99,7 +99,7 @@ code rdraw176 ( gx gy -- )
 
   \ doc{
   \
-  \ incx ( -- a )
+  \ incx ( -- a ) "inc-x"
   \
   \ A double-cell variable used by `adraw176` and `aline176`.
   \
@@ -109,7 +109,7 @@ code rdraw176 ( gx gy -- )
 
   \ doc{
   \
-  \ incy ( -- a )
+  \ incy ( -- a ) "ink-y"
   \
   \ A double-cell variable used by `adraw176` and `aline176`.
   \
@@ -284,7 +284,7 @@ need x1 need incx need y1 need incy
 
   \ doc{
   \
-  \ adraw176 ( gx gy -- )
+  \ adraw176 ( gx gy -- ) "a-draw-176"
   \
   \ Draw a line from the current coordinates to the given
   \ absolute coordinates _gx gy_, using only the top 176 pixel
@@ -328,7 +328,7 @@ need x1 need incx need y1 need incy
 
   \ doc{
   \
-  \ aline176 ( gx gy -- )
+  \ aline176 ( gx gy -- ) "a-line-176"
   \
   \ Draw a line from the current coordinates to the given
   \ absolute coordinates _gx gy_, using only the top 176 pixel
@@ -566,5 +566,10 @@ code ortholine ( gx gy gxinc gyinc len -- )
   \
   \ 2017-12-10: Update to `a push,` and `a pop,`, after the
   \ change in the assembler.
+  \
+  \ 2018-02-15: Improve documentation: add pronunciation to
+  \ words that need it.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

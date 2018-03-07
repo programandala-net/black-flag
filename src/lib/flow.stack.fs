@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201712111901
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -14,7 +14,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -25,16 +25,16 @@
 
 ( cs-pick cs-roll cs-drop cs-dup cs-mark cs-test )
 
-[unneeded] cs-pick ?( need pick
+unneeding cs-pick ?( need pick
 
 : cs-pick ( u -- ) ( C: x#u .. x#1 x#0 -- x#u .. x#1 x#0 x#u )
   pick ; compile-only ?)
 
   \ doc{
   \
-  \ cs-pick
-  \   \ ( S: u -- )
-  \   \ ( C: x#u .. x#1 x#0 -- x#u .. x#1 x#0 x#u )
+  \ cs-pick "c-s-pick"
+  \   ( S: u -- )
+  \   ( C: x#u .. x#1 x#0 -- x#u .. x#1 x#0 x#u )
 
   \
   \ Remove _u_. Copy _x#u_ to the top of the control-flow
@@ -52,16 +52,16 @@
   \
   \ }doc
 
-[unneeded] cs-roll ?( need roll
+unneeding cs-roll ?( need roll
 
 : cs-roll ( u -- ) ( C: x#u x#n .. x#0 -- x#n .. x#0 x#u )
   roll ; compile-only ?)
 
   \ doc{
   \
-  \ cs-roll
-  \   \ ( S: u -- )
-  \   \ ( C: x#u x#u-1 .. x#0 -- x#u-1 .. x#0 x#u )
+  \ cs-roll "c-s-roll"
+  \   ( S: u -- )
+  \   ( C: x#u x#u-1 .. x#0 -- x#u-1 .. x#0 x#u )
 
   \
   \ Remove _u_.  Rotate _u+1_ items on top of the control-flow
@@ -80,11 +80,11 @@
   \
   \ }doc
 
-[unneeded] cs-drop ?\ : cs-drop ( C: x -- ) drop ; compile-only
+unneeding cs-drop ?\ : cs-drop ( C: x -- ) drop ; compile-only
 
   \ doc{
   \
-  \ cs-drop ( C: x -- )
+  \ cs-drop ( C: x -- ) "c-s-drop"
 
   \
   \ Remove _x_ from the control-flow stack.
@@ -99,13 +99,13 @@
   \
   \ }doc
 
-[unneeded] cs-dup
+unneeding cs-dup
 
 ?\ : cs-dup ( C: x -- x x ) dup ; compile-only
 
   \ doc{
   \
-  \ cs-dup ( C: x -- x x )
+  \ cs-dup ( C: x -- x x ) "c-s-dup"
 
   \
   \ Duplicate _x_ on the control-flow stack.
@@ -120,7 +120,7 @@
   \
   \ }doc
 
-[unneeded] cs-mark ?\ 0 cconstant cs-mark ( C: -- cs-mark )
+unneeding cs-mark ?\ 0 cconstant cs-mark ( C: -- cs-mark )
 
   \ Credit:
   \ Control-Flow Stack Extensions
@@ -128,7 +128,7 @@
 
   \ doc{
   \
-  \ cs-mark ( C: -- cs-mark )
+  \ cs-mark ( C: -- cs-mark ) "c-s-mark"
   \
   \ Place a marker _cs-mark_ on the control-flow stack.  The
   \ marker ocuppies the same width as an _orig|dest_ but is
@@ -138,7 +138,7 @@
   \
   \ }doc
 
-[unneeded] cs-test ?( need cs-mark
+unneeding cs-test ?( need cs-mark
 
 : cs-test ( -- f ) ( C: x -- x ) dup cs-mark <> ; ?)
 
@@ -148,7 +148,7 @@
 
   \ doc{
   \
-  \ cs-test
+  \ cs-test "c-s-test"
   \   Compilation: ( -- f ) ( C: x -- x )
 
   \ Return a true flag if _x_ is an _orig|dest_, and false if a
@@ -174,5 +174,10 @@
   \
   \ 2017-12-11: Unalias `cs-pick`, `cs-roll` and `cs-drop`.
   \ Improve documentation. Add `cs-mark`, `cs-test`, `cs-dup`.
+  \
+  \ 2018-02-15: Improve documentation: add pronunciation to
+  \ words that need it.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

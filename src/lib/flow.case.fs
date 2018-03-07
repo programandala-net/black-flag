@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201712100141
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -15,7 +15,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -33,9 +33,9 @@
   \ When `alias` is already defined,
   \ this version uses 40 bytes; else it uses 51 bytes.
 
-need thens
+need cs-mark need thens
 
-0 cconstant case immediate compile-only
+cs-mark cconstant case immediate compile-only
 
   \ doc{
   \
@@ -54,7 +54,8 @@ need thens
   \ Origin: Forth-94 (CORE EXT), Forth-2012 (CORE EXT).
   \
   \ See: `of`, `endof`, `default-of`, `less-of`,
-  \ `greater-of`, `between-of`, `within-of`, `or-of`, `any-of`.
+  \ `greater-of`, `between-of`, `within-of`, `or-of`, `any-of`,
+  \ `cond`, `thens`.
   \
   \ }doc
 
@@ -151,7 +152,7 @@ need between
 
   \ doc{
   \
-  \ (between-of) ( x1 x2 x3 -- x1 x1 | x1 x4 )
+  \ (between-of) ( x1 x2 x3 -- x1 x1 | x1 x4 ) "paren-between-of"
   \
   \ The run-time factor of `between-of`.  If _x1_ is in range
   \ _x2 x3_, as calculated by `between`, return _x1 x1_;
@@ -210,14 +211,14 @@ need between
   \
   \ Code from Galope.
 
-[unneeded] less-of ?( need nup
+unneeding less-of ?( need nup
 
 : (less-of) ( n1 n2 -- n1 n1 | n1 n3 )
   nup nup >= if invert then ;
 
   \ doc{
   \
-  \ (less-of) ( n1 n2 -- n1 n1 | n1 n3 )
+  \ (less-of) ( n1 n2 -- n1 n1 | n1 n3 ) "paren-less-of"
   \
   \ The run-time factor of `less-of`.
   \
@@ -257,14 +258,14 @@ need between
   \
   \ }doc
 
-[unneeded] greater-of ?( need nup
+unneeding greater-of ?( need nup
 
 : (greater-of) ( n1 n2 -- n1 n1 | n1 n3 )
   nup nup <= if invert then ;
 
   \ doc{
   \
-  \ (greater-of) ( n1 n2 -- n1 n1 | n1 n3 )
+  \ (greater-of) ( n1 n2 -- n1 n1 | n1 n3 ) "paren-greater-of"
   \
   \ The run-time factor of `greater-of`.
   \
@@ -306,14 +307,14 @@ need between
 
 ( any-of default-of )
 
-[unneeded] any-of ?( need any? need pick
+unneeding any-of ?( need any? need pick
 
 : (any-of) ( x#0 x#1 .. x#n n -- x#0 x#0 | x#0 0 )
   dup 1+ pick >r any? r> tuck and ;
 
   \ doc{
   \
-  \ (any-of) ( x#0 x#1 .. x#n n -- x#0 x#0 | x#0 0 )
+  \ (any-of) ( x#0 x#1 .. x#n n -- x#0 x#0 | x#0 0 ) "paren-any-of"
   \
   \ The run-time factor of `any-of`.  If _x#0_ equals any of
   \ _x#1 .. x#n_, return _x#0 x#0_; else return _x#0 0_.
@@ -418,14 +419,14 @@ need between
   \
   \ Code from Galope.
 
-[unneeded] within-of ?( need within
+unneeding within-of ?( need within
 
 : (within-of) ( x1 x2 x3 -- x1 x1 | x1 x4 )
   2>r dup dup 2r> within 0= if invert then ;
 
   \ doc{
   \
-  \ (within-of) ( x1 x2 x3 -- x1 x1 | x1 x4 )
+  \ (within-of) ( x1 x2 x3 -- x1 x1 | x1 x4 ) "paren-within-of"
   \
   \ The run-time factor of `within-of`.  If _x1_ is in range
   \ _x2 x3_, as calculated by `within`, return _x1 x1_;
@@ -440,8 +441,9 @@ need between
 
   \ doc{
   \
-  \ within-of Compilation: ( C: -- of-sys )
-  \           Run-time:    ( x1 x2 x3 -- | x1 )
+  \ within-of
+  \   Compilation: ( C: -- of-sys )
+  \   Run-time:    ( x1 x2 x3 -- | x1 )
 
   \ A variant of `of`.
   \
@@ -486,7 +488,7 @@ need between
 
   \ doc{
   \
-  \ (or-of) ( x1 x2 x3 -- x1 x1 | x1 x4 )
+  \ (or-of) ( x1 x2 x3 -- x1 x1 | x1 x4 ) "paren-or-of"
   \
   \ The run-time factor of `less-of`.
   \
@@ -570,5 +572,13 @@ need between
   \ library.
   \
   \ 2017-12-10: Improve documentation.
+  \
+  \ 2018-01-04: Use `cs-mark` for `case`, because `thens` is
+  \ used in `endcase`.
+  \
+  \ 2018-02-04: Improve documentation: add pronunciation to
+  \ words that need it.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

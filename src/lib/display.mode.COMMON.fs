@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201712090118
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -14,7 +14,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -25,14 +25,14 @@
 
 ( form>xy >form form (at-xy columns rows set-mode-output )
 
-[unneeded] form>xy ?( need columns need rows need */
+unneeding form>xy ?( need columns need rows need */
 
 : form>xy ( cols rows -- x y )
   xy swap >r rows */ r> swap >r columns */ r> ; ?)
 
   \ doc{
   \
-  \ form>xy ( cols rows -- x y )
+  \ form>xy ( cols rows -- x y ) "form-to-x-y"
   \
   \ _x y_ is the new cursor position corresponding to a display
   \ mode whose `form` is _cols rows_. _x y_ are calculated with
@@ -43,14 +43,14 @@
   \
   \ }doc
 
-[unneeded] >form ?( need form>xy need columns need rows need to
+unneeding >form ?( need form>xy need columns need rows need to
 
 : >form ( cols rows -- )
   2dup form>xy at-xy to rows to columns ; ?)
 
   \ doc{
   \
-  \ >form ( cols rows -- )
+  \ >form ( cols rows -- ) "to-form"
   \
   \ Adapt the cursor position of the current display mode to a
   \ display mode whose `form` is _cols rows_.
@@ -65,7 +65,7 @@
   \
   \ }doc
 
-[unneeded] form ?( need columns need rows
+unneeding form ?( need columns need rows
 
 : form ( -- cols rows ) columns rows ; ?)
 
@@ -80,12 +80,12 @@
   \
   \ }doc
 
-[unneeded] (at-xy
+unneeding (at-xy
 ?\ : (at-xy ( col row -- ) 22 emit swap emit emit ;
 
   \ doc{
   \
-  \ (at-xy  ( col row -- )
+  \ (at-xy  ( col row -- ) "paren-at-x-y"
   \
   \ Set the cursor coordinates to column _col_ and row _row_,
   \ by displaying control character 22 followed by _col_ and
@@ -102,7 +102,7 @@
   \
   \ }doc
 
-[unneeded] columns ?\ need cvalue 32 cvalue columns
+unneeding columns ?\ need cvalue 32 cvalue columns
 
   \ doc{
   \
@@ -115,7 +115,7 @@
   \
   \ }doc
 
-[unneeded] rows ?\ need cvalue 24 cvalue rows
+unneeding rows ?\ need cvalue 24 cvalue rows
 
   \ doc{
   \
@@ -128,7 +128,7 @@
   \
   \ }doc
 
-[unneeded] set-mode-output ?( need os-chans
+unneeding set-mode-output ?( need os-chans
 
 : set-mode-output ( a -- )
   \ os-chans @ 2dup ! 2dup 5 + ! 15 + ! ; ?) \ XXX OLD
@@ -215,5 +215,10 @@ code (banked-mode-output) ( -- )
   \
   \ 2017-12-09: Update with `need */`, since `*/` was moved to
   \ the library.
+  \
+  \ 2018-02-04: Improve documentation: add pronunciation to
+  \ words that need it.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

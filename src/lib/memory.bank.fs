@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201705111910
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -14,7 +14,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -23,42 +23,9 @@
   \ retain every copyright, credit and authorship notice, and
   \ this license.  There is no warranty.
 
-( get-default-bank set-default-bank /bank bank-start )
+( /bank bank-start )
 
-
-[unneeded] get-default-bank
-
-?\ : get-default-bank ( -- +n ) default-bank# c@ ;
-
-  \ doc{
-  \
-  \ get-default-bank ( -- +n )
-  \
-  \ Get the current default bank _+n_ by fetching the contents
-  \ of `default-bank#`.
-  \
-  \ See: `set-default-bank`, `default-bank`, `bank`,
-  \ `banks`.
-  \
-  \ }doc
-
-[unneeded] set-default-bank
-
-?\ : set-default-bank ( +n -- ) default-bank# c! ;
-
-  \ doc{
-  \
-  \ set-default-bank ( +n -- )
-  \
-  \ Set _+n_ as the default memory bank by modifyng the
-  \ contents of `default-bank#`.
-  \
-  \ See: `get-default-bank`, `default-bank`, `bank`,
-  \ `banks`.
-  \
-  \ }doc
-
-[unneeded] /bank ?\ $4000 constant /bank
+unneeding /bank ?\ $4000 constant /bank
 
   \ doc{
   \
@@ -70,7 +37,7 @@
   \
   \ }doc
 
-[unneeded] bank-start ?\ $C000 constant bank-start
+unneeding bank-start ?\ $C000 constant bank-start
 
   \ doc{
   \
@@ -107,5 +74,10 @@
   \ 2017-02-21: Improve documentation.
   \
   \ 2017-05-11: Move `/bank` and `bank-start` from the kernel.
+  \
+  \ 2018-01-23: Remove `get-default-bank` and
+  \ `set-default-bank`.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

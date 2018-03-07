@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201709091154
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -27,7 +27,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -38,7 +38,7 @@
 
 ( avariable 2avariable cavariable )
 
-[unneeded] avariable ?( need array>
+unneeding avariable ?( need array>
 
 : avariable ( n "name" -- )
   create  cells allot
@@ -46,7 +46,7 @@
 
   \ doc{
   \
-  \ avariable ( n "name" -- )
+  \ avariable ( n "name" -- ) "a-variable"
   \
   \ Create a 1-dimension single-cell variables array _name_
   \ with _n_ elements and the execution semantics defined
@@ -62,7 +62,7 @@
   \
   \ }doc
 
-[unneeded] 2avariable ?( need 2array>
+unneeding 2avariable ?( need 2array>
 
 : 2avariable ( n "name" -- )
   create  [ 2 cells ] cliteral * allot
@@ -70,7 +70,7 @@
 
   \ doc{
   \
-  \ 2avariable ( n "name" -- )
+  \ 2avariable ( n "name" -- ) "two-a-variable"
   \
   \ Create a 1-dimension double-cell variables array _name_
   \ with _n_ elements and the execution semantics defined
@@ -86,7 +86,7 @@
   \
   \ }doc
 
-[unneeded] cavariable ?( need align
+unneeding cavariable ?( need align
 
 : cavariable ( n "name" -- )
   create  allot align
@@ -94,7 +94,7 @@
 
   \ doc{
   \
-  \ cavariable ( n "name" -- )
+  \ cavariable ( n "name" -- ) "c-a-variable"
   \
   \ Create a 1-dimension character variables array _name_ with
   \ _n_ elements and the execution semantics defined below.
@@ -130,5 +130,10 @@
   \ references.
   \
   \ 2017-09-09: Update notation "pfa" to the standard "dfa".
+  \
+  \ 2018-02-05: Improve documentation: add pronunciation to
+  \ words that need it.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

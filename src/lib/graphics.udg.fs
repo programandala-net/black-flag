@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201712101211
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -14,7 +14,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -23,38 +23,58 @@
   \ retain every copyright, credit and authorship notice, and
   \ this license.  There is no warranty.
 
-( /udg /udg* udg-width udg> udg! udg: )
+( /udg /udg* /udg+ udg-width udg> udg! udg: )
 
-[unneeded] /udg ?\ 8 cconstant /udg
+unneeding /udg ?\ 8 cconstant /udg
 
   \ doc{
   \
-  \ /udg ( -- b )
+  \ /udg ( -- b ) "slash-u-d-g"
   \
   \ _b_ is the size of a UDG (User Defined Graphic), in bytes.
   \
-  \ See: `udg-width`, `udg!`.
+  \ See: `udg-width`, `udg!`, `/udg*`, `/udg+`.
   \
   \ }doc
 
-[unneeded] /udg* ?\ need 8* need alias ' 8* alias /udg*
+unneeding /udg* ?\ need 8* need alias ' 8* alias /udg*
 
   \ doc{
   \
-  \ /udg* ( n1 -- n2 )
+  \ /udg* ( n1 -- n2 ) "slash-u-d-g-star"
   \
-  \ Multiply _n1_ by the `/udg`, resulting _n2_. Used by
-  \ `udg>`.
+  \ Multiply _n1_ by `/udg`, resulting _n2_. Used by `udg>`.
   \
-  \ ``/udg*`` is an `alias` of `8*`.
+  \ ``/udg*`` is equivalent to ``/udg *`` but faster: it's an
+  \ `alias` of `8*`.
+  \
+  \ See: `/udg+`.
   \
   \ }doc
 
-[unneeded] udg-width ?\ 8 cconstant udg-width
+unneeding /udg+ ?\ need 8+ need alias ' 8+ alias /udg+
 
   \ doc{
   \
-  \ udg-width ( -- b )
+  \ /udg+ ( n1 -- n2 ) "slash-u-d-g-plus"
+  \
+  \ Add `/udg` to _n1_, resulting _n2_.
+  \
+  \ ``/udg+`` is useful when UDG are referenced by address,
+  \ e.g. with `emit-udga` and `,udg-block`.
+  \
+  \ ``/udg+`` is equivalent to ``/udg +`` but faster: it's an
+  \ `alias` of `8+`.
+  \
+  \ See: `/udg*`.
+  \
+  \ }doc
+
+unneeding udg-width ?\ 8 cconstant udg-width
+
+  \ doc{
+  \
+  \ udg-width ( -- b ) "u-d-g-width"
   \
   \ _b_ is the width of a UDG (User Defined Graphic), in
   \ pixels.
@@ -63,13 +83,13 @@
   \
   \ }doc
 
-[unneeded] udg> ?( need /udg* need get-udg
+unneeding udg> ?( need /udg* need get-udg
 
 : udg> ( c -- a ) /udg* get-udg + ; ?)
 
   \ doc{
   \
-  \ udg> ( c -- a )
+  \ udg> ( c -- a ) "u-d-g-to"
   \
   \ Convert UDG number _n_ (0..255) to the address _a_ of its
   \ bitmap, pointed by `os-udg`.
@@ -78,13 +98,13 @@
   \
   \ }doc
 
-[unneeded] udg! ?( need udg>
+unneeding udg! ?( need udg>
 
 : udg! ( b0..b7 c -- ) udg> dup 7 + ?do i c! -1 +loop ; ?)
 
   \ doc{
   \
-  \ udg! ( b0..b7 c -- )
+  \ udg! ( b0..b7 c -- ) "u-d-g-store"
   \
   \ Store the 8-byte bitmap _b0..b7_ into UDG _c_ (0..255) of
   \ the UDG font pointed by `os-udg`.  _b0_ is the first (top)
@@ -94,13 +114,13 @@
   \
   \ }doc
 
-[unneeded] udg: ?( need udg!
+unneeding udg: ?( need udg!
 
 : udg: ( b0..b7 c "name" -- ) dup cconstant udg! ; ?)
 
   \ doc{
   \
-  \ udg: ( b0..b7 c "name" -- )
+  \ udg: ( b0..b7 c "name" -- ) "u-d-g-colon"
   \
   \ Create a `cconstant` _name_ for UDG char _c_ (0..255) and
   \ store the 8-byte bitmap _b0..b7_ into that UDG char.  _b0_
@@ -136,7 +156,7 @@ here anon> ! 3 cells allot
 
   \ doc{
   \
-  \ udg-group ( width height c -- )
+  \ udg-group ( width height c -- ) "u-d-g-group"
   \
   \ Parse a group of UDG definitions organized in _width_
   \ columns and _height_ rows, and store them starting from UDG
@@ -178,11 +198,12 @@ create udg-blank '.' c,  create udg-dot 'X' c,
 
   \ doc{
   \
-  \ udg-blank  ( -- ca )
+  \ udg-blank  ( -- ca ) "u-d-g-blank"
   \
   \ A character variable. _ca_ is the address of a byte
-  \ containing character used by `grid` and `g` as a grid
-  \ blank. By default it's '.'.
+  \ containing the character used by `udg-group`, `udg-block`,
+  \ `,udg-block` and others as a grid blank. By default it's
+  \ '.'.
   \
   \ See: `udg-dot`, `udg-scan>binary`.
   \
@@ -190,11 +211,12 @@ create udg-blank '.' c,  create udg-dot 'X' c,
 
   \ doc{
   \
-  \ udg-dot  ( -- ca )
+  \ udg-dot  ( -- ca ) "u-d-g-dot"
   \
   \ A character variable. _ca_ is the address of a byte
-  \ containing the character used by `grid` and `g` as a grid
-  \ blank. By default it's 'X'.
+  \ containing the character used by `udg-group`, `udg-block`
+  \ `,udg-block` and others as a grid blank. By default it's
+  \ 'X'.
   \
   \ See: `udg-blank`, `udg-scan>binary`.
   \
@@ -208,12 +230,13 @@ create udg-blank '.' c,  create udg-dot 'X' c,
 
   \ doc{
   \
-  \ udg-scan>binary ( ca len -- )
+  \ udg-scan>binary ( ca len -- ) "u-d-g-scan-to-binary"
   \
   \ Convert the characters `udg-blank` and `udg-dot` found in
   \ UDG scan string _ca len_ to '0' and '1' respectively.
   \
-  \ See: `udg-scan>number?`.
+  \ See: `udg-scan>number?`.  `udg-group`, `udg-block`,
+  \ `,udg-block`.
   \
   \ }doc
 
@@ -222,13 +245,13 @@ create udg-blank '.' c,  create udg-dot 'X' c,
 
   \ doc{
   \
-  \ udg-scan>number? ( ca len -- n true | false )
+  \ udg-scan>number? ( ca len -- n true | false ) "u-d-g-scan-to-number-question"
   \
   \ Is UDG scan string _ca len_ a valid binary number?
   \ If so, return _n_ and _true_; else return _false_.
   \ The string is processed by `udg-scan>binary` first.
   \
-  \ See: `udg-scan>binary`, `udg-scan>number`.
+  \ See: `udg-scan>number`, `udg-dot`, `udg-blank`.
   \
   \ }doc
 
@@ -237,14 +260,14 @@ create udg-blank '.' c,  create udg-dot 'X' c,
 
   \ doc{
   \
-  \ udg-scan>number ( ca len -- n )
+  \ udg-scan>number ( ca len -- n ) "u-d-g-scan-to-number"
   \
   \ If UDG scan string _ca len_, after being processed by
   \ `udg-scan>binary`, is a valid binary number, return the
   \ result _n_.  Otherwise `throw` exception #-290 (invalid UDG
   \ scan).
   \
-  \ See: `udg-scan>number?`, `udg-block`, `udg-group`.
+  \ See: `udg-scan>number?`, `udg-dot`, `udg-blank`.
   \
   \ }doc
 
@@ -275,35 +298,122 @@ need parse-name-thru
     2dup
   while repeat ;
 
-( udg-block )
+( (udg-block udg-block )
 
-need udg-scan>number need udg> need /udg need /udg*
+unneeding (udg-block ?(
+
+need udg-scan>number need /udg need /udg*
 need udg-width need parse-name-thru need j need anon
 
-here anon> ! 3 cells allot
+here anon> ! 2 cells allot
 
-: udg-block ( width height c "name..." -- )
-  3 set-anon
+: (udg-block ( width height a "name..." -- )
+  rot 2 set-anon
     \ Set the anonymous local variables:
-    \   [ 0 ] anon = _c_
-    \   [ 1 ] anon = _height_
-    \   [ 2 ] anon = _width_
-  [ 1 ] anon @ /udg* 0 ?do parse-name-thru ( ca len )
-    [ 2 ] anon @ 0 ?do
+    \   [ 0 ] anon = _width_
+    \   [ 1 ] anon = address to store the UDG block
+  /udg* 0 ?do parse-name-thru ( ca len )
+    [ 0 ] anon @ 0 ?do
       over udg-width udg-scan>number ( ca len b )
-      j /udg /mod [ 2 ] anon @ * i + /udg* +
-        \ Calculate the offset from the address of _c_ in
-        \ the UDG font, to store the scan _b_.
-      [ 0 ] anon @ udg> + c!
-        \ Store _b_ at the proper address in the UDG font,
-        \ i.e. the address of _c_ plus the offset.
-      udg-width /string ( ca' len' ) loop 2drop loop ;
+      j /udg /mod [ 0 ] anon @ * i + /udg* + ( ca len b +n )
+      [ 1 ] anon @ + c!
+      udg-width /string ( ca' len' ) loop 2drop loop ; ?)
 
   \ doc{
   \
-  \ udg-block ( width height c "name..." -- )
+  \ (udg-block ( width height a "name..." -- ) "paren-u-d-g-block"
   \
-  \ Parse a UDG block, from UDG character _c_ (0..255). _width_
+  \ Parse a UDG block, and store it from address _a_.  _width_
+  \ and _height_ are in characters.  The maximum _width_ is 7
+  \ (imposed by the size of Forth source blocks). _height_ has
+  \ no maximum, as the UDG block can ocuppy more than one Forth
+  \ block (provided the Forth block has no index line, i.e.
+  \ `load-program` is used to load the source).
+  \
+  \ The scans can be formed by binary digits, by the characters
+  \ hold in `udg-blank` and `udg-dot`, or any combination of
+  \ both notations.
+  \
+  \ ``(udg-block`` is a common factor of `udg-block` and
+  \ `,udg-block`, whose documentation include usage examples.
+  \
+  \ See: `csprite`, `udg-group`.
+  \
+  \ }doc
+
+unneeding udg-block ?( need udg> need (udg-block
+
+: udg-block ( width height c "name..." -- )
+  udg> (udg-block ; ?)
+
+  \ doc{
+  \
+  \ udg-block ( width height c "name..." -- ) "u-d-g-block"
+  \
+  \ Parse a UDG block, and store it from UDG character _c_
+  \ (0..255). _width_ and _height_ are in characters.  The
+  \ maximum _width_ is 7 (imposed by the size of Forth source
+  \ blocks). _height_ has no maximum, as the UDG block can
+  \ ocuppy more than one Forth block (provided the Forth block
+  \ has no index line, i.e. `load-program` is used to load the
+  \ source).
+  \
+  \ The scans can be formed by binary digits, by the characters
+  \ hold in `udg-blank` and `udg-dot`, or any combination of
+  \ both notations.
+  \
+  \ Usage example:
+
+  \ ----
+  \ 0 cconstant mass-udg
+  \ 2 cconstant mass-height
+  \ 5 cconstant mass-width
+  \
+  \ mass-width mass-height mass-udg udg-block
+  \
+  \ ..XXXX....XXXX....XXXX....XXXX....XXXX..
+  \ .XXXXXX..XXXXXX..XXXXXX..XXXXXX..X.XXXX.
+  \ XXXXXXXXXXXXXXXXXXXXXXXXX.XXXXXXX.XXXXXX
+  \ XXXXXXXXXXXXXXXXX.XXXXXXX.XXXXXXXXXXXXXX
+  \ XXXXXXXXX.XXXXXXX.XXXXXXXXXXXXXXXXXXXXXX
+  \ XX..XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  \ .XXXXXX..XXXXXX..XXXXXX..XXXXXX..XXXXXX.
+  \ ..XXXX....XXXX....XXXX....XXXX....XXXX..
+  \ ..XXXX....XXXX....XXXX....XXXX....XXXX..
+  \ .XXXXXX..XXXXXX..XXXXXX..XXXXXX..X.XXXX.
+  \ XXXXXXXXXXXXXXXXXXXXXXXXX.XXXXXXX.XXXXXX
+  \ XXXXXXXXXXXXXXXXX.XXXXXXX.XXXXXXXXXXXXXX
+  \ XXXXXXXXX.XXXXXXX.XXXXXXXXXXXXXXXXXXXXXX
+  \ XX..XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  \ .XXXXXX..XXXXXX..XXXXXX..XXXXXX..XXXXXX.
+  \ ..XXXX....XXXX....XXXX....XXXX....XXXX..
+  \
+  \ : .mass ( -- )
+  \   mass-height 0 ?do
+  \     mass-width 0 ?do
+  \       i j mass-width * + mass-udg + emit-udg
+  \     loop cr
+  \   loop ;
+  \
+  \ cr .mass
+  \ ----
+
+  \ See: `,udg-block`, `csprite`, `udg-group`.
+  \
+  \ }doc
+
+( ,udg-block csprite )
+
+unneeding ,udg-block ?( need /udg* need (udg-block
+
+: ,udg-block ( width height "name..." -- )
+  here >r 2dup * /udg* allot r> (udg-block ; ?)
+
+  \ doc{
+  \
+  \ ,udg-block ( width height "name..." -- ) "comma-u-d-g-block"
+  \
+  \ Parse a UDG block, and compile it in data space.  _width_
   \ and _height_ are in characters.  The maximum _width_ is 7
   \ (imposed by the size of Forth source blocks). _height_ has
   \ no maximum, as the UDG block can ocuppy more than one Forth
@@ -317,31 +427,27 @@ here anon> ! 3 cells allot
   \ Usage example:
 
   \ ----
-  \ 5 2 140 udg-block
+  \ here 3 1 ,udg-block
+  \ ..........X..X..........
+  \ ...XXXXXX.X..X.XXXXXXX..
+  \ ..XXXXXXXXXXXXXXXXXXXXX.
+  \ .XXXXXXXXXXXXXXXXXXXXXXX
+  \ .XX.X.X.X.X.X.X.X.X.X.XX
+  \ ..XX..XX..XX..XX..XX.XX.
+  \ ...X.XXX.XXX.XXX.XXX.X..
+  \ ....X.X.X.X.X.X.X.X.X... constant tank
   \
-  \ ..XXXX....XXXX....XXXX....XXXX....XXXX..
-  \ .XXXXXX..XXXXXX..XXXXXX..XXXXXX..X.XXXX.
-  \ XXXXXXXXXXXXXXXXXXXXXXXXX.XXXXXXX.XXXXXX
-  \ XXXXXXXXXXXXXXXXX.XXXXXXX.XXXXXXXXXXXXXX
-  \ XXXXXXXXX.XXXXXXX.XXXXXXXXXXXXXXXXXXXXXX
-  \ XX..XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  \ .XXXXXX..XXXXXX..XXXXXX..XXXXXX..XXXXXX.
-  \ ..XXXX....XXXX....XXXX....XXXX....XXXX..
-  \ ..XXXX....XXXX....XXXX....XXXX....XXXX..
-  \ .XXXXXX..XXXXXX..XXXXXX..XXXXXX..X.XXXX.
-  \ XXXXXXXXXXXXXXXXXXXXXXXXX.XXXXXXX.XXXXXX
-  \ XXXXXXXXXXXXXXXXX.XXXXXXX.XXXXXXXXXXXXXX
-  \ XXXXXXXXX.XXXXXXX.XXXXXXXXXXXXXXXXXXXXXX
-  \ XX..XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  \ .XXXXXX..XXXXXX..XXXXXX..XXXXXX..XXXXXX.
-  \ ..XXXX....XXXX....XXXX....XXXX....XXXX..
+  \ : .tank ( -- )
+  \   tank dup emit-udga /udg+ dup emit-udga /udg+ emit-udga ;
+  \
+  \ cr .tank cr
   \ ----
 
-  \ See: `csprite`, `udg-group`.
+  \ See: `udga-emit`, `udg-block`, `csprite`, `udg-group`.
   \
   \ }doc
 
-( csprite )
+unneeding csprite ?(
 
 need udg-scan>number need /udg*
 need udg-width need parse-name-thru need j need anon
@@ -359,11 +465,11 @@ here anon> ! 3 cells allot
       over udg-width udg-scan>number ( ca len b )
       j [ 2 ] anon @ * i + [ 0 ] anon @ + c! udg-width /string
     loop 2drop
-  loop ;
+  loop ; ?)
 
   \ doc{
   \
-  \ csprite ( width height a "name..." -- )
+  \ csprite ( width height a "name..." -- ) "c-sprite"
   \
   \ Parse a character sprite and store it at _a_. _width_ and
   \ _height_ are in characters.  The maximum _width_ is 7
@@ -376,8 +482,9 @@ here anon> ! 3 cells allot
   \ hold in `udg-blank` and `udg-dot`, or any combination of
   \ both notations.
   \
-  \ The difference with `udg-block` is ``csprite`` stores the
-  \ graphic by whole scans, not by characters.
+  \ The difference with `udg-block` and `,udg-block` is
+  \ ``csprite`` stores the graphic by whole scans, not by
+  \ characters.
   \
   \ Usage example:
 
@@ -407,7 +514,7 @@ here anon> ! 3 cells allot
 
 ( make-block-chars default-udg-chars )
 
-[unneeded] make-block-chars ?( need assembler
+unneeding make-block-chars ?( need assembler
 
 code make-block-chars ( a -- )
   h pop, b push,
@@ -444,7 +551,7 @@ code make-block-chars ( a -- )
   \
   \ }doc
 
-[unneeded] default-udg-chars ?( need rom-font need get-udg
+unneeding default-udg-chars ?( need rom-font need get-udg
 
 rom-font 'A' 8 * +    \ from
 get-udg @ 144 8 * +   \ to
@@ -453,7 +560,7 @@ move ?)
 
   \ doc{
   \
-  \ default-udg-chars ( -- )
+  \ default-udg-chars ( -- ) "default-u-d-g-chars"
   \
   \ A phoney word used only to do ``need default-udg-chars`` in
   \ order to define UDG 144..164 as letters 'A'..'U', copied
@@ -509,7 +616,7 @@ $FF $FF $FF $FF $FF $FF $FF $FF #143 udg! #128 udg> 8 erase
 ( set-udg get-udg type-udg )
 
 
-[unneeded] set-udg ?( need os-udg
+unneeding set-udg ?( need os-udg
 
 code set-udg ( a -- ) E1 c, 22 c, os-udg , jpnext, end-code ?)
   \ pop hl
@@ -518,7 +625,7 @@ code set-udg ( a -- ) E1 c, 22 c, os-udg , jpnext, end-code ?)
 
   \ doc{
   \
-  \ set-udg ( a -- )
+  \ set-udg ( a -- ) "set-u-d-g"
   \
   \ Set address _a_ as the the current UDG set (characters
   \ 0..255), by changing the system variable `os-udg`.  _a_
@@ -528,7 +635,7 @@ code set-udg ( a -- ) E1 c, 22 c, os-udg , jpnext, end-code ?)
   \
   \ }doc
 
-[unneeded] get-udg ?( need os-udg
+unneeding get-udg ?( need os-udg
 
 code get-udg ( -- a ) 2A c, os-udg , E5 c, jpnext, end-code ?)
   \ ld hl, (sys_udg)
@@ -537,7 +644,7 @@ code get-udg ( -- a ) 2A c, os-udg , E5 c, jpnext, end-code ?)
 
   \ doc{
   \
-  \ get-udg ( -- a )
+  \ get-udg ( -- a ) "get-u-d-g"
   \
   \ Get address _a_ of the current UDG set (characters
   \ 0..255), by fetching the system variable `os-udg`.  _a_
@@ -547,13 +654,13 @@ code get-udg ( -- a ) 2A c, os-udg , E5 c, jpnext, end-code ?)
   \
   \ }doc
 
-[unneeded] type-udg
+unneeding type-udg
 
 ?\ : type-udg ( ca len -- ) bounds ?do i c@ emit-udg loop  ;
 
   \ doc{
   \
-  \ type-udg ( ca len -- )
+  \ type-udg ( ca len -- ) "type-u-d-g"
   \
   \ If _len_ is greater than zero, display the UDG character
   \ string _ca len_. All characters of the string are printed
@@ -565,7 +672,7 @@ code get-udg ( -- a ) 2A c, os-udg , E5 c, jpnext, end-code ?)
 
 ( display-char-bitmap_ )
 
-[unneeded] display-char-bitmap_ ?(
+unneeding display-char-bitmap_ ?(
 
 need assembler need xy>scra_
 
@@ -593,7 +700,7 @@ create display-char-bitmap_ ( -- a ) asm
 
   \ doc{
   \
-  \ display-char-bitmap_ ( -- a )
+  \ display-char-bitmap_ ( -- a ) "display-char-bitmap-underscore"
   \
   \ Return address _a_ of a Z80 routine that displays
   \ the bitmap of a character at given cursor coordinates.
@@ -613,7 +720,7 @@ create display-char-bitmap_ ( -- a ) asm
   \ Alternative version that uses the version of
   \ `xy>scra_` that does not use the BC register.
 
-[unneeded] display-char-bitmap_ ?(
+unneeding display-char-bitmap_ ?(
 
 need assembler need xy>scra_
 
@@ -659,7 +766,7 @@ create display-char-bitmap_ ( -- a ) asm
 
   \ XXX UNDER DEVELOPMENT
 
-[unneeded] at-xy-display-udg ?(
+unneeding at-xy-display-udg ?(
 
 need assembler need display-char-bitmap_ need os-udg
 
@@ -696,7 +803,7 @@ unused code at-xy-display-udg ( c x y -- )
 
   \ doc{
   \
-  \ at-xy-display-udg ( c x y -- )
+  \ at-xy-display-udg ( c x y -- ) "at-x-y-display-u-d-g"
   \
   \ Display UDG _c_ at cursor coordinates _x y_. This is much
   \ faster than using `at-xy` and `emit-udg`, because no ROM
@@ -708,7 +815,7 @@ unused code at-xy-display-udg ( c x y -- )
   \
   \ }doc
 
-[unneeded] udg-at-xy-display ?(
+unneeding udg-at-xy-display ?(
 
 need assembler need display-char-bitmap_ need os-udg
 
@@ -743,7 +850,7 @@ unused code udg-at-xy-display ( x y c -- )
 
   \ doc{
   \
-  \ udg-at-xy-display ( x y c -- )
+  \ udg-at-xy-display ( x y c -- ) "u-d-g-at-x-y-display"
   \
   \ Display UDG _c_ (0..255) at cursor coordinates _x y_. This
   \ is much faster than a combination of `at-xy` and
@@ -1087,5 +1194,17 @@ exx, jpnext, end-code
   \
   \ 2017-12-10: Update to `a push,` and `a pop,`, after the
   \ change in the assembler.
+  \
+  \ 2018-01-06: Add prototype of `,udg-block`.
+  \
+  \ 2018-01-07: Add `/udg+`. Improve documentation.
+  \
+  \ 2018-01-08: Improve and factor `udg-block`. Finish
+  \ `,udg-block`.  Improve documentation.
+  \
+  \ 2018-02-17: Improve documentation: add pronunciation to
+  \ words that need it.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

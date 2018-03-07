@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201712110053
+  \ Last modified: 201803062301
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -14,7 +14,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -23,9 +23,9 @@
   \ retain every copyright, credit and authorship notice, and
   \ this license.  There is no warranty.
 
-( 2nip pick roll )
+( 2nip pick unpick roll )
 
-[unneeded] 2nip ?( code 2nip ( x1 x2 x3 x4 -- x3 x4 )
+unneeding 2nip ?( code 2nip ( x1 x2 x3 x4 -- x3 x4 )
   E1 c, D1 c, F1 c, F1 c, D5 c, E5 c, jpnext, end-code ?)
     \ pop hl
     \ pop de
@@ -47,7 +47,7 @@
   \
   \ }doc
 
-[unneeded] pick ?(
+unneeding pick ?(
 code pick ( x#u .. x#1 x#0 u -- x#u .. x#1 x#0 x#u )
   E1 c,  29 c,  39 c,  C3 c, fetchhl , end-code ?)
     \ pop hl
@@ -59,11 +59,33 @@ code pick ( x#u .. x#1 x#0 u -- x#u .. x#1 x#0 x#u )
   \
   \ pick ( x#u .. x#1 x#0 u -- x#u .. x#1 x#0 x#u )
   \
-  \ See: `roll`, `rot`.
+  \ Remove _u_ copy the _x#u_ to the top of the stack.  ``0
+  \ pick`` is equivalent to `dup` and ``1 pick`` is equivalent
+  \ to `over`.
+  \
+  \ Origin: Forth-83 (Required Word Set), Forth-94 (CORE EXT),
+  \ Forth-2012 (CORE EXT).
+  \
+  \ See: `unpick`, `roll`, `rot`.
   \
   \ }doc
 
-[unneeded] roll ?( need assembler need unresolved need >amark
+unneeding unpick ?\ : unpick ( x u -- ) 2+ cells sp@ + ! ;
+
+  \ doc{
+  \
+  \ unpick ( x#u .. x#1 x#0 x u -- x .. x#1 x#0 )
+  \
+  \ Remove _x_ and _u_. Replace _x#u_ with _x_.  ``0 unpick``
+  \ is equivalent to `nip` (but much slower).
+  \
+  \ See: `pick`.
+  \
+  \ Origin: LaForth's ``put``.
+  \
+  \ }doc
+
+unneeding roll ?( need assembler need unresolved need >amark
 
 code roll ( x#u x#u-1 .. x#0 u -- x#u-1 .. x#0 x#u )
 
@@ -113,11 +135,12 @@ code roll ( x#u x#u-1 .. x#0 u -- x#u-1 .. x#0 x#u )
   \
   \ }doc
 
-( 3drop 4drop 3dup )
+( 3drop 4drop 3dup 4dup )
 
-[unneeded] 3drop ?(
+unneeding 3drop ?(
+
 code 3drop ( x1 x2 x3 -- )
-  E1 c,  E1 c,  E1 c,  jpnext, end-code ?)
+ E1 c, E1 c, E1 c, jpnext, end-code ?)
     \ pop hl
     \ pop hl
     \ pop hl
@@ -127,11 +150,12 @@ code 3drop ( x1 x2 x3 -- )
   \
   \ 3drop ( x1 x2 x3 -- )
   \
-  \ See: `drop`, `2drop`, `4drop`.
+  \ See: `3dup`, `drop`, `2drop`, `4drop`.
   \
   \ }doc
 
-[unneeded] 4drop ?(
+unneeding 4drop ?(
+
 code 4drop ( x1 x2 x3 x4 -- )
   E1 c,  E1 c,  E1 c,  E1 c,  jpnext, end-code ?)
     \ pop hl
@@ -144,15 +168,15 @@ code 4drop ( x1 x2 x3 x4 -- )
   \
   \ 4drop ( x1 x2 x3 x4 -- )
   \
-  \ See: `drop`, `2drop`, `3drop`.
+  \ See: `4dup`, `drop`, `2drop`, `3drop`.
   \
   \ }doc
 
-[unneeded] 3dup ?(
+unneeding 3dup ?(
+
 code 3dup ( x1 x2 x3 -- x1 x2 x3 x1 x2 x3 )
-  D9 c,
+  D9 c, C1 c, D1 c, E1 c, E5 c, D5 c, C5 c, E5 c, D5 c, C5 c,
     \ exx
-  C1 c,  D1 c,  E1 c,  E5 c,  D5 c,  C5 c,  E5 c,  D5 c,  C5 c,
     \ pop bc
     \ pop de
     \ pop hl
@@ -162,7 +186,7 @@ code 3dup ( x1 x2 x3 -- x1 x2 x3 x1 x2 x3 )
     \ push hl
     \ push de
     \ push bc
-  D9 c,  jpnext, end-code ?)
+  D9 c, jpnext, end-code ?)
     \ exx
     \ _jp_next
 
@@ -177,13 +201,43 @@ code 3dup ( x1 x2 x3 -- x1 x2 x3 x1 x2 x3 )
   \ : 3dup ( x1 x2 x3 -- x1 x2 x3 x1 x2 x3 ) dup 2over rot ;
   \ ----
 
-  \ See: `dup`, `2dup`.
+  \ See: `3drop`, `dup`, `2dup`, `4dup`.
+  \
+  \ }doc
+
+unneeding 4dup ?(
+
+code 4dup ( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2 x3 x4 )
+  D9 c, F1 c, C1 c, D1 c, E1 c,
+    \ exx
+    \ pop af
+    \ pop bc
+    \ pop de
+    \ pop hl
+  E5 c, D5 c, C5 c, F5 c, E5 c, D5 c, C5 c, F5 c,
+    \ push hl
+    \ push de
+    \ push bc
+    \ push af
+    \ push hl
+    \ push de
+    \ push bc
+    \ push af
+  D9 c, jpnext, end-code ?)
+    \ exx
+    \ _jp_next
+
+  \ doc{
+  \
+  \ 4dup ( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2 x3 x4 )
+  \
+  \ See: `4drop`, `dup`, `2dup`, `3dup`.
   \
   \ }doc
 
 ( 2rot swapped )
 
-[unneeded] 2rot ?( need roll
+unneeding 2rot ?( need roll
 
 : 2rot ( x1 x2 x3 x4 x5 x6 -- x3 x4 x5 x6 x1 x2 )
   5 roll 5 roll ; ?)
@@ -194,7 +248,7 @@ code 3dup ( x1 x2 x3 -- x1 x2 x3 x1 x2 x3 )
   \
   \ }doc
 
-[unneeded] swapped ?(
+unneeding swapped ?(
 
 : swapped ( i*x n1 n2 -- j*x )
   >r 1+ cells sp@ +     ( i*x a1 ) ( R: n2 )
@@ -235,7 +289,7 @@ code 3dup ( x1 x2 x3 -- x1 x2 x3 x1 x2 x3 )
 
 ( nup drup dip 0dup -dup )
 
-[unneeded] nup ?( code nup ( x1 x2 -- x1 x1 x2 )
+unneeding nup ?( code nup ( x1 x2 -- x1 x1 x2 )
   E1 c,  D1 c,  D5 c,  D5 c, E5 c, jpnext, end-code ?)
     \ pop hl
     \ pop de
@@ -261,7 +315,7 @@ code 3dup ( x1 x2 x3 -- x1 x2 x3 x1 x2 x3 )
   \
   \ }doc
 
-[unneeded] drup ?( code drup ( x1 x2 -- x1 x1 )
+unneeding drup ?( code drup ( x1 x2 -- x1 x1 )
   D1 c,  E1 c,  E5 c,  E5 c,  jpnext, end-code ?)
     \ pop de
     \ pop hl
@@ -284,7 +338,7 @@ code 3dup ( x1 x2 x3 -- x1 x2 x3 x1 x2 x3 )
   \
   \ }doc
 
-[unneeded] dip ?( code dip ( x1 x2 -- x2 x2 )
+unneeding dip ?( code dip ( x1 x2 -- x2 x2 )
   E1 c, D1 c, E5 c, E5 c,  jpnext, end-code ?)
     \ pop hl
     \ pop de
@@ -307,7 +361,7 @@ code 3dup ( x1 x2 x3 -- x1 x2 x3 x1 x2 x3 )
   \
   \ }doc
 
-[unneeded] 0dup ?( code 0dup ( x -- x | 0 0 )
+unneeding 0dup ?( code 0dup ( x -- x | 0 0 )
   E1 c,  78 04 + c,  B0 05 + c,
     \ pop hl
     \ ld a,h
@@ -328,7 +382,7 @@ code 3dup ( x1 x2 x3 -- x1 x2 x3 x1 x2 x3 )
   \
   \ }doc
 
-[unneeded] -dup ?( code -dup ( x -- x | x x )
+unneeding -dup ?( code -dup ( x -- x | x x )
   E1 c,  CB c, 7C c,  C2 c, pushhl , E5 c, E5 c, jpnext,
   end-code ?)
     \ pop hl
@@ -350,7 +404,7 @@ code 3dup ( x1 x2 x3 -- x1 x2 x3 x1 x2 x3 )
 
 ( ndrop 2ndrop >true >false 2>true 2>false )
 
-[unneeded] ndrop ?(
+unneeding ndrop ?(
 
 code ndrop ( x1..xn n -- )
   E1 c, 29 c, EB c, 21 c, 0000 , 39 c, 19 c, F9 c,
@@ -373,7 +427,7 @@ code ndrop ( x1..xn n -- )
   \
   \ }doc
 
-[unneeded] 2ndrop ?(
+unneeding 2ndrop ?(
 
 code 2ndrop ( dx1..dxn n -- )
 
@@ -398,7 +452,7 @@ code 2ndrop ( dx1..dxn n -- )
   \
   \ }doc
 
-[unneeded] >true [unneeded] 2>true and ?(
+unneeding >true unneeding 2>true and ?(
 
 code 2>true ( x1 x2 -- true ) E1 c, end-code
   \ pop hl
@@ -428,7 +482,7 @@ code >true ( x -- true ) E1 c, ' true jp, end-code ?)
   \
   \ }doc
 
-[unneeded] >false [unneeded] 2>false and ?(
+unneeding >false unneeding 2>false and ?(
 
 code 2>false ( x1 x2 -- false ) E1 c, end-code
   \ pop hl
@@ -521,5 +575,10 @@ code >false ( x -- false ) E1 c, ' false jp, end-code ?)
   \ `_jp_next` in Z80 comments.
   \
   \ 2017-12-11: Improve stack comments of `roll` and `pick`.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
+  \
+  \ 2018-03-06: Add `unpick`. Improve documentation. Add
+  \ `4dup`.
 
   \ vim: filetype=soloforth

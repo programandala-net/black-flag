@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201712101955
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -14,7 +14,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -25,7 +25,7 @@
 
 ( ud.r u.r ud. holds .00 .0000 )
 
-[unneeded] ud.r
+unneeding ud.r
 ?\ : ud.r ( ud n -- ) >r <# #s #> r> over - 0 max spaces type ;
 
   \ Credit:
@@ -34,7 +34,7 @@
 
   \ doc{
   \
-  \ ud.r ( ud n -- )
+  \ ud.r ( ud n -- ) "u-d-dot-r"
   \
   \ Display _ud_ right aligned in a field _n_ characters wide.
   \ If the number of characters required to display _ud_ is
@@ -45,7 +45,7 @@
   \
   \ }doc
 
-[unneeded] u.r ?( need u>ud need ud.r
+unneeding u.r ?( need u>ud need ud.r
 : u.r ( u n -- ) >r u>ud r> ud.r ; ?)
 
   \ Credit:
@@ -54,7 +54,7 @@
 
   \ doc{
   \
-  \ u.r ( u n -- )
+  \ u.r ( u n -- ) "u-dot-r"
   \
   \ Display _u_ right aligned in a field _n_ characters wide.
   \ If the number of characters required to display _u_ is
@@ -73,7 +73,7 @@
   \
   \ }doc
 
-[unneeded] ud. ?( need ud.r
+unneeding ud. ?( need ud.r
 : ud. ( ud -- ) 0 ud.r space ; ?)
 
   \ Credit:
@@ -82,7 +82,7 @@
 
   \ doc{
   \
-  \ ud. ( ud -- )
+  \ ud. ( ud -- ) "u-d-dot"
   \
   \ Display an usigned double number _ud_.
   \
@@ -90,7 +90,7 @@
   \
   \ }doc
 
-[unneeded] holds ?(
+unneeding holds ?(
 
 : holds ( ca len -- )
   begin  dup  while  1- 2dup + c@ hold  repeat 2drop ; ?)
@@ -111,11 +111,11 @@
   \
   \ }doc
 
-[unneeded] .00 ?\ : .00 ( +n -- ) s>d <# # # #> type ;
+unneeding .00 ?\ : .00 ( +n -- ) s>d <# # # #> type ;
 
   \ doc{
   \
-  \ .00 ( +n -- )
+  \ .00 ( +n -- ) "dot-zero-zero"
   \
   \ Display _+n_ with two digits.
   \
@@ -123,11 +123,11 @@
   \
   \ }doc
 
-[unneeded] .0000 ?\ : .0000 ( +n -- ) s>d <# # # # # #> type ;
+unneeding .0000 ?\ : .0000 ( +n -- ) s>d <# # # # # #> type ;
 
   \ doc{
   \
-  \ .0000 ( +n -- )
+  \ .0000 ( +n -- ) "dot-zero-zero-zero-zero"
   \
   \ Display _+n_ with four digits.
   \
@@ -141,15 +141,15 @@
   \
   \ Code modified from eForth.
 
-[unneeded] base.
+unneeding base.
 ?\ : base. ( -- ) does> c@ base @ >r base ! u. r> base ! ;
 
-[unneeded] bin.
+unneeding bin.
 ?\ need base.  create bin. ( n -- ) #2 c, base.
 
   \ doc{
   \
-  \ bin. ( n -- )
+  \ bin. ( n -- ) "bin-dot"
   \
   \ Display _n_ as an unsigned binary number, followed by
   \ one space.
@@ -158,12 +158,12 @@
   \
   \ }doc
 
-[unneeded] hex.
+unneeding hex.
 ?\ need base.  create hex. ( n -- ) #16 c, base.
 
   \ doc{
   \
-  \ hex. ( n -- )
+  \ hex. ( n -- ) "hex-dot"
   \
   \ Display _n_ as an unsigned hexadecimal number, followed by
   \ one space.
@@ -172,7 +172,7 @@
   \
   \ }doc
 
-  \ [unneeded] dec.
+  \ unneeding dec.
   \ ?\ need base.  create dec. ( n -- ) #10 c, base.
   \ XXX OLD -- `dec.` is in the kernel
 
@@ -182,13 +182,13 @@
   \
   \ Code partly adapted from lina.
 
-[unneeded] base' [unneeded] base> and ?(
+unneeding base' unneeding base> and ?(
 
 variable base'  : base> ( -- ) base' @ base ! ; ?)
 
   \ doc{
   \
-  \ base' ( -- a )
+  \ base' ( -- a ) "base-tick"
   \
   \ A temporary variable used by `<hex`, `hex>`, `<bin` and
   \ `bin>`.  to store the current value of `base`.
@@ -199,19 +199,19 @@ variable base'  : base> ( -- ) base' @ base ! ; ?)
 
   \ doc{
   \
-  \ base> ( -- )
+  \ base> ( -- ) "base-from"
   \
   \ Restore the previous value of `base` from `base'`.
   \ ``base>`` is executed by `bin>` and `hex>`.
   \
   \ }doc
 
-[unneeded] (d.
+unneeding (d.
 ?\ : (d. ( d n -- ca len ) <# 0 ?do  #  loop  #> ;
 
   \ doc{
   \
-  \ (d. ( d n -- ca len )
+  \ (d. ( d n -- ca len ) "paren-d-dot"
   \
   \ Convert _d_ to an unsigned number in the current `base`,
   \ with _n_ digits, as string _ca len_.
@@ -220,12 +220,12 @@ variable base'  : base> ( -- ) base' @ base ! ; ?)
   \
   \ }doc
 
-[unneeded] <hex [unneeded] hex> and ?( need base' need base>
+unneeding <hex unneeding hex> and ?( need base' need base>
 : <hex ( -- ) base @ base' ! hex ; : hex> ( -- ) base> ; ?)
 
   \ doc{
   \
-  \ <hex ( -- )
+  \ <hex ( -- ) "start-hex"
   \
   \ Start a code zone where hexadecimal radix is the default,
   \ by save the current value of `base` to `base'` and
@@ -239,7 +239,7 @@ variable base'  : base> ( -- ) base' @ base ! ; ?)
 
   \ doc{
   \
-  \ hex> ( -- )
+  \ hex> ( -- ) "end-hex"
   \
   \ End a code zone where hexadecimal radix is the default, by
   \ restoring the value of `base` from `base'`.  The zone was
@@ -247,12 +247,12 @@ variable base'  : base> ( -- ) base' @ base ! ; ?)
   \
   \ }doc
 
-[unneeded] (dhex. dup ?\ need <hex need (d.
+unneeding (dhex. dup ?\ need <hex need (d.
 ?\ : (dhex. ( d n -- ) <hex (d. hex> type space ;
 
   \ doc{
   \
-  \ (dhex. ( d n -- )
+  \ (dhex. ( d n -- ) "paren-d-hex-dot"
   \
   \ Display _d_ as an unsigned hexadecimal number with _n_ digits.
   \
@@ -260,12 +260,12 @@ variable base'  : base> ( -- ) base' @ base ! ; ?)
   \
   \ }doc
 
-[unneeded] 32hex.
+unneeding 32hex.
 ?\ need (dhex.  : 32hex. ( d -- ) 8 (dhex. ;
 
   \ doc{
   \
-  \ 32hex. ( d -- )
+  \ 32hex. ( d -- ) "32-hex-dot"
   \
   \ Display _d_ as an unsigned 32-bit hexadecimal number.
   \
@@ -273,12 +273,12 @@ variable base'  : base> ( -- ) base' @ base ! ; ?)
   \
   \ }doc
 
-[unneeded] 16hex.
+unneeding 16hex.
 ?\ need (dhex.  : 16hex. ( n -- ) s>d 4 (dhex. ;
 
   \ doc{
   \
-  \ 16hex. ( d -- )
+  \ 16hex. ( d -- ) "16-hex-dot"
   \
   \ Display _d_ as an unsigned 16-bit hexadecimal number.
   \
@@ -286,12 +286,12 @@ variable base'  : base> ( -- ) base' @ base ! ; ?)
   \
   \ }doc
 
-[unneeded] 8hex.
+unneeding 8hex.
 ?\ need (dhex.  : 8hex. ( b -- ) s>d 2 (dhex. ;
 
   \ doc{
   \
-  \ 8hex. ( d -- )
+  \ 8hex. ( d -- ) "8-hex-dot"
   \
   \ Display _d_ as an unsigned 8-bit hexadecimal number.
   \
@@ -305,7 +305,7 @@ variable base'  : base> ( -- ) base' @ base ! ; ?)
   \
   \ Code inspired by lina.
 
-[unneeded] binary ?\ : binary ( -- ) 2 base ! ;
+unneeding binary ?\ : binary ( -- ) 2 base ! ;
 
   \ doc{
   \
@@ -317,13 +317,13 @@ variable base'  : base> ( -- ) base' @ base ! ; ?)
   \
   \ }doc
 
-[unneeded] <bin [unneeded] bin> and ?(
+unneeding <bin unneeding bin> and ?(
 need base' need base> need binary
 : <bin ( -- ) base @ base' ! binary ; : bin> ( -- ) base> ; ?)
 
   \ doc{
   \
-  \ <bin ( -- )
+  \ <bin ( -- ) "start-bin"
   \
   \ Start a code zone where binary radix is the default, by
   \ saving the current value of `base` to `base'` and executing
@@ -335,7 +335,7 @@ need base' need base> need binary
 
   \ doc{
   \
-  \ bin> ( -- )
+  \ bin> ( -- ) "end-bin"
   \
   \ End a code zone where binary radix is the default, by
   \ restoring the value of `base` from `base'`.  The zone was
@@ -343,13 +343,13 @@ need base' need base> need binary
   \
   \ }doc
 
-[unneeded] (dbin. dup
+unneeding (dbin. dup
 ?\ need <bin need (d.
 ?\ : (dbin. ( d n -- ) <bin (d. bin> type space ;
 
   \ doc{
   \
-  \ (dbin. ( d n -- )
+  \ (dbin. ( d n -- ) "paren-d-bin-dot"
   \
   \ Display _d_ as an unsigned binary number with _n_ digits.
   \
@@ -357,12 +357,12 @@ need base' need base> need binary
   \
   \ }doc
 
-[unneeded] 32bin.
+unneeding 32bin.
 ?\ need (dbin.  : 32bin. ( d -- ) #32 (dbin. ;
 
   \ doc{
   \
-  \ 32bin. ( d -- )
+  \ 32bin. ( d -- ) "32-bin-dot"
   \
   \ Display _d_ as an unsigned 32-bit binary number.
   \
@@ -370,12 +370,12 @@ need base' need base> need binary
   \
   \ }doc
 
-[unneeded] 16bin.
+unneeding 16bin.
 ?\ need (dbin.  : 16bin. ( n -- ) s>d #16 (dbin. ;
 
   \ doc{
   \
-  \ 16bin. ( n -- )
+  \ 16bin. ( n -- ) "16-bin-dot"
   \
   \ Display _n_ as an unsigned 16-bit binary number.
   \
@@ -383,12 +383,12 @@ need base' need base> need binary
   \
   \ }doc
 
-[unneeded] 8bin.
+unneeding 8bin.
 ?\ need (dbin.  : 8bin. ( b -- ) s>d  #8 (dbin. ;
 
   \ doc{
   \
-  \ 8bin. ( n -- )
+  \ 8bin. ( n -- ) "8-bin-dot"
   \
   \ Display _n_ as an unsigned 8-bit binary number.
   \
@@ -430,5 +430,10 @@ need base' need base> need binary
   \
   \ 2017-12-10: Move `.00` and `.0000` from <time.fs>.
   \ Document them.
+  \
+  \ 2018-02-04: Improve documentation: add pronunciation to
+  \ words that need it.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

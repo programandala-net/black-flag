@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201712111851
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -14,7 +14,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -25,9 +25,12 @@
 
 ( cvalue value 2value to )
 
-[unneeded] cvalue ?( need to
+unneeding cvalue ?( need to need ;code
 
-: cvalue ( c "name"  -- ) create 0 c, c, does> 1+ c@ ; ?)
+: cvalue ( c "name"  -- )
+  create 0 c, c, ;code 23 c, ' c@ 1+ jp, end-code ?)
+                   \ inc hl
+                   \ jp c_fetch.hl
 
   \ doc{
   \
@@ -41,9 +44,12 @@
   \
   \ }doc
 
-[unneeded] value ?( need to
+unneeding value ?( need to need ;code
 
-: value ( n "name"  -- ) create 1 c, , does> 1+ @ ; ?)
+: value ( n "name"  -- )
+  create 1 c, , ;code 23 c, ' @ 1+ jp, end-code ?)
+                  \ inc hl
+                  \ jp fetch.hl
 
   \ doc{
   \
@@ -59,9 +65,12 @@
   \
   \ }doc
 
-[unneeded] 2value ?( need to
+unneeding 2value ?( need to
 
-: 2value ( x1 x2 "name"  -- ) create 2 c, 2, does> 1+ 2@ ; ?)
+: 2value ( x1 x2 "name"  -- )
+  create 2 c, 2, ;code 23 c, ' 2@ 1+ jp, end-code ?)
+                   \ inc hl
+                   \ jp two_fetch.hl
 
   \ doc{
   \
@@ -77,7 +86,7 @@
   \
   \ }doc
 
-[unneeded] to ?( need >body need array>
+unneeding to ?( need >body need array>
 
 create to> ' c! , ' ! , ' 2! ,
 
@@ -115,6 +124,8 @@ create to> ' c! , ' ! , ' 2! ,
   \
   \ Origin: Forth-94 (CORE EXT), Forth-2012 (CORE EXT).
   \
+  \ See: `!>`, `c!>`, `2!>`.
+  \
   \ }doc
 
   \ ===========================================================
@@ -144,5 +155,12 @@ create to> ' c! , ' ! , ' 2! ,
   \ 2017-05-15: Improve documentation.
   \
   \ 2017-12-11: Fix and improve needing of `to`.
+  \
+  \ 2018-01-20: Improve documentation.
+  \
+  \ 2018-01-24: Rewrite the run-time part of `cvalue`, `value`
+  \ and `2value` in Z80.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

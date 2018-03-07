@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201709091154
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -14,7 +14,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -25,12 +25,12 @@
 
 ( ?--> update flush thru )
 
-[unneeded] ?-->
+unneeding ?-->
 ?\ : ?--> ( f -- ) if  postpone -->  then ; immediate
 
   \ doc{
   \
-  \ ?--> ( f -- )
+  \ ?--> ( f -- ) "question-next-block"
   \
   \ If _f_ is not false, continue interpretation on the next
   \ sequential block.  parse area. ``?-->`` is used for
@@ -42,7 +42,7 @@
   \
   \ }doc
 
-[unneeded] update
+unneeding update
 ?\ : update ( -- ) disk-buffer @ $8000 or disk-buffer ! ;
 
   \ doc{
@@ -59,7 +59,7 @@
   \
   \ }doc
 
-[unneeded] flush
+unneeding flush
 ?\ : flush ( -- ) save-buffers empty-buffers ;
 
   \ doc{
@@ -76,7 +76,7 @@
   \
   \ }doc
 
-[unneeded] thru
+unneeding thru
 ?\ : thru ( block1 block2 -- ) 1+ swap ?do  i load  loop ;
   \ XXX FIXME -- when block1>block2
 
@@ -97,7 +97,7 @@
 
 ( continued ?load reload loads +load +thru loader )
 
-[unneeded] continued ?\ : continued ( u -- ) ?loading (load) ;
+unneeding continued ?\ : continued ( u -- ) ?loading (load) ;
 
   \ doc{
   \
@@ -112,7 +112,7 @@
   \
   \ }doc
 
-[unneeded] ?load
+unneeding ?load
 ?\ : ?load ( block f -- ) if  dup load  then  drop ;
 
   \ Credit:
@@ -121,7 +121,7 @@
 
   \ doc{
   \
-  \ ?load ( u f -- )
+  \ ?load ( u f -- ) "question-load"
   \
   \ Load block _u_ if flag _f_ is true, else do nothing.
   \
@@ -131,7 +131,7 @@
   \
   \ }doc
 
-[unneeded] reload
+unneeding reload
 ?\ : reload ( -- ) empty-buffers  lastblk @ load ;
 
   \ doc{
@@ -144,7 +144,7 @@
   \
   \ }doc
 
-[unneeded] loads ?\ : loads ( u n -- ) bounds ?do i load loop ;
+unneeding loads ?\ : loads ( u n -- ) bounds ?do i load loop ;
 
   \ Credit:
   \
@@ -160,12 +160,12 @@
   \
   \ }doc
 
-[unneeded] +load  [unneeded] +thru  and
+unneeding +load  unneeding +thru  and
 ?\ : +load ( n -- ) blk @ + load ;
 
   \ doc{
   \
-  \ +load ( n -- )
+  \ +load ( n -- ) "plus-load"
   \
   \ Load the block that is _n_ blocks from the current one.
   \
@@ -173,12 +173,12 @@
   \
   \ }doc
 
-[unneeded] +thru
+unneeding +thru
 ?\ : +thru ( u1 u2 -- ) 1+ swap ?do  i +load  loop ;
 
   \ doc{
   \
-  \ +thru ( u1 u2 -- )
+  \ +thru ( u1 u2 -- ) "plus-thru"
   \
   \ Load consecutively the blocks that are _u1_ blocks through
   \ _u2_ blocks from the current one.
@@ -187,7 +187,7 @@
   \
   \ }doc
 
-[unneeded] loader
+unneeding loader
 ?\ : loader ( u "name" -- ) create , does> ( dfa ) @ load ;
 
   \ doc{
@@ -205,12 +205,12 @@
 
 ( lineblock>source lineload load-program )
 
-[unneeded] lineblock>source [unneeded] lineload and
+unneeding lineblock>source unneeding lineload and
 ?\ : lineblock>source ( n u -- ) blk !  c/l * >in ! ;
 
   \ doc{
   \
-  \ lineblock>source ( n u -- )
+  \ lineblock>source ( n u -- ) "line-block-to-source"
   \
   \ Set block _u_ as the current source, starting from its
   \ line _n_.
@@ -219,7 +219,7 @@
   \
   \ }doc
 
-[unneeded] lineload ?(
+unneeding lineload ?(
 
 : lineload ( n u -- )
   dup 0= #-259 ?throw
@@ -227,7 +227,7 @@
 
   \ doc{
   \
-  \ lineload ( n u -- )
+  \ lineload ( n u -- ) "line-load"
   \
   \ Begin interpretation at line _n_ of block _u_.
   \
@@ -237,7 +237,7 @@
   \
   \ }doc
 
-[unneeded] load-program ?( need locate
+unneeding load-program ?( need locate
 
 variable loading-program
 
@@ -278,7 +278,7 @@ variable loading-program
 
   \ doc{
   \
-  \ (load-program ( u -- )
+  \ (load-program ( u -- ) "paren-load-program"
   \
   \ Load a program, i.e. a set of blocks that are loaded as a
   \ whole. The blocks of a program don't have block headers.
@@ -373,5 +373,10 @@ variable loading-program
   \ of error. Improve documentation.
   \
   \ 2017-09-09: Update notation "pfa" to the standard "dfa".
+  \
+  \ 2018-02-05: Improve documentation: add pronunciation to
+  \ words that need it.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

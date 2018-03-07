@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201709091154
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -14,7 +14,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -83,7 +83,7 @@
 
 ( black blue red magenta green cyan yellow white contrast )
 
-[unneeded] black ?\ 0 cconstant black
+unneeding black ?\ 0 cconstant black
 
   \ doc{
   \
@@ -93,11 +93,12 @@
   \ black color.
   \
   \ See: `blue`, `red`, `magenta`, `green`,
-  \ `cyan`, `yellow`, `white`, `contrast`, `papery`.
+  \ `cyan`, `yellow`, `white`, `contrast`, `papery`,
+  \ `inversely`.
   \
   \ }doc
 
-[unneeded] blue ?\ 1 cconstant blue
+unneeding blue ?\ 1 cconstant blue
 
   \ doc{
   \
@@ -107,11 +108,11 @@
   \ blue color.
   \
   \ See: `black`, `red`, `magenta`, `green`, `cyan`,
-  \ `yellow`, `white`, `contrast`, `papery`.
+  \ `yellow`, `white`, `contrast`, `papery`, `inversely`.
   \
   \ }doc
 
-[unneeded] red ?\ 2 cconstant red
+unneeding red ?\ 2 cconstant red
 
   \ doc{
   \
@@ -121,11 +122,11 @@
   \ red color.
   \
   \ See: `black`, `blue`, `magenta`, `green`, `cyan`,
-  \ `yellow`, `white`, `contrast`, `papery`.
+  \ `yellow`, `white`, `contrast`, `papery`, `inversely`.
   \
   \ }doc
 
-[unneeded] magenta ?\ 3 cconstant magenta
+unneeding magenta ?\ 3 cconstant magenta
 
   \ doc{
   \
@@ -135,11 +136,11 @@
   \ magenta color.
   \
   \ See: `black`, `blue`, `red`, `green`, `cyan`,
-  \ `yellow`, `white`, `contrast`, `papery`.
+  \ `yellow`, `white`, `contrast`, `papery`, `inversely`.
   \
   \ }doc
 
-[unneeded] green ?\ 4 cconstant green
+unneeding green ?\ 4 cconstant green
 
   \ doc{
   \
@@ -149,11 +150,11 @@
   \ green color.
   \
   \ See: `black`, `blue`, `red`, `magenta`, `cyan`,
-  \ `yellow`, `white`, `contrast`, `papery`.
+  \ `yellow`, `white`, `contrast`, `papery`, `inversely`.
   \
   \ }doc
 
-[unneeded] cyan ?\ 5 cconstant cyan
+unneeding cyan ?\ 5 cconstant cyan
 
   \ doc{
   \
@@ -163,11 +164,11 @@
   \ cyan color.
   \
   \ See: `black`, `blue`, `red`, `magenta`, `green`,
-  \ `yellow`, `white`, `contrast`, `papery`.
+  \ `yellow`, `white`, `contrast`, `papery`, `inversely`.
   \
   \ }doc
 
-[unneeded] yellow ?\ 6 cconstant yellow
+unneeding yellow ?\ 6 cconstant yellow
 
   \ doc{
   \
@@ -177,11 +178,11 @@
   \ yellow color.
   \
   \ See: `black`, `blue`, `red`, `magenta`, `green`,
-  \ `cyan`, `white`, `contrast`, `papery`.
+  \ `cyan`, `white`, `contrast`, `papery`, `inversely`.
   \
   \ }doc
 
-[unneeded] white ?\ 7 cconstant white
+unneeding white ?\ 7 cconstant white
 
   \ doc{
   \
@@ -191,11 +192,11 @@
   \ white color.
   \
   \ See: `black`, `blue`, `red`, `magenta`, `green`,
-  \ `cyan`, `yellow`, `contrast`, `papery`.
+  \ `cyan`, `yellow`, `contrast`, `papery`, `inversely`.
   \
   \ }doc
 
-[unneeded] contrast ?( need white need green
+unneeding contrast ?( need white need green
 
 : contrast ( b1 -- b1 ) green < white and ; ?)
 
@@ -208,13 +209,13 @@
   \ or `magenta`); _b2_ is `black` (0) if _b1_ is a light
   \ colour (`green`, `cyan`, `yellow` or `white`).
   \
-  \ See: `papery`.
+  \ See: `papery`, `inversely`.
   \
   \ }doc
 
 ( papery brighty flashy attr>paper attr>ink )
 
-[unneeded] papery ?( need 8* need alias
+unneeding papery ?( need 8* need alias
 
 ' 8* alias papery ( b1 -- b2 ) ?)
 
@@ -225,17 +226,13 @@
   \ Convert paper color _b1_ to its equivalent attribute _b2_.
   \
   \ ``papery`` is an alias of `8*`, which is written in Z80.
-  \ Its equivalent definition in Forth is the following:
 
-  \ ----
-  \ : papery ( b1 -- b2 ) 8 * ;
-  \ ----
-
-  \ See: `brighty`, `flashy`, `attr>paper`, `contrast`
+  \ See: `brighty`, `flashy`, `attr>paper`, `contrast,
+  \ `inversely`.
   \
   \ }doc
 
-[unneeded] brighty ?(
+unneeding brighty ?(
 
 code brighty ( b1 -- b2 )
   E1 c, CB c, C0 6 8 * + 5 + c, E5 c, jpnext, end-code ?)
@@ -257,11 +254,11 @@ code brighty ( b1 -- b2 )
   \ : brighty ( b1 -- b2 ) bright-mask or ;
   \ ----
 
-  \ See: `bright-mask`, `papery`, `flashy`.
+  \ See: `bright-mask`, `papery`, `flashy`, `inversely`.
   \
   \ }doc
 
-[unneeded] flashy ?(
+unneeding flashy ?(
 
 code flashy ( b1 -- b2 )
   E1 c, CB c, C0 7 8 * + 5 + c, E5 c, jpnext, end-code ?)
@@ -283,11 +280,11 @@ code flashy ( b1 -- b2 )
   \ : flashy ( b1 -- b2 ) flash-mask or ;
   \ ----
 
-  \ See: `flash-mask`, `papery`, `brighty`.
+  \ See: `flash-mask`, `papery`, `brighty`, `inversely`.
   \
   \ }doc
 
-[unneeded] attr>paper ?(
+unneeding attr>paper ?(
 
 code attr>paper ( b1 -- b2 )
   E1 c, 7D c, E6 c, %00111000 c,
@@ -317,7 +314,7 @@ code attr>paper ( b1 -- b2 )
   \
   \ }doc
 
-[unneeded] attr>ink ?(
+unneeding attr>ink ?(
 
 code attr>ink ( b1 -- b2 )
   E1 c, 7D c, E6 c, %111 c, pusha jp, end-code ?)
@@ -345,7 +342,7 @@ code attr>ink ( b1 -- b2 )
 
 ( attr@ attr! attr-mask@ attr-mask! )
 
-[unneeded] attr@ ?( need os-attr-t
+unneeding attr@ ?( need os-attr-t
 
 code attr@ ( -- b ) 3A c, os-attr-t , pusha jp, end-code ?)
   \ ld a,(sys_attr_t)
@@ -361,7 +358,7 @@ code attr@ ( -- b ) 3A c, os-attr-t , pusha jp, end-code ?)
   \
   \ }doc
 
-[unneeded] attr! ?( need os-attr-t
+unneeding attr! ?( need os-attr-t
 
 code attr! ( b -- )
   D1 c, 78 03 + c, 32 c, os-attr-t , jpnext, end-code ?)
@@ -386,7 +383,7 @@ code attr! ( b -- )
   \
   \ }doc
 
-[unneeded] attr-mask@ ?( need os-mask-t
+unneeding attr-mask@ ?( need os-mask-t
 
 code attr-mask@ ( -- b )
   3A c, os-mask-t , pusha jp, end-code ?)
@@ -403,7 +400,7 @@ code attr-mask@ ( -- b )
   \
   \ }doc
 
-[unneeded] attr-mask! ?( need os-mask-t
+unneeding attr-mask! ?( need os-mask-t
 
 code attr-mask! ( b -- )
   D1 c, 78 03 + c, 32 c, os-mask-t , jpnext, end-code ?)
@@ -427,7 +424,7 @@ code attr-mask! ( b -- )
   \
   \ }doc
 
-[unneeded] mask+attr>perm
+unneeding mask+attr>perm
 
 ?\ code mask+attr>perm ( -- ) $1CAD call, jpnext, end-code
   \ call rom_set_permanent_colors_0x1CAD
@@ -447,7 +444,7 @@ code attr-mask! ( b -- )
 
 ( mask+attr! mask+attr@ attr-setter mask+attr-setter )
 
-[unneeded] mask+attr! ?( need os-attr-t
+unneeding mask+attr! ?( need os-attr-t
 
 code mask+attr! ( b1 b2 -- )
   E1 c, D1 c, 60 03 + c, 22 c, os-attr-t , jpnext, end-code ?)
@@ -473,7 +470,7 @@ code mask+attr! ( b1 b2 -- )
   \
   \ }doc
 
-[unneeded] mask+attr@ ?( need os-attr-t
+unneeding mask+attr@ ?( need os-attr-t
 
 code mask+attr@ ( -- b1 b2 )
   26 c, 00 c, ED c, 5B c, os-attr-t , 68 02 + c, E5 c,
@@ -496,7 +493,7 @@ code mask+attr@ ( -- b1 b2 )
   \
   \ }doc
 
-[unneeded] attr-setter ?( need attr!
+unneeding attr-setter ?( need attr!
 
 : attr-setter ( b "name" -- )
   create c,  does> ( -- ) ( dfa ) c@ attr! ; ?)
@@ -512,7 +509,7 @@ code mask+attr@ ( -- b1 b2 )
   \
   \ }doc
 
-[unneeded] mask+attr-setter ?( need mask+attr!
+unneeding mask+attr-setter ?( need mask+attr!
 
 : mask+attr-setter ( b1 b2 "name" -- )
   create 2,  does> ( -- ) ( dfa ) 2@ mask+attr! ; ?)
@@ -531,7 +528,7 @@ code mask+attr@ ( -- b1 b2 )
 
 ( perm-attr@ perm-attr! perm-attr-mask@ perm-attr-mask! )
 
-[unneeded] perm-attr@ ?( need os-attr-p
+unneeding perm-attr@ ?( need os-attr-p
 
 code perm-attr@ ( -- b )
   3A c, os-attr-p , pusha jp, end-code ?)
@@ -552,7 +549,7 @@ code perm-attr@ ( -- b )
   \
   \ }doc
 
-[unneeded] perm-attr! ?( need os-attr-p
+unneeding perm-attr! ?( need os-attr-p
 
 code perm-attr! ( b -- )
   D1 c, 78 03 + c, 32 c, os-attr-p , jpnext, end-code ?)
@@ -580,7 +577,7 @@ code perm-attr! ( b -- )
   \
   \ }doc
 
-[unneeded] perm-attr-mask@ ?( need os-mask-p
+unneeding perm-attr-mask@ ?( need os-mask-p
 
 code perm-attr-mask@ ( -- b )
   3A c, os-mask-p , pusha jp, end-code ?)
@@ -601,7 +598,7 @@ code perm-attr-mask@ ( -- b )
   \
   \ }doc
 
-[unneeded] perm-attr-mask! ?( need os-mask-p
+unneeding perm-attr-mask! ?( need os-mask-p
 
 code perm-attr-mask! ( b -- )
   D1 c, 78 03 + c, 32 c, os-mask-p , jpnext, end-code ?)
@@ -631,11 +628,22 @@ code perm-attr-mask! ( b -- )
 
 ( get-paper set-paper get-ink set-ink )
 
-[unneeded] get-paper ?( need attr@ need attr>paper
+unneeding get-paper ?( need attr@ need attr>paper
 
 : get-paper ( -- b ) attr@ attr>paper ; ?)
 
-[unneeded] set-paper ?( need os-attr-t
+  \ doc{
+  \
+  \ get-paper ( -- b )
+  \
+  \ Get the paper color _b_ from the current attribute.
+  \
+  \ See: `set-paper`, `attr@`, `paper.`, `get-ink`,
+  \ `get-bright`, `get-flash`, `paper-mask`.
+  \
+  \ }doc
+
+unneeding set-paper ?( need os-attr-t
 
 code set-paper ( b -- )
   E1 c, 7D c, E6 c, %111 c,
@@ -670,16 +678,27 @@ code set-paper ( b -- )
   \ : set-paper ( b -- ) papery attr@ unpaper-mask and or attr! ;
   \ ----
 
-  \ See: `attr!`, `paper.`, `set-ink`, `set-flash`,
-  \ `set-bright`.
+  \ See: `get-paper`, `attr!`, `paper.`, `set-ink`, `set-flash`,
+  \ `set-bright`, `paper-mask`.
   \
   \ }doc
 
-[unneeded] get-ink ?( need attr@ need attr>ink
+unneeding get-ink ?( need attr@ need attr>ink
 
 : get-ink ( -- b ) attr@ attr>ink ; ?)
 
-[unneeded] set-ink ?( need os-attr-t
+  \ doc{
+  \
+  \ get-ink ( -- b )
+  \
+  \ Get the ink color _b_ from the current attribute.
+  \
+  \ See: `set-ink`, `attr@`, `ink.`, `get-paper`,
+  \ `get-bright`, `get-flash`, `ink-mask`.
+  \
+  \ }doc
+
+unneeding set-ink ?( need os-attr-t
 
 code set-ink ( b -- )
   D1 c, 21 c, os-attr-t ,
@@ -696,34 +715,82 @@ code set-ink ( b -- )
   \
   \ set-ink ( b -- )
   \
-  \ Set ink color _b_ by modifying bits 0-2 of the current
-  \ attribute. Note that _b_ is supposed to be in the range
-  \ 0..7 and its bits 3-7 are not masked. Therefore any value
-  \ other than 0..7 will corrupt the current attribute.
+  \ Set ink color _b_ (0..7) by modifying bits 0-2 of the
+  \ current attribute.
   \
   \ ``set-ink`` is written in Z80. Its equivalent definition in
   \ Forth is the following:
 
   \ ----
-  \ : set-ink ( b -- ) attr@ %11111000 and or attr! ;
+  \ : set-ink ( b -- ) attr@ unink-mask and or attr! ;
   \ ----
 
-  \ See: `attr!`, `ink.`, `set-paper`, `set-flash`,
-  \ `set-bright`.
+  \ See: `get-ink`, `attr!`, `ink.`, `set-paper`, `set-flash`,
+  \ `set-bright`, `unink-mask`.
   \
   \ }doc
 
 ( ink-mask unink-mask paper-mask unpaper-mask )
 
-[unneeded] ink-mask       ?\ %00000111 cconstant ink-mask
-[unneeded] unink-mask     ?\ %11111000 cconstant unink-mask
+unneeding ink-mask       ?\ %00000111 cconstant ink-mask
 
-[unneeded] paper-mask     ?\ %00111000 cconstant paper-mask
-[unneeded] unpaper-mask   ?\ %11000111 cconstant unpaper-mask
+  \ doc{
+  \
+  \ ink-mask ( -- b )
+  \
+  \ A constant. _b_ is the bitmask of the bits used to
+  \ indicate the ink in an attribute byte.
+  \
+  \ See: `unink-mask`, `set-ink`, `attr!`,
+  \ `paper-mask`, `bright-mask`, `flash-mask`.
+  \
+  \ }doc
+
+unneeding unink-mask     ?\ %11111000 cconstant unink-mask
+
+  \ doc{
+  \
+  \ unink-mask ( -- b )
+  \
+  \ A constant. _b_ is the inverted bitmask of the bits used to
+  \ indicate the ink in an attribute byte.
+  \
+  \ See: `ink-mask`, `set-ink`, `attr!`,
+  \ `unpaper-mask`, `unbright-mask`, `unflash-mask`.
+  \
+  \ }doc
+
+unneeding paper-mask     ?\ %00111000 cconstant paper-mask
+
+  \ doc{
+  \
+  \ paper-mask ( -- b )
+  \
+  \ A constant. _b_ is the bitmask of the bits used to
+  \ indicate the paper in an attribute byte.
+  \
+  \ See: `unpaper-mask`, `papery`, `set-paper`, `attr!`,
+  \ `ink-mask`, `bright-mask`, `flash-mask`.
+  \
+  \ }doc
+
+unneeding unpaper-mask   ?\ %11000111 cconstant unpaper-mask
+
+  \ doc{
+  \
+  \ unpaper-mask ( -- b )
+  \
+  \ A constant. _b_ is the inverted bitmask of the bits used to
+  \ indicate the paper in an attribute byte.
+  \
+  \ See: `paper-mask`, `papery`, `set-paper`, `attr!`,
+  \ `unink-mask`, `unbright-mask`, `unflash-mask`.
+  \
+  \ }doc
 
 ( bright-mask unbright-mask get-bright set-bright )
 
-[unneeded] bright-mask    ?\ %01000000 cconstant bright-mask
+unneeding bright-mask    ?\ %01000000 cconstant bright-mask
 
   \ doc{
   \
@@ -732,11 +799,12 @@ code set-ink ( b -- )
   \ A constant. _b_ is the bitmask of the bit used to indicate
   \ the bright status in an attribute byte.
   \
-  \ See: `bright-mask`, `brighty`, `set-bright`, `attr!`.
+  \ See: `unbright-mask`, `brighty`, `set-bright`, `attr!`,
+  \ `flash-mask`, `paper-mask`, `ink-mask`.
   \
   \ }doc
 
-[unneeded] unbright-mask  ?\ %10111111 cconstant unbright-mask
+unneeding unbright-mask  ?\ %10111111 cconstant unbright-mask
 
   \ doc{
   \
@@ -745,14 +813,14 @@ code set-ink ( b -- )
   \ A constant. _b_ is the inverted bitmask of the bit used to
   \ indicate the bright status in an attribute byte.
   \
-  \ See: `unbright-mask`, `brighty`, `set-bright`, `attr!`.
+  \ See: `bright-mask`, `brighty`, `set-bright`, `attr!`.
+  \ `unflash-mask`, `unpaper-mask`, `unink-mask`.
   \
   \ }doc
 
-[unneeded] get-bright ?( need attr@ need bright-mask
+unneeding get-bright ?( need attr@ need bright-mask
 
-: get-bright ( -- f )
-  attr@ [ bright-mask ] cliteral and 0= ; ?)
+: get-bright ( -- f ) attr@ bright-mask and 0= ; ?)
 
   \ doc{
   \
@@ -762,17 +830,16 @@ code set-ink ( b -- )
   \ else return _false_.
   \
   \ See: `set-bright`, `attr@`, `bright.`, `get-paper`,
-  \ `get-ink`, `get-flash`.
+  \ `get-ink`, `get-flash`, `bright-mask`.
   \
   \ }doc
 
-[unneeded] set-bright ?(
+unneeding set-bright ?(
 
 need bright-mask need attr@ need unbright-mask need attr!
 
 : set-bright ( f -- )
-  [ bright-mask ] cliteral and
-  attr@ [ unbright-mask ] cliteral and or attr! ; ?)
+  bright-mask and attr@ unbright-mask and or attr! ; ?)
 
   \ doc{
   \
@@ -785,13 +852,13 @@ need bright-mask need attr@ need unbright-mask need attr!
   \ on them having a common bit with `bright-mask`.
   \
   \ See: `get-bright`, `attr!`, `bright.`, `set-paper`,
-  \ `set-ink`, `set-flash`.
+  \ `set-ink`, `set-flash`, `bright-mask`.
   \
   \ }doc
 
 ( flash-mask unflash-mask get-flash set-flash )
 
-[unneeded] flash-mask   ?\ %10000000 cconstant flash-mask
+unneeding flash-mask   ?\ %10000000 cconstant flash-mask
 
   \ doc{
   \
@@ -800,12 +867,13 @@ need bright-mask need attr@ need unbright-mask need attr!
   \ A constant. _b_ is the bitmask of the bit used to indicate
   \ the flash status in an attribute byte.
   \
-  \ See: `flash-mask`, `flashy`, `set-flash`, `attr!`.
+  \ See: `unflash-mask`, `flashy`, `set-flash`, `attr!`,
+  \ `bright-mask`, `paper-mask`, `ink-mask`.
   \
   \ }doc
 
-[unneeded] unflash-mask ?\ %01111111 cconstant unflash-mask
-  
+unneeding unflash-mask ?\ %01111111 cconstant unflash-mask
+
   \ doc{
   \
   \ unflash-mask ( -- b )
@@ -813,13 +881,14 @@ need bright-mask need attr@ need unbright-mask need attr!
   \ A constant. _b_ is the inverted bitmask of the bit used to
   \ indicate the flash status in an attribute byte.
   \
-  \ See: `unflash-mask`, `flashy`, `set-flash`, `attr!`.
+  \ See: `flash-mask`, `flashy`, `set-flash`, `attr!`,
+  \ `unbright-mask`, `unpaper-mask`, `unink-mask`.
   \
   \ }doc
 
-[unneeded] get-flash ?( need attr@ need flash-mask
+unneeding get-flash ?( need attr@ need flash-mask
 
-: get-flash ( -- f ) attr@ [ flash-mask ] cliteral and 0= ; ?)
+: get-flash ( -- f ) attr@ flash-mask and 0= ; ?)
 
   \ doc{
   \
@@ -828,18 +897,17 @@ need bright-mask need attr@ need unbright-mask need attr!
   \ If flash is active in the current attribute, return _true_,
   \ else return _false_.
   \
-  \ See: `set-flash`, `attr!`, `flash.`, `set-paper`,
-  \ `set-ink`, `set-bright`.
+  \ See: `set-flash`, `attr!`, `flash.`, `get-paper`,
+  \ `get-ink`, `get-bright`, `flash-mask`.
   \
   \ }doc
 
-[unneeded] set-flash ?(
+unneeding set-flash ?(
 
 need flash-mask need attr@ need unflash-mask need attr!
 
 : set-flash ( f -- )
-  [ flash-mask ] cliteral and
-  attr@ [ unflash-mask ] cliteral and or attr! ; ?)
+  flash-mask and attr@ unflash-mask and or attr! ; ?)
 
   \ doc{
   \
@@ -852,13 +920,13 @@ need flash-mask need attr@ need unflash-mask need attr!
   \ on them having a common bit with `flash-mask`.
   \
   \ See: `get-flash`, `attr!`, `flash.`, `set-paper`,
-  \ `set-ink`, `set-bright`.
+  \ `set-ink`, `set-bright`, `flash-mask`.
   \
   \ }doc
 
-( inverse-on inverse-off inverse )
+( inverse-on inverse-off inverse inversely )
 
-[unneeded] inverse-on ?(
+unneeding inverse-on ?(
 
 code inverse-on ( -- )
   FD c, CB c, 57 c, C6 08 02 * + c,  jpnext, end-code ?)
@@ -875,7 +943,7 @@ code inverse-on ( -- )
   \
   \ }doc
 
-[unneeded] inverse-off ?(
+unneeding inverse-off ?(
 
 code inverse-off ( -- )
   FD c, CB c, 57 c, 86 08 02 * + c,  jpnext, end-code ?)
@@ -892,7 +960,7 @@ code inverse-off ( -- )
   \
   \ }doc
 
-[unneeded] inverse ?( need inverse-off need inverse-on
+unneeding inverse ?( need inverse-off need inverse-on
 
 code inverse ( f -- )
   E1 c, 78 04 + c, B0 05 + c,
@@ -914,9 +982,33 @@ code inverse ( f -- )
   \
   \ }doc
 
+unneeding inversely ?( need flash-mask need bright-mask
+need attr>paper need attr>ink need papery
+
+  : inversely ( b1 -- b2 )
+    dup dup [ flash-mask bright-mask or ] cliteral and >r
+    attr>paper swap attr>ink papery or r> or ; ?)
+
+  \ code inversely ( b1 -- b2 ) \  XXX TODO --
+  \ jpnext, end-code ?)
+  \ push hl
+  \ _jp_next
+
+  \ doc{
+  \
+  \ inversely ( b1 -- b2 )
+  \
+  \ Convert attribute _b1_ to its inversely equivalent _b2_,
+  \ i.e. _b2_ has paper and ink exchanged.
+  \
+  \ See: `constrast`, `papery`, `brighty`, `flashy`,
+  \ `attr>paper`, `attr>ink`.
+  \
+  \ }doc
+
 ( overprint-on overprint-off overprint )
 
-[unneeded] overprint-on ?(
+unneeding overprint-on ?(
 
 code overprint-on ( -- )
   FD c, CB c, 57 c, C6 08 00 * + c,  jpnext, end-code ?)
@@ -932,7 +1024,7 @@ code overprint-on ( -- )
   \
   \ }doc
 
-[unneeded] overprint-off ?(
+unneeding overprint-off ?(
 
 code overprint-off ( -- )
   FD c, CB c, 57 c, 86 08 00 * + c,  jpnext, end-code ?)
@@ -949,7 +1041,7 @@ code overprint-off ( -- )
   \
   \ }doc
 
-[unneeded] overprint ?( need overprint-on need overprint-off
+unneeding overprint ?( need overprint-on need overprint-off
 
 code overprint ( f -- )
   E1 c, 78 04 + c, B0 05 + c,
@@ -973,7 +1065,7 @@ code overprint ( f -- )
 
 ( paper. ink. (0-9-color. flash. bright. (0-1-8-color. )
 
-[unneeded] paper. ?( need (0-9-color.
+unneeding paper. ?( need (0-9-color.
 
 code paper. ( b -- ) 3E c, 11 c, (0-9-color. jp, end-code ?)
   \ ld a,paper_control_char
@@ -996,7 +1088,7 @@ code paper. ( b -- ) 3E c, 11 c, (0-9-color. jp, end-code ?)
   \
   \ }doc
 
-[unneeded] ink. ?( need (0-9-color.
+unneeding ink. ?( need (0-9-color.
 
 code ink. ( b -- ) 3E c, 10 c, (0-9-color. jp, end-code ?)
   \ ld a,ink_control_char
@@ -1018,7 +1110,7 @@ code ink. ( b -- ) 3E c, 10 c, (0-9-color. jp, end-code ?)
   \
   \ }doc
 
-[unneeded] (0-9-color. ?( need assembler
+unneeding (0-9-color. ?( need assembler need prt,
 
 create (0-9-color. ( -- a ) asm
 
@@ -1052,7 +1144,7 @@ create (0-9-color. ( -- a ) asm
 
   \ }doc
 
-[unneeded] flash.
+unneeding flash.
 
 ?\ need (0-1-8-color.  : flash. ( n -- ) 18 (0-1-8-color. ;
 
@@ -1078,7 +1170,7 @@ create (0-9-color. ( -- a ) asm
   \
   \ }doc
 
-[unneeded] bright.
+unneeding bright.
 
 ?\ need (0-1-8-color.  : bright. ( n -- ) 19 (0-1-8-color. ;
 
@@ -1103,7 +1195,7 @@ create (0-9-color. ( -- a ) asm
   \
   \ }doc
 
-[unneeded] (0-1-8-color.
+unneeding (0-1-8-color.
 
 ?\ : (0-1-8-color. ( n c -- ) emit %1001 and 8 min emit ;
 
@@ -1224,5 +1316,11 @@ create (0-9-color. ( -- a ) asm
   \ 2017-05-09: Remove `jppushhl,`.
   \
   \ 2017-09-09: Update notation "pfa" to the standard "dfa".
+  \
+  \ 2018-02-01: Need `prt,`, which has been made optional.
+  \
+  \ 2018-02-10: Improve documentation. Add `inversely`.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

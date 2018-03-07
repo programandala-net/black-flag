@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201712131926
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -14,7 +14,7 @@
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -25,7 +25,7 @@
 
 ( under+ +under )
 
-[unneeded] under+ ?(
+unneeding under+ ?(
 
 code under+ ( n1|u1 x n2|u2 -- n3|u3 x )
   D9 c, D1 c, C1 c, E1 c, 19 c, E5 c, C5 c, D9 c,
@@ -59,7 +59,7 @@ code under+ ( n1|u1 x n2|u2 -- n3|u3 x )
   \
   \ }doc
 
-[unneeded] +under ?(
+unneeding +under ?(
 
 code +under ( n1|u1 n2|u2 x -- n3|u3 x )
   D9 c, C1 c, D1 c, E1 c, 19 c, E5 c, C5 c, D9 c,
@@ -98,7 +98,7 @@ code +under ( n1|u1 n2|u2 x -- n3|u3 x )
 
 ( % u% u>ud within between gcd )
 
-[unneeded] % ?\ need */ : % ( n1 n2 -- n3 ) 100 swap */ ;
+unneeding % ?\ need */ : % ( n1 n2 -- n3 ) 100 swap */ ;
 
   \ doc{
   \
@@ -110,7 +110,8 @@ code +under ( n1|u1 n2|u2 x -- n3|u3 x )
   \
   \ }doc
 
-[unneeded] u%
+unneeding u%
+
 ?\ : u% ( u1 u2 -- u3 ) >r 100 um* r> um/mod nip ;
 
   \ doc{
@@ -123,7 +124,7 @@ code +under ( n1|u1 n2|u2 x -- n3|u3 x )
   \
   \ }doc
 
-[unneeded] u>ud ?\ need alias  ' 0 alias u>ud ( u -- ud )
+unneeding u>ud ?\ need alias  ' 0 alias u>ud ( u -- ud )
 
   \ doc{
   \
@@ -136,7 +137,7 @@ code +under ( n1|u1 n2|u2 x -- n3|u3 x )
   \
   \ }doc
 
-[unneeded] within
+unneeding within
 
 ?\ : within ( n1|u1 n2|u2 n3|u3 -- f ) over - >r - r> u< ;
 
@@ -161,7 +162,7 @@ code +under ( n1|u1 n2|u2 x -- n3|u3 x )
   \
   \ }doc
 
-[unneeded] between
+unneeding between
 
 ?\ : between ( n1|u1 n2|u2 n3|u3 -- f ) over - -rot - u< 0= ;
 
@@ -184,7 +185,7 @@ code +under ( n1|u1 n2|u2 x -- n3|u3 x )
   \
   \ }doc
 
-[unneeded] gcd
+unneeding gcd
 
 ?\ : gcd ( n1 n2 -- n3 ) begin ?dup while tuck mod repeat ;
 
@@ -208,15 +209,14 @@ code +under ( n1|u1 n2|u2 x -- n3|u3 x )
 
 ( odd? even? )
 
-[unneeded] odd? ?(
+unneeding odd? ?(
 
-code odd? ( n -- f )
-  E1 c, CB c, 40 05 + c, CA c, ' false , C3 c, ' true ,
+code odd? ( n -- f ) E1 c, CB c, 40 05 + c, CA c, ' false ,
+                     C3 c, ' true , end-code ?)
   \ pop hl
   \ bit 0,l
   \ jp z,false_
   \ jp true_
-  end-code ?)
 
   \ doc{
   \
@@ -235,15 +235,14 @@ code odd? ( n -- f )
   \
   \ }doc
 
-[unneeded] even? ?(
+unneeding even? ?(
 
-code even? ( n -- f )
-  E1 c, CB c, 40 05 + c, CA c, ' true , C3 c, ' false ,
+code even? ( n -- f ) E1 c, CB c, 40 05 + c, CA c, ' true ,
+                      C3 c, ' false , end-code ?)
   \ pop hl
   \ bit 0,l
   \ jp z,true_
   \ jp false_
-  end-code ?)
 
   \ doc{
   \
@@ -262,12 +261,10 @@ code even? ( n -- f )
   \
   \ }doc
 
-( 8* 8+ 8- )
+( 8* 8+ 8- 3* )
 
-[unneeded] 8* ?(
-
-code 8* ( x1 -- x2 )
-  e1 c, 29 c, 29 c, 29 c, E5 c, jpnext, end-code ?)
+unneeding 8* ?( code 8* ( x1 -- x2 ) e1 c, 29 c, 29 c, 29 c,
+                                      E5 c, jpnext, end-code ?)
   \ pop hl
   \ add hl,hl
   \ add hl,hl
@@ -286,14 +283,12 @@ code 8* ( x1 -- x2 )
   \ This is the same as ``3 lshift`` or ``2* 2* 2*``, but
   \ faster.
   \
-  \ See: `2*`, `lshift`, `8+`, `8-`.
+  \ See: `2*`, `3*`, `lshift`, `8+`, `8-`, `*`.
   \
   \ }doc
 
-[unneeded] 8+ ?(
-
-code 8+ ( n1 -- n2 )
-  e1 c, 11 c, 0008 , 19 c,  E5 c, jpnext, end-code ?)
+unneeding 8+ ?( code 8+ ( n1 -- n2 ) E1 c, 11 c, 0008 , 19 c,
+                                      E5 c, jpnext, end-code ?)
   \ pop hl
   \ ld de,8
   \ add hl,de
@@ -313,10 +308,9 @@ code 8+ ( n1 -- n2 )
   \
   \ }doc
 
-[unneeded] 8- ?(
-
-code 8- ( n1 -- n2 ) e1 c, 11 c, 0008 , A7 c, ED c, 52 c, E5 c,
-                     jpnext, end-code ?)
+unneeding 8- ?( code 8- ( n1 -- n2 )
+                   e1 c, 11 c, 0008 , A7 c, ED c, 52 c, E5 c,
+                   jpnext, end-code ?)
   \ pop hl
   \ ld de,8
   \ and a
@@ -337,9 +331,34 @@ code 8- ( n1 -- n2 ) e1 c, 11 c, 0008 , A7 c, ED c, 52 c, E5 c,
   \
   \ }doc
 
+unneeding 3* ?(
+
+code 3* ( x1 -- x2 )
+  E1 c, 54 c, 5D c, 29 c, 19 c, E5 c, jpnext, end-code ?)
+  \ pop hl
+  \ ld d,h
+  \ ld e,l
+  \ add hl,hl
+  \ add hl,de
+  \ push hl
+  \ _jp_next
+
+  \ doc{
+  \
+  \ 3* ( n1 -- n2 )
+  \
+  \ Multiply _n1_ by 3 giving _n2_.
+  \
+  \ This is the same as ``3 *`` or ``dup dup + +``, but
+  \ faster.
+  \
+  \ See: `2*`, `8*`, `*`, `+`.
+  \
+  \ }doc
+
 ( polarity <=> )
 
-[unneeded] polarity ?(
+unneeding polarity ?(
 
 code polarity ( n -- -1 | 0 | 1 )
   D1 c, 78 02 + c, B0 03 + c, CA c, ' false ,
@@ -385,7 +404,7 @@ code polarity ( n -- -1 | 0 | 1 )
   \
   \ }doc
 
-[unneeded] <=>
+unneeding <=>
 
 ?\ need polarity  : <=> ( n1 n2 -- -1|0|1 ) - polarity ;
 
@@ -403,7 +422,7 @@ code polarity ( n -- -1 | 0 | 1 )
 
 ( u<= u>= <= >= 0>= 0<= 0max )
 
-[unneeded] u<= ?\ : u<= ( u1 u2 -- f ) u> 0= ;
+unneeding u<= ?\ : u<= ( u1 u2 -- f ) u> 0= ;
 
   \ doc{
   \
@@ -416,7 +435,7 @@ code polarity ( n -- -1 | 0 | 1 )
   \
   \ }doc
 
-[unneeded] u>= ?\ : u>= ( u1 u2 -- f ) u< 0= ;
+unneeding u>= ?\ : u>= ( u1 u2 -- f ) u< 0= ;
 
   \ doc{
   \
@@ -429,7 +448,7 @@ code polarity ( n -- -1 | 0 | 1 )
   \
   \ }doc
 
-[unneeded] <= ?\ : <= ( n1 n2 -- f ) > 0= ;
+unneeding <= ?\ : <= ( n1 n2 -- f ) > 0= ;
 
   \ doc{
   \
@@ -442,7 +461,7 @@ code polarity ( n -- -1 | 0 | 1 )
   \
   \ }doc
 
-[unneeded] >= ?\ : >= ( n1 n2 -- f ) < 0= ;
+unneeding >= ?\ : >= ( n1 n2 -- f ) < 0= ;
 
   \ doc{
   \
@@ -455,7 +474,7 @@ code polarity ( n -- -1 | 0 | 1 )
   \
   \ }doc
 
-[unneeded] 0>= ?\ : 0>= ( n0 -- f ) 0< 0= ;
+unneeding 0>= ?\ : 0>= ( n0 -- f ) 0< 0= ;
 
   \ doc{
   \
@@ -468,7 +487,7 @@ code polarity ( n -- -1 | 0 | 1 )
   \
   \ }doc
 
-[unneeded] 0<= ?\ : 0<= ( n -- f ) 0> 0= ;
+unneeding 0<= ?\ : 0<= ( n -- f ) 0> 0= ;
 
   \ doc{
   \
@@ -481,7 +500,7 @@ code polarity ( n -- -1 | 0 | 1 )
   \
   \ }doc
 
-[unneeded] 0max ?(
+unneeding 0max ?(
 
 code 0max ( n -- n | 0 )
   E1 c, CB c, 10 05 + c, DA c, ' false , CB c, 18 05 + c,
@@ -508,9 +527,9 @@ code 0max ( n -- n | 0 )
   \
   \ }doc
 
-( lshift rshift )
+( lshift rshift ?shift )
 
-[unneeded] lshift ?( need assembler need unresolved
+unneeding lshift ?( need assembler need unresolved
 
 code lshift ( x1 u -- x2 )
 
@@ -541,14 +560,13 @@ code lshift ( x1 u -- x2 )
   \
   \ }doc
 
-[unneeded] rshift ?( need assembler need unresolved
+unneeding rshift ?( need assembler need unresolved
 
 code rshift ( x1 u -- x2 )
 
-  exx, b pop, c b ld, h pop,
+  exx, b pop, c b ld, h pop,  b inc, rahead 0 unresolved !
   \ B = loop counter (high 8 bits of _u_ are ignored)
   \ HL = _x1_
-  b inc, rahead 0 unresolved !
   rbegin  h srl, l rr, 0 unresolved @ >rresolve  rstep
   h push, exx, jpnext, end-code ?)
 
@@ -572,8 +590,6 @@ code rshift ( x1 u -- x2 )
   \
   \ }doc
 
-( ?shift )
-
 need 0exit need rshift need lshift
 
 : ?shift ( x n -- x | x' )
@@ -594,16 +610,15 @@ need 0exit need rshift need lshift
 
 ( clshift crshift )
 
-[unneeded] clshift ?(
+unneeding clshift ?(
 
 code clshift ( b1 u -- b2 )
 
-  D1 c,  E1 c,  78 05 + c,  1C c,
+  D1 c,  E1 c,  78 05 + c,  1C c, here
     \ pop de ; E = u (8 high bits are ignored)
     \ pop hl ; L = b1
     \ ld a,l ; A = b1
     \ inc e
-  here
     \ begin:
   1D c,  CA c, pusha ,  80 07 + c,  C3 c, , end-code ?)
     \ dec e
@@ -623,18 +638,17 @@ code clshift ( b1 u -- b2 )
   \
   \ }doc
 
-[unneeded] crshift ?(
+unneeding crshift ?(
 
   \ XXX UNDER DEVELOPMENT -- 2016-05-01
 
 code crshift ( b1 u -- b2 )
 
-  D1 c,  E1 c,  78 05 + c,  1C c,
+  D1 c,  E1 c,  78 05 + c,  1C c, here
     \ pop de
     \ pop hl
     \ ld a,l
     \ inc e
-  here
     \ begin:
   1D c,  CA c, pusha ,
     \ dec e
@@ -644,9 +658,9 @@ code crshift ( b1 u -- b2 )
   C3 c, , end-code ?)
     \ jp begin
 
-( bits )
+( bits 2/ cell/ )
 
-need assembler
+unneeding bits ?( need assembler
 
 code bits ( ca len -- u )
 
@@ -662,7 +676,7 @@ code bits ( ca len -- u )
     \ Note: `2swap` is needed because `rbegin ragain` and `rif
     \ rthen` are not nested.
 
-  exx, h push, jpnext, end-code
+  exx, h push, jpnext, end-code ?)
 
   \ Credit:
   \
@@ -684,11 +698,7 @@ code bits ( ca len -- u )
   \
   \ }doc
 
-( 2/ cell/ )
-
-[unneeded] 2/ ?(
-
-code 2/ ( x1 -- x2 )
+unneeding 2/ ?( code 2/ ( x1 -- x2 )
   E1 c, CB c, 2C c, CB c, 1D c, E5 c, jpnext, end-code ?)
   \ pop hl
   \ sra h
@@ -717,7 +727,7 @@ code 2/ ( x1 -- x2 )
   \
   \ }doc
 
-[unneeded] cell/ ?\ need alias need 2/  ' 2/ alias cell/
+unneeding cell/ ?\ need alias need 2/  ' 2/ alias cell/
 
   \ Credit:
   \
@@ -746,8 +756,7 @@ need sqrt need d2* need cell-bits
     2dup 2* u> if               \ check for next bit of root
       >r r@ 2* - 1- r>          \ reduce remainder
       1+                        \ add a bit to root
-    then
-  loop rot drop ;
+    then loop rot drop ;
 
   \ Credit:
   \
@@ -782,9 +791,94 @@ need sqrt need d2* need cell-bits
   \
   \ }doc
 
-( sqrt newton-sqrt )
+( /-rem /- -rem */-rem */- )
 
-[unneeded] sqrt ?\ defer sqrt ( n1 -- n2 )
+  \ Symmetric-division operators
+
+  \ Credit:
+  \
+  \ Forth-94 documentation.
+
+unneeding /-rem ?( need sm/rem
+
+: /-rem ( n1 n2 -- n3 n4 ) >r  s>d  r> sm/rem ; ?)
+
+  \ doc{
+  \
+  \ /-rem ( n1 n2 -- n3 n4 )
+  \
+  \ Divide _n1_ by _n2_ (doing a symmetric division), giving the
+  \ remainder _n3_ and the symmetric quotient _n4_.
+  \
+  \ See: `/mod`, `/_mod`, `sm/rem`.
+  \
+  \ }doc
+
+unneeding /- ?( need /-rem
+
+: /- (  n1 n2 -- n3 ) /-rem nip ; ?)
+
+  \ doc{
+  \
+  \ /- ( n1 n2 -- n3 )
+  \
+  \ Divide _n1_ by _n2_ (doing a symmetric division), giving the
+  \ symmetric quotient _n4_.
+  \
+  \ See: `/-rem`, `/`, `/_`, `sm/rem`.
+  \
+  \ }doc
+
+unneeding -rem ?( need /-rem
+
+: -rem ( n1 n2 -- n3 ) /-rem drop ; ?)
+
+  \ doc{
+  \
+  \ -rem ( n1 n2 -- n3 )
+  \
+  \ Divide _n1_ by _n2_ (doing a symmetric division), giving the
+  \ remainder _n3_.
+  \
+  \ See: `/-rem`, `/`, `/_mod`.
+  \
+  \ }doc
+
+unneeding */-rem ?( need sm/rem
+
+: */-rem (  n1 n2 n3 -- n4 n5 ) >r  m*  r> sm/rem ; ?)
+
+  \ doc{
+  \
+  \ */-rem ( n1 n2 n3 -- n4 n5 )
+  \
+  \ Multiply _n1_ by _n2_ producing the intermediate result
+  \ _d_.  Divide _d_ by _n3_ (doing a symmetric division), giving
+  \ the remainder _n4_ and the symmetric quotient _n5_.
+  \
+  \ See: `*/mod`, `*/_mod`, `sm/rem`.
+  \
+  \ }doc
+
+unneeding ?( need */-rem
+
+: */- ( n1 n2 n3 -- n4 ) */-rem nip ; ?)
+
+  \ doc{
+  \
+  \ */- ( n1 n2 n3 -- n4 )
+  \
+  \ Multiply _n1_ by _n2_ producing the intermediate result
+  \ _d_.  Divide _d_ by _n3_ (doing a symmetric division),
+  \ giving the symmetric quotient _n4_.
+  \
+  \ See: `*/-rem`, `*/`, `*/_`, `sm/rem`.
+  \
+  \ }doc
+
+( sqrt newton-sqrt fm/mod */ )
+
+unneeding sqrt ?\ defer sqrt ( n1 -- n2 )
 
   \ doc{
   \
@@ -796,7 +890,7 @@ need sqrt need d2* need cell-bits
   \
   \ }doc
 
-[unneeded] newton-sqrt ?( need sqrt need 2/
+unneeding newton-sqrt ?( need sqrt need 2/
 
 : newton-sqrt ( n1 -- n2 )
   dup if dup 2/ 20 0 ?do 2dup / + 2/ loop swap drop then ;
@@ -819,102 +913,13 @@ need sqrt need d2* need cell-bits
   \
   \ }doc
 
-( /-rem /- -rem */-rem */- )
-
-  \ Symmetric-division operators
-
-  \ Credit:
-  \
-  \ Forth-94 documentation.
-
-[unneeded] /-rem ?( need sm/rem
-
-: /-rem ( n1 n2 -- n3 n4 ) >r  s>d  r> sm/rem ; ?)
-
-  \ doc{
-  \
-  \ /-rem ( n1 n2 -- n3 n4 )
-  \
-  \ Divide _n1_ by _n2_ (doing a symmetric division), giving the
-  \ remainder _n3_ and the symmetric quotient _n4_.
-  \
-  \ See: `/mod`, `/_mod`, `sm/rem`.
-  \
-  \ }doc
-
-[unneeded] /- ?( need /-rem
-
-: /- (  n1 n2 -- n3 ) /-rem nip ; ?)
-
-  \ doc{
-  \
-  \ /- ( n1 n2 -- n3 )
-  \
-  \ Divide _n1_ by _n2_ (doing a symmetric division), giving the
-  \ symmetric quotient _n4_.
-  \
-  \ See: `/-rem`, `/`, `/_`, `sm/rem`.
-  \
-  \ }doc
-
-[unneeded] -rem ?( need /-rem
-
-: -rem ( n1 n2 -- n3 ) /-rem drop ; ?)
-
-  \ doc{
-  \
-  \ -rem ( n1 n2 -- n3 )
-  \
-  \ Divide _n1_ by _n2_ (doing a symmetric division), giving the
-  \ remainder _n3_.
-  \
-  \ See: `/-rem`, `/`, `/_mod`.
-  \
-  \ }doc
-
-[unneeded] */-rem ?( need sm/rem
-
-: */-rem (  n1 n2 n3 -- n4 n5 ) >r  m*  r> sm/rem ; ?)
-
-  \ doc{
-  \
-  \ */-rem ( n1 n2 n3 -- n4 n5 )
-  \
-  \ Multiply _n1_ by _n2_ producing the intermediate result
-  \ _d_.  Divide _d_ by _n3_ (doing a symmetric division), giving
-  \ the remainder _n4_ and the symmetric quotient _n5_.
-  \
-  \ See: `*/mod`, `*/_mod`, `sm/rem`.
-  \
-  \ }doc
-
-[unneeded] ?( need */-rem
-
-: */- ( n1 n2 n3 -- n4 ) */-rem nip ; ?)
-
-  \ doc{
-  \
-  \ */- ( n1 n2 n3 -- n4 )
-  \
-  \ Multiply _n1_ by _n2_ producing the intermediate result
-  \ _d_.  Divide _d_ by _n3_ (doing a symmetric division),
-  \ giving the symmetric quotient _n4_.
-  \
-  \ See: `*/-rem`, `*/`, `*/_`, `sm/rem`.
-  \
-  \ }doc
-
-( fm/mod */ )
-
-[unneeded] fm/mod ?(
+unneeding fm/mod ?(
 
 : fm/mod ( d1 n1 -- n2 n3 )
-  dup >r                \ save divisor
-  sm/rem
-  over 0<> over 0< and  \ quotient<0 and remainder<>0?
-  if
-    swap r> +           \ add divisor to remainder
-    swap 1-             \ decrement quotient
+  dup >r sm/rem
+  over 0<> over 0< and   \ quotient<0 and remainder<>0?
+  if swap r> +           \ add divisor to remainder
+     swap 1-             \ decrement quotient
   else r> drop then ; ?)
 
   \ Credit:
@@ -952,7 +957,7 @@ need sqrt need d2* need cell-bits
   \
   \ }doc
 
-[unneeded] */ ?\ : */ ( n1 n2 n3 -- n4 ) */mod nip ;
+unneeding */ ?\ : */ ( n1 n2 n3 -- n4 ) */mod nip ;
 
   \ Credit:
   \ Code from Abersoft Forth.
@@ -979,7 +984,8 @@ need sqrt need d2* need cell-bits
   \
   \ Forth-94 documentation.
 
-[unneeded] /_mod ?( need fm/mod
+unneeding /_mod ?( need fm/mod
+
 : /_mod ( n1 n2 -- n3 n4 ) >r s>d r> fm/mod ; ?)
 
   \ doc{
@@ -993,7 +999,7 @@ need sqrt need d2* need cell-bits
   \
   \ }doc
 
-[unneeded] /_ ?\ need /_mod : /_ ( n1 n2 -- n3 ) /_mod nip ;
+unneeding /_ ?\ need /_mod : /_ ( n1 n2 -- n3 ) /_mod nip ;
 
   \ doc{
   \
@@ -1006,7 +1012,8 @@ need sqrt need d2* need cell-bits
   \
   \ }doc
 
-[unneeded] _mod ?( need /_mod
+unneeding _mod ?( need /_mod
+
 : _mod ( n1 n2 -- n3 ) /_mod drop ; ?)
 
   \ doc{
@@ -1020,7 +1027,8 @@ need sqrt need d2* need cell-bits
   \
   \ }doc
 
-[unneeded] */_mod ?( need fm/mod
+unneeding */_mod ?( need fm/mod
+
 : */_mod ( n1 n2 n3 -- n4 n5 ) >r m* r> fm/mod ; ?)
 
   \ doc{
@@ -1035,7 +1043,8 @@ need sqrt need d2* need cell-bits
   \
   \ }doc
 
-[unneeded] */_ ?( need */_mod
+unneeding */_ ?( need */_mod
+
 : */_ ( n1 n2 n3 -- n4 ) */_mod nip ; ?)
 
   \ doc{
@@ -1052,7 +1061,7 @@ need sqrt need d2* need cell-bits
 
 ( any? either neither ifelse )
 
-[unneeded] any? ?( need roll  variable (any?)
+unneeding any? ?( need roll  variable (any?)
 
 : any? ( x[0] x[1]..x[n] n -- f )
   dup 1+ roll (any?) !
@@ -1076,7 +1085,7 @@ need sqrt need d2* need cell-bits
   \
   \ }doc
 
-[unneeded] either
+unneeding either
 
 ?\ : either ( x1 x2 x3 -- f ) -rot over = -rot = or ;
 
@@ -1097,7 +1106,7 @@ need sqrt need d2* need cell-bits
   \
   \ }doc
 
-[unneeded] neither
+unneeding neither
 
 ?\ : neither ( x1 x2 x3 -- f ) -rot over <> -rot <> and ;
 
@@ -1118,7 +1127,7 @@ need sqrt need d2* need cell-bits
   \
   \ }doc
 
-[unneeded] ifelse
+unneeding ifelse
 
 ?\ : ifelse ( x1 x2 f -- x1 | x2 ) if drop else nip then ;
 
@@ -1136,7 +1145,7 @@ need sqrt need d2* need cell-bits
 
 ( split join )
 
-[unneeded] split ?(
+unneeding split ?(
 
 code split ( x -- b1 b2 )
   E1 c, 16 c, 00 c, 58 05 + c, 68 04 + c, 26 c, 00 c,
@@ -1167,7 +1176,7 @@ code split ( x -- b1 b2 )
   \
   \ }doc
 
-[unneeded] join ?(
+unneeding join ?(
 
 code join ( b1 b2 -- x )
   D1 c, 60 03 + c, D1 c, 68 03 + c, E5 c, jpnext, end-code ?)
@@ -1327,6 +1336,11 @@ code join ( b1 b2 -- x )
   \ 2017-12-09: Move `*/` from the kernel.
   \
   \ 2017-12-13: Improve documentation.
-
+  \
+  \ 2018-01-04: Add `3*`. Improve documentation.
+  \
+  \ 2018-02-14: Compact the code, saving three blocks.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

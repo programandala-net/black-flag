@@ -3,18 +3,18 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201705051713
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
   \ Description
 
-  \ Words related to 48k sound.
+  \ ZX Spectrum 48 sound words.
 
   \ ===========================================================
   \ Author
 
-  \ Marcos Cruz (programandala.net), 2015, 2016, 2017.
+  \ Marcos Cruz (programandala.net), 2015, 2016, 2017, 2018.
 
   \ ===========================================================
   \ License
@@ -25,7 +25,7 @@
 
 ( bleep hz>bleep dhz>bleep )
 
-[unneeded] bleep ?(
+unneeding bleep ?(
 
 code bleep ( duration pitch -- )
  E1 c, D1 c, C5 c, CD c, 03B5 , C1 c, DD c, 21 c, next ,
@@ -140,7 +140,7 @@ code bleep ( duration pitch -- )
   \
   \ }doc
 
-[unneeded] hz>bleep ?(
+unneeding hz>bleep ?(
 
 : hz>bleep ( frequency duration1 -- duration2 pitch )
   over m* 1000 m/ nip swap  437500. rot m/ nip 30 - ; ?)
@@ -163,7 +163,7 @@ code bleep ( duration pitch -- )
   \
   \ }doc
 
-[unneeded] dhz>bleep ?(
+unneeding dhz>bleep ?(
 
 : dhz>bleep ( frequency duration1 -- duration2 pitch )
   over m* 10000 m/ nip swap  4375000. rot m/ nip 30 - ; ?)
@@ -224,7 +224,7 @@ code bleep ( duration pitch -- )
 
   \ XXX TODO -- Include the previus table into the manual.
 
-[unneeded] middle-octave ?(
+unneeding middle-octave ?(
 
 create middle-octave ( -- a )
   \ C      C#     D      D#     E      F
@@ -263,7 +263,7 @@ create middle-octave ( -- a )
   \
   \ }doc
 
-[unneeded] /octave ?\ 12 cconstant /octave
+unneeding /octave ?\ 12 cconstant /octave
 
   \ doc{
   \
@@ -276,7 +276,7 @@ create middle-octave ( -- a )
   \
   \ }doc
 
-[unneeded] octave-changer ?( need rshift need lshift
+unneeding octave-changer ?( need rshift need lshift
 
         ' rshift  ,
 here    ' drop    ,
@@ -295,7 +295,7 @@ here    ' drop    ,
   \
   \ }doc
 
-[unneeded] change-octave ?(
+unneeding change-octave ?(
 
 need polarity need octave-changer need array>
 
@@ -316,7 +316,7 @@ need polarity need octave-changer need array>
 
 ( -beep>note +beep>note beep>note )
 
-[unneeded] -beep>note ?( need /octave
+unneeding -beep>note ?( need /octave
 
 : -beep>note ( -n1 -- -n2 +n3 )
   abs [ /octave 1- ] literal + /octave /mod negate
@@ -334,7 +334,7 @@ need polarity need octave-changer need array>
   \
   \ }doc
 
-[unneeded] +beep>note ?( need /octave
+unneeding +beep>note ?( need /octave
 
 : +beep>note ( +n1 -- +n2 +n3 ) /octave /mod swap ; ?)
 
@@ -350,7 +350,7 @@ need polarity need octave-changer need array>
   \
   \ }doc
 
-[unneeded] beep>note ?( need -beep>note need +beep>note
+unneeding beep>note ?( need -beep>note need +beep>note
 
 : beep>note ( n1 -- n2 +n3 )
   dup 0< if  -beep>note exit  then  +beep>note ; ?)
@@ -370,11 +370,11 @@ need polarity need octave-changer need array>
 
 ( note>dhz beep>dhz beep>bleep beep )
 
-[unneeded] note>dhz ?( need middle-octave need array>
+unneeding note>dhz ?( need middle-octave need array>
 
 : note>dhz ( +n1 -- +n2 ) middle-octave array> @ ; ?)
 
-[unneeded] beep>dhz ?(
+unneeding beep>dhz ?(
 
 need beep>note need note>dhz need change-octave
 
@@ -392,7 +392,7 @@ need beep>note need note>dhz need change-octave
   \
   \ }doc
 
-[unneeded] beep>bleep ?(
+unneeding beep>bleep ?(
 
 need beep>dhz need dhz>bleep
 
@@ -434,7 +434,7 @@ need beep>dhz need dhz>bleep
   \
   \ }doc
 
-[unneeded] beep ?( need beep>bleep need bleep
+unneeding beep ?( need beep>bleep need bleep
 
 : beep ( duration pitch -- ) beep>bleep bleep ; ?)
 
@@ -496,11 +496,11 @@ need beep>dhz need dhz>bleep
   \
   \ }doc
 
-( laser-gun ambulance )
+( laser-gun-sound ambulance-sound )
 
-[unneeded] laser-gun ?( need assembler
+unneeding laser-gun-sound ?( need assembler
 
-code laser-gun ( -- ) b push, 5 b ld#, 0500 h ldp#,
+code laser-gun-sound ( -- ) b push, 5 b ld#, 0500 h ldp#,
   <mark  0001 d ldp#,
          h push, 03B5 call, h pop,  \ ROM beeper
          0010 d ldp#, d subp,  nz? ?jr,
@@ -517,13 +517,13 @@ code laser-gun ( -- ) b push, 5 b ld#, 0500 h ldp#,
   \
   \ laser-gun ( -- )
   \
-  \ Laser gun sound for ZX Spectrum 48K.
+  \ Laser gun sound for ZX Spectrum 48.
   \
   \ }doc
 
-[unneeded] ambulance ?( need assembler
+unneeding ambulance-sound ?( need assembler
 
-code ambulance ( n -- )
+code ambulance-sound ( n -- )
 
   d pop, b push, e b ld,
 
@@ -546,7 +546,7 @@ code ambulance ( n -- )
   \
   \ ambulance ( n -- )
   \
-  \ Ambulance sound for ZX Spectrum 48K. Make it _n_ times.
+  \ Ambulance sound for ZX Spectrum 48. Make it _n_ times.
   \
   \ }doc
 
@@ -589,7 +589,7 @@ code white-noise ( u -- )
   \
   \ white-noise ( -- )
   \
-  \ White noise for ZX Spectrum 48K.  _u_ is the duration in
+  \ White noise for ZX Spectrum 48.  _u_ is the duration in
   \ number of sample bytes.
   \
   \ }doc
@@ -638,5 +638,9 @@ code white-noise ( u -- )
   \ 2017-03-13: Improve documentation.
   \
   \ 2017-05-05: Improve documentation.
+  \
+  \ 2018-01-23: Rename all sounds: add suffix "-sound".
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth

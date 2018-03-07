@@ -3,7 +3,7 @@
   \ This file is part of Solo Forth
   \ http://programandala.net/en.program.solo_forth.html
 
-  \ Last modified: 201801022025
+  \ Last modified: 201803052149
   \ See change log at the end of the file
 
   \ ===========================================================
@@ -25,7 +25,7 @@
 
 ( -! c+! c-! )
 
-[unneeded] -! ?(
+unneeding -! ?(
 
 code -! ( n|u a -- )
   E1 c, D1 c, 7E c, 90 03 + c, 70 07 + c, 23 c,
@@ -51,7 +51,7 @@ code -! ( n|u a -- )
   \
   \ }doc
 
-[unneeded] c+! ?(
+unneeding c+! ?(
 
 code c+! ( c ca -- )
   E1 c, D1 c, 78 03 + c, 86 c, 70 07 + c, jpnext, end-code ?)
@@ -72,7 +72,7 @@ code c+! ( c ca -- )
   \
   \ }doc
 
-[unneeded] c-! ?(
+unneeding c-! ?(
 
 code c-! ( c ca -- )
   E1 c, D1 c, 7E c, 90 03 + c, 70 07 + c, jpnext, end-code ?)
@@ -93,9 +93,9 @@ code c-! ( c ca -- )
   \
   \ }doc
 
-( c1+! c1-! 1+! 1-! )
+( c1+! c1-! ?c1-! 1+! 1-! )
 
-[unneeded] c1+!
+unneeding c1+!
 
 ?\ code c1+! ( ca -- ) E1 c, 34 c, jpnext, end-code
     \ pop hl
@@ -112,7 +112,7 @@ code c-! ( c ca -- )
   \
   \ }doc
 
-[unneeded] c1-!
+unneeding c1-!
 
 ?\ code c1-! ( ca -- ) E1 c, 35 c, jpnext, end-code
     \ pop hl
@@ -125,11 +125,32 @@ code c-! ( c ca -- )
   \
   \ Decrement the character stored at _ca_.
   \
-  \ See: `c1+!`, `c-!`, `1-!`.
+  \ See: `?c1-!`, `c1+!`, `c-!`, `1-!`.
   \
   \ }doc
 
-[unneeded] 1+! ?(
+unneeding ?c1-! ?(
+
+code ?c1-! ( ca -- )
+  E1 c, 7E c, A7 c, CA c, next , 35 c, jpnext, end-code ?)
+    \ pop hl
+    \ ld a,(hl)
+    \ and a
+    \ jp z,next
+    \ dec (hl)
+    \ _jp_next
+
+  \ doc{
+  \
+  \ ?c1-! ( ca - )
+  \
+  \ If the character stored at _ca_ is not zero, decrement it.
+  \
+  \ See: `c1-!`, `c1+!`, `c-!`, `1-!`.
+  \
+  \ }doc
+
+unneeding 1+! ?(
 
 code 1+! ( a -- )
   E1 c, 5E c, 23 c, 56 c, 13 c, 70 02 + c, 2B c, 70 03 + c,
@@ -154,7 +175,7 @@ code 1+! ( a -- )
   \
   \ }doc
 
-[unneeded] 1-! ?(
+unneeding 1-! ?(
 
 code 1-! ( a -- )
   E1 c, 5E c, 23 c, 56 c, 1B c, 70 02 + c, 2B c, 70 03 + c,
@@ -179,9 +200,9 @@ code 1-! ( a -- )
   \
   \ }doc
 
-( @+ 2@+ c@+ c@1+ c@1- )
+( @+ 2@+ c@+ )
 
-[unneeded] @+
+unneeding @+
 
 ?\ : @+ ( a -- a' x ) dup cell+ swap @ ;
 
@@ -197,7 +218,7 @@ code 1-! ( a -- )
   \
   \ }doc
 
-[unneeded] 2@+
+unneeding 2@+
 
 ?\ : 2@+ ( a -- a' xd ) dup cell+ cell+ swap 2@ ;
 
@@ -213,7 +234,7 @@ code 1-! ( a -- )
   \
   \ }doc
 
-[unneeded] c@+ ?\ need alias ' count alias c@+ ( ca -- ca' c )
+unneeding c@+ ?\ need alias ' count alias c@+ ( ca -- ca' c )
 
   \ doc{
   \
@@ -229,7 +250,9 @@ code 1-! ( a -- )
   \
   \ }doc
 
-[unneeded] c@1+ ?(
+( c@1+ c@1- c@2+ c@2- )
+
+unneeding c@1+ ?(
 
 code c@1+ ( ca -- c )
   E1 c, 6E c, 26 c, 00 c, 23 c, E5 c, jpnext, end-code ?)
@@ -244,16 +267,16 @@ code c@1+ ( ca -- c )
   \
   \ c@1+ ( ca -- c )
   \
-  \ Fetch the character stored at _ca_, increment it and return
-  \ the result _c_.
+  \ Fetch the character stored at _ca_, add 1 to it, according
+  \ to the operation of `+`, giving _c_.
   \
-  \ ``c@1+`` is a faster alternative to the idiom ``c@ 1+``.
+  \ ``c@1+`` is a faster alternative to ``c@ 1+``.
   \
-  \ See: `c@1-`, `c@`, `1+`.
+  \ See: `c@1-`, `c@2+`, `c@`, `1+`.
   \
   \ }doc
 
-[unneeded] c@1- ?(
+unneeding c@1- ?(
 
 code c@1- ( ca -- c )
   E1 c, 6E c, 26 c, 00 c, 2B c, E5 c, jpnext, end-code ?)
@@ -268,18 +291,68 @@ code c@1- ( ca -- c )
   \
   \ c@1- ( ca -- c )
   \
-  \ Fetch the character stored at _ca_, decrement it and return
-  \ the result _c_.
+  \ Fetch the character stored at _ca_, subtract 1 from it,
+  \ according to the operation of `-`, giving _c_.
   \
-  \ ``c@1-`` is a faster alternative to the idiom ``c@ 1-``.
+  \ ``c@1-`` is a faster alternative to ``c@ 1-``.
   \
-  \ See: `c@1+`, `c@`, `1-`.
+  \ See: `c@1+`, `c@2-`, `c@`, `1-`.
+  \
+  \ }doc
+
+unneeding c@2+ ?(
+
+code c@2+ ( ca -- c )
+  E1 c, 6E c, 26 c, 00 c, 23 c, 23 c, E5 c, jpnext, end-code ?)
+  \ pop hl
+  \ ld l,(hl)
+  \ ld h,0
+  \ inc hl
+  \ inc hl
+  \ push hl
+  \ _jp_next
+
+  \ doc{
+  \
+  \ c@2+ ( ca -- c )
+  \
+  \ Fetch the character stored at _ca_, add 2 to it, according
+  \ to the operation of `+`, and return the result _c_.
+  \
+  \ ``c@2+`` is a faster alternative to ``c@ 2+``.
+  \
+  \ See: `c@2-`, `c@1+`, `c@`, `2+`.
+  \
+  \ }doc
+
+unneeding c@2- ?(
+
+code c@2- ( ca -- c )
+  E1 c, 6E c, 26 c, 00 c, 2B c, 2B c, E5 c, jpnext, end-code ?)
+  \ pop hl
+  \ ld l,(hl)
+  \ ld h,0
+  \ dec hl
+  \ dec hl
+  \ push hl
+  \ _jp_next
+
+  \ doc{
+  \
+  \ c@2- ( ca -- c )
+  \
+  \ Fetch the character stored at _ca_, subtract 2 from it,
+  \ according to the operation of `-`, and giving _c_.
+  \
+  \ ``c@2-`` is a faster alternative to ``c@ 2-``.
+  \
+  \ See: `c@2+`, `c@1-`, `c@`, `2-`.
   \
   \ }doc
 
 ( n, nn, n@ nn@ n! nn! )
 
-[unneeded] n, ?\ : n, ( x[u]..x[1] u -- ) 0 ?do , loop ;
+unneeding n, ?\ : n, ( x[u]..x[1] u -- ) 0 ?do , loop ;
 
   \ doc{
   \
@@ -293,7 +366,7 @@ code c@1- ( ca -- c )
   \
   \ }doc
 
-[unneeded] nn, ?( need need-here need-here n,
+unneeding nn, ?( need need-here need-here n,
 
 : nn, ( x[u]..x[1] u -- ) dup , n, ; ?)
 
@@ -309,7 +382,7 @@ code c@1- ( ca -- c )
   \
   \ }doc
 
-[unneeded] n@ ?(
+unneeding n@ ?(
 
 : n@ ( a u -- x[u]..x[1] )
   tuck 1- cells + \ point _a_ to _x[u]_
@@ -326,7 +399,7 @@ code c@1- ( ca -- c )
   \
   \ }doc
 
-[unneeded] nn@ ?( need need-here need-here n@
+unneeding nn@ ?( need need-here need-here n@
 
 : nn@ ( a -- x[1]..x[u] u | 0 ) dup @ >r cell+ r@ n@ r> ; ?)
 
@@ -343,7 +416,7 @@ code c@1- ( ca -- c )
   \
   \ }doc
 
-[unneeded] n! ?(
+unneeding n! ?(
 
 : n! ( x[u]..x[1] u a -- )
   swap 0 ?do dup >r ! r> cell+ loop drop ; ?)
@@ -359,7 +432,7 @@ code c@1- ( ca -- c )
   \
   \ }doc
 
-[unneeded] nn! ?( need need-here need-here n!
+unneeding nn! ?( need need-here need-here n!
 
 : nn! ( x[u]..x[1] u a -- ) 2dup ! cell+ n! ; ?)
 
@@ -377,7 +450,7 @@ code c@1- ( ca -- c )
 
 ( bit>mask bit? set-bit reset-bit )
 
-[unneeded] bit>mask
+unneeding bit>mask
 
 ?\ need lshift : bit>mask ( n -- b ) 1 swap lshift ;
 
@@ -391,7 +464,7 @@ code c@1- ( ca -- c )
   \
   \ }doc
 
-[unneeded] bit?
+unneeding bit?
 
 ?\ need bit>mask : bit? ( b n -- f ) bit>mask and 0<> ;
 
@@ -405,7 +478,7 @@ code c@1- ( ca -- c )
   \
   \ }doc
 
-[unneeded] set-bit?
+unneeding set-bit?
 
 ?\ need bit>mask : set-bit ( b1 n -- b2 ) bit>mask or ;
 
@@ -419,7 +492,7 @@ code c@1- ( ca -- c )
   \
   \ }doc
 
-[unneeded] reset-bit? ?( need bit>mask
+unneeding reset-bit? ?( need bit>mask
 
 : reset-bit ( b1 n -- b2 ) bit>mask invert and ; ?)
 
@@ -433,14 +506,14 @@ code c@1- ( ca -- c )
   \
   \ }doc
 
-( c@and ctoggle coff )
+( c@and ctoggle coff con )
 
   \ Credit:
   \
   \ Words inspired by MPE PowerForth for TiniARM.
 
   \ XXX OLD -- `c@and?` is in the kernel
-  \ [unneeded] c@and? ?(
+  \ unneeding c@and? ?(
   \ code c@and? ( b ca -- f )
   \   hl pop  de pop  e a ld  m and
   \   ' true jpnz  ' false jp end-code ?)
@@ -451,7 +524,7 @@ code c@1- ( ca -- c )
   \ "and" of it with _b_. Return _false_ if the result
   \ is zero, else _true_.
 
-[unneeded] c@and ?(
+unneeding c@and ?(
 
 code c@and ( b1 ca -- b2 )
   E1 c, D1 c, 78 03 + c, A6 c, C3 c, pusha , jpnext,
@@ -474,20 +547,20 @@ code c@and ( b1 ca -- b2 )
   \ }doc
 
   \ XXX OLD -- `cset` is in the kernel
-  \ [unneeded] cset ?(
+  \ unneeding cset ?(
   \ code cset ( b ca -- )
   \   hl pop  de pop  e a ld  m or  a m ld  jpnext,
   \ end-code ?)
   \   \ Set the bits at _ca_ specified by the bitmask _b_.
 
   \ XXX OLD -- `creset` is in the kernel
-  \ [unneeded] creset ?(
+  \ unneeding creset ?(
   \ code creset ( b ca -- )
   \   hl pop  de pop  e a ld  cpl  m and  a m ld  jpnext,
   \ end-code ?)
   \   \ Reset the bits at _ca_ specified by the bitmask _b_.
 
-[unneeded] ctoggle ?(
+unneeding ctoggle ?(
 
 code ctoggle ( b ca -- )
   E1 c, D1 c, 7E c, A8 03 + c, 70 07 + c, jpnext, end-code ?)
@@ -508,11 +581,11 @@ code ctoggle ( b ca -- )
   \
   \ }doc
 
-[unneeded] coff
+unneeding coff
 
-?\ code coff ( ca -- ) E1 c, 36 c, 00 c, jpnext, end-code
+?\ code coff ( ca -- ) E1 c, 36 c, false c, jpnext, end-code
   \ pop hl
-  \ ld (hl),0
+  \ ld (hl),false
   \ _jp_next
 
   \ doc{
@@ -532,7 +605,34 @@ code ctoggle ( b ca -- )
   \
   \ }doc
 
-[unneeded] c? ?\ : c? ( ca -- ) c@ . ;
+unneeding con
+
+?\ code con ( ca -- ) E1 c, 36 c, true c, jpnext, end-code
+  \ pop hl
+  \ ld (hl),true
+  \ _jp_next
+
+  \ doc{
+  \
+  \ con ( ca -- )
+  \
+  \ Store `true` at _ca_.
+  \
+  \ ``con`` is written in Z80. Its equivalent definition in
+  \ Forth is the following:
+
+  \ ----
+  \ : con ( ca -- ) true swap c! ;
+  \ ----
+
+  \ NOTE: The value actually stored is not `true`, which is a
+  \ cell, but its 8-bit equivalent $FF.
+  \
+  \ See: `coff`, `on`.
+  \
+  \ }doc
+
+unneeding c? ?\ : c? ( ca -- ) c@ . ;
 
   \ doc{
   \
@@ -547,7 +647,7 @@ code ctoggle ( b ca -- )
 
 ( !exchange c!exchange reserve alloted align aligned )
 
-[unneeded] !exchange
+unneeding !exchange
 
 ?\ : !exchange ( x1 a -- x2 ) dup @ rot rot ! ;
 
@@ -561,7 +661,7 @@ code ctoggle ( b ca -- )
   \
   \ }doc
 
-[unneeded] c!exchange ?(
+unneeding c!exchange ?(
 
 code c!exchange ( c1 ca -- c2 )
   D9 c, E1 c, C1 c, 7E c, 16 c, 00 c, 58 07 + c, D5 c,
@@ -594,7 +694,7 @@ code c!exchange ( c1 ca -- c2 )
   \
   \ }doc
 
-[unneeded] reserve
+unneeding reserve
 
 ?\ : reserve ( n -- a ) here tuck over erase allot ;
 
@@ -605,9 +705,11 @@ code c!exchange ( c1 ca -- c2 )
   \ Reserve _n_ address units of data space, erase the zone and
   \ return its address _a_.
   \
+  \ See: `allot`, `alloted`, `here`, `erase`.
+  \
   \ }doc
 
-[unneeded] alloted ?\ : allotted ( n -- a ) here swap allot ;
+unneeding alloted ?\ : allotted ( n -- a ) here swap allot ;
 
   \ doc{
   \
@@ -616,9 +718,11 @@ code c!exchange ( c1 ca -- c2 )
   \ Reserve _n_ address units of data space and return its
   \ address _a_.
   \
+  \ See: `allot`, `here`, `reserve`.
+  \
   \ }doc
 
-[unneeded] align ?\ need alias ' noop alias align immediate
+unneeding align ?\ need alias ' noop alias align immediate
 
   \ doc{
   \
@@ -637,7 +741,7 @@ code c!exchange ( c1 ca -- c2 )
   \
   \ }doc
 
-[unneeded] aligned ?\ need alias ' noop alias aligned immediate
+unneeding aligned ?\ need alias ' noop alias aligned immediate
 
   \ doc{
   \
@@ -658,7 +762,7 @@ code c!exchange ( c1 ca -- c2 )
 
 ( /! *! 2/! 2*! exchange cexchange )
 
-[unneeded] /! ?\ : /! ( n a -- ) tuck @ swap / swap ! ;
+unneeding /! ?\ : /! ( n a -- ) tuck @ swap / swap ! ;
 
   \ doc{
   \
@@ -671,7 +775,7 @@ code c!exchange ( c1 ca -- c2 )
   \
   \ }doc
 
-[unneeded] *! ?\ : *! ( n a -- ) tuck @ swap * swap ! ;
+unneeding *! ?\ : *! ( n a -- ) tuck @ swap * swap ! ;
 
   \ doc{
   \
@@ -684,7 +788,7 @@ code c!exchange ( c1 ca -- c2 )
   \
   \ }doc
 
-[unneeded] 2*! ?\ : 2*! ( a -- ) dup @ 2* swap ! ;
+unneeding 2*! ?\ : 2*! ( a -- ) dup @ 2* swap ! ;
 
   \ doc{
   \
@@ -696,7 +800,7 @@ code c!exchange ( c1 ca -- c2 )
   \
   \ }doc
 
-[unneeded] 2/! ?\ need 2/ : 2/! ( a -- ) dup @ 2/ swap ! ;
+unneeding 2/! ?\ need 2/ : 2/! ( a -- ) dup @ 2/ swap ! ;
 
   \ doc{
   \
@@ -708,7 +812,7 @@ code c!exchange ( c1 ca -- c2 )
   \
   \ }doc
 
-[unneeded] exchange
+unneeding exchange
 
 ?\ : exchange ( a1 a2 -- ) 2dup @ swap @  rot ! swap ! ;
 
@@ -722,7 +826,7 @@ code c!exchange ( c1 ca -- c2 )
   \
   \ }doc
 
-[unneeded] cexchange ?(
+unneeding cexchange ?(
 
 code cexchange ( ca1 ca2 -- )
   D9 c, E1 c, D1 c, 7E c, 47 c, 1A c, 77 c, 78 c, 12 c, D9 c,
@@ -747,7 +851,7 @@ code cexchange ( ca1 ca2 -- )
   \
   \ ``cexchange`` is written in Z80. An equivalent definition
   \ in Forth is the following:
-  \ 
+  \
   \ ----
   \ : cexchange ( ca1 ca2 -- ) 2dup c@ swap c@ rot c! swap c! ;
   \ ----
@@ -826,5 +930,15 @@ code cexchange ( ca1 ca2 -- )
   \ 2017-12-12: Add `coff`.
   \
   \ 2018-01-02: Add `c@1+` and `c@1-`.
+  \
+  \ 2018-01-03: Add `c@2+` and `c@2-`.
+  \
+  \ 2018-01-04: Add `?c1-!`.
+  \
+  \ 2018-01-19: Add `con`.
+  \
+  \ 2018-02-01: Improve documentation.
+  \
+  \ 2018-03-05: Update `[unneeded]` to `unneeding`.
 
   \ vim: filetype=soloforth
