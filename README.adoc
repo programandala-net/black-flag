@@ -1,6 +1,6 @@
 == Black Flag 
 :author: Marcos Cruz (programandala.net)
-:revdate: 2017-11-21
+:revdate: 2019-03-15
 :linkattrs:
 
 == Description
@@ -30,7 +30,7 @@ features:
 - Improved graphics
 - Improved sound effects
 - New fonts
-- Trilingual
+- Multilingual
 - Configurable
 - And many more...
 
@@ -38,7 +38,7 @@ features:
 
 I find the original game very nice.  In its simplicity (it was written
 in plain Sinclair BASIC in 1984), it combines features of simulation,
-estrategy, text adventure and arcade.
+strategy, text adventure and arcade.
 
 Also a couple of little friends of mine found it very enjoyable. So,
 in 2011-08 I decided to translate the original game to Spanish,
