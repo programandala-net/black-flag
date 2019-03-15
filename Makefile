@@ -5,7 +5,7 @@
 # This file is part of Black Flag
 # http://programandala.net/en.program.black_flag.html
 
-# Last modified 201705211943
+# Last modified 201903151756
 # See change log at the end of the file
 
 ################################################################
@@ -89,15 +89,14 @@ tmp/black_flag.complete.fs: \
 	src/black_flag_end-program.fs
 	cat $^ > $@
 
-tmp/black_flag.complete.converted.fs: tmp/black_flag.complete.fs
+tmp/black_flag.complete.8-bit.fs: tmp/black_flag.complete.fs
 	vim -S ./make/utf8_to_udg.vim \
 		-c "set fileencoding=latin1" \
 		-c "saveas! $@" \
 		-c "quit!" $<
 
-tmp/black_flag.fba: tmp/black_flag.complete.converted.fs
-	./make/fs2fba.sh $<
-	mv $(basename $<).fba $@
+%.fba: %.fs
+	make/fs2fba.sh $<
 
 tmp/library.fs: \
 	$(secondary_source_files) \
@@ -109,7 +108,7 @@ tmp/library.fb: tmp/library.fs
 
 tmp/disk_2_black_flag.fb: \
 	tmp/library.fb \
-	tmp/black_flag.fba
+	tmp/black_flag.complete.8-bit.fba
 	cat $^ > $@
 
 disk_2_black_flag.mgt: tmp/disk_2_black_flag.fb
@@ -139,4 +138,6 @@ disk_2_black_flag.mgt: tmp/disk_2_black_flag.fb
 # Solo Forth and fsb2.
 #
 # 2017-05-21: Update to changes in Solo Forth.
-
+#
+# 2019-03-15: Generalize the rule of fs2fba.sh.  Improve some
+# filenames.
