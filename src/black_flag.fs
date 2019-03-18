@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.57.0+201801031726" ;
+: version$ ( -- ca len ) s" 0.58.0-dev.0+201903181514" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -66,6 +66,7 @@ only forth definitions
   section(   -Debugging tools)  \ {{{2
 
 need order  need ~~  need see  need dump  need where
+need list \ XXX TMP -- for debugging
 
   \ --------------------------------------------
   section(   -Definers)  \ {{{2
@@ -162,8 +163,9 @@ game-wordlist  dup >order set-current
   \ ============================================================
   section( Debugging tools [1])  \ {{{1
 
-:  ~~h ( -- ) 2 border new-key- 1 border ;
+  \ :  ~~h ( -- ) 2 border new-key- 1 border ;
   \ Break point.
+  \ XXX OLD
 
 'q' ~~quit-key c!  $FF ~~resume-key c!  22 ~~y c!  ~~? off
 
@@ -174,6 +176,11 @@ game-wordlist  dup >order set-current
 : ?break ( -- ) break-key? if cr ." Aborted!" cr quit then ;
 
 defer .debug-info ( -- )
+
+' .debug-info ' ~~app-info defer!
+
+variable debug-pause debug-pause on
+  \ Flag: Wait for a key at the end of `.debug-info`?
 
   \ ============================================================
   section( Constants)  \ {{{1
@@ -1865,19 +1872,77 @@ sailor-window-cols 2+ 8 * 4 +
 
 : island-location ( n -- )
   case
-    native-village  of  .village                          endof
-    dubloons-found  of  4 8 palm2 14 5 palm2              endof
+    native-village  of
+                        1 border \ XXX INFORMER
+                        .debug-info  \ XXX INFORMER
+                        .village
+                        endof
+    dubloons-found  of
+                        2 border \ XXX INFORMER
+                        .debug-info  \ XXX INFORMER
+                        4 8 palm2 14 5 palm2
+                        endof
       \ XXX TODO -- print dubloons here
-    hostile-native  of  14 5 palm2 25 8 palm2 .native  endof
-    just-3-palms-1  of  ~~ 25 8 palm2
-                           4 8 palm2 16 5 palm2   ~~ endof
+    hostile-native  of
+                        3 border \ XXX INFORMER
+                        .debug-info  \ XXX INFORMER
+                        14 5 palm2 25 8 palm2
+                        .debug-info  \ XXX INFORMER
+                        .native
+                        endof
+
+    just-3-palms-1  of
+                        4 border \ XXX INFORMER
+                        .debug-info  \ XXX INFORMER
+                        25 8 palm2
+                        .debug-info  \ XXX INFORMER
+                        4 8 palm2
+                        .debug-info  \ XXX INFORMER
+                        16 5 palm2
+                        .debug-info  \ XXX INFORMER
+                        endof
+      \ XXX FIXME -- Crash, sometimes.
+
     snake of
-      13 5 palm2 5 6 palm2 18 8 palm2 23 8 palm2 .snake
-                                                          endof
-    just-3-palms-2  of  23 8 palm2 4 8 palm2 17 5 palm2   endof
-    native-supplies of  .supplies  .native  16 4 palm2 endof
-    native-ammo     of  .ammo-gift .native 20 5 palm2  endof
-  endcase ;
+                        5 border \ XXX INFORMER
+                        .debug-info  \ XXX INFORMER
+      13 5 palm2 5 6 palm2
+      18 8 palm2 23 8 palm2
+                        .debug-info  \ XXX INFORMER
+      .snake
+      endof
+
+    just-3-palms-2  of
+                        6 border \ XXX INFORMER
+                        .debug-info  \ XXX INFORMER
+                        23 8 palm2
+                        .debug-info  \ XXX INFORMER
+                        4 8 palm2
+                        .debug-info  \ XXX INFORMER
+                        17 5 palm2
+                        .debug-info  \ XXX INFORMER
+                        endof
+      \ XXX FIXME -- Crash, sometimes.
+
+    native-supplies of
+                        7 border \ XXX INFORMER
+                        .debug-info  \ XXX INFORMER
+                        .supplies  .native  16 4 palm2
+                        endof
+    native-ammo     of
+                        7 border 10 ms \ XXX INFORMER
+                        2 border 10 ms \ XXX INFORMER
+                        7 border 10 ms \ XXX INFORMER
+                        2 border 10 ms \ XXX INFORMER
+                        7 border 10 ms \ XXX INFORMER
+                        2 border 10 ms \ XXX INFORMER
+                        .debug-info  \ XXX INFORMER
+                        .ammo-gift .native 20 5 palm2
+                        endof
+  endcase
+  0 border \ XXX INFORMER
+  .debug-info  \ XXX INFORMER
+  ;
 
 : current-island-location ( -- )
   crew-loc @ island @ island-location ;
@@ -1938,7 +2003,9 @@ create island-events-table ( -- a ) here
 here - cell / constant island-events
 
 : island-event ( -- )
-  island-events random island-events-table array> perform ;
+  island-events random island-events-table array>
+  .debug-info
+  perform ;
 
   \ ============================================================
   section( Enter island location)  \ {{{1
@@ -2001,9 +2068,9 @@ here - cell / constant island-events
     \ XXX TODO -- Change the message if the village is visited.
   endof
 
-  just-3-palms-1 of  island-event  endof
+  just-3-palms-1 of  .debug-info island-event  endof
 
-  just-3-palms-2 of  island-event  endof
+  just-3-palms-2 of  .debug-info island-event  endof
 
   endcase
   .debug-info  \ XXX INFORMER
@@ -2589,12 +2656,26 @@ far>sconstant intro-text-2$
   \ ============================================================
   section( Debugging tools [2])  \ {{{1
 
+: color-debug ( c -- ) attributes columns rot fill ;
+  \ Color the debug info with attribute _c_.
+
+: do-debug-pause ( -- )
+  100 1 beep 100 10 beep
+  attributes c@
+  [ white red papery + brighty ] cliteral color-debug
+  key drop color-debug ;
+  \ Highlight the debug information, do a pause, then restore
+  \ the previous attributes.
+
 : (.debug-info) ( -- )
   get-fonts 2>r text-font
   home aboard? if     ." SHIP:"  ship-loc ? ship-loc @ sea
                else   ." LAND:"  crew-loc ? crew-loc @ island
-               then ? ." Stack:" .s last-column column - spaces
+               then ? ." Stack:" .s
+               last-column column - spaces
+               debug-pause @ if do-debug-pause then
             2r> set-fonts ;
+  \ Display the debug information.
 
 ' (.debug-info) ' .debug-info defer!
 
