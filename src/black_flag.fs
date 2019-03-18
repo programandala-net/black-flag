@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.58.0-dev.0+201903181514" ;
+: version$ ( -- ca len ) s" 0.59.0-dev.0+201903190032" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -132,6 +132,7 @@ need cyan    need yellow  need white
 
 need attr!  need papery  need brighty  need blackout
 need bright-mask
+need attr@ \ XXX TMP -- used by debugging tools
 
 need set-paper  need set-ink  need set-bright
 
@@ -167,20 +168,9 @@ game-wordlist  dup >order set-current
   \ Break point.
   \ XXX OLD
 
-'q' ~~quit-key c!  $FF ~~resume-key c!  22 ~~y c!  ~~? off
-
-' default-font ' ~~app-info defer!
-  \ Make sure the debug information compiled by `~~` is printed
-  \ with the ROM font.
+'q' ~~quit-key c!  bl ~~resume-key c!  20 ~~y c!  ~~? on
 
 : ?break ( -- ) break-key? if cr ." Aborted!" cr quit then ;
-
-defer .debug-info ( -- )
-
-' .debug-info ' ~~app-info defer!
-
-variable debug-pause debug-pause on
-  \ Flag: Wait for a key at the end of `.debug-info`?
 
   \ ============================================================
   section( Constants)  \ {{{1
@@ -437,7 +427,7 @@ far>sconstants damage-level$ ( n -- ca len )
   np@ far," Fibaloto"   \ fi-balot-o
   np@ far," Pomotruko"  \ pom-o-truk-o
   np@ far," Putotombo"  \ put-o-tomb-o="well tomb"
-  np@ far," Ursorelo"   \ urs-orel-="ear of bear"
+  np@ far," Ursorelo"   \ urs-orel-o="ear of bear"
   np@ far," Kukumemo"   \ kukum-em-o
 far>sconstants village$ ( n -- ca len )
       constant villages
@@ -789,7 +779,7 @@ far-banks 3 + c@ cconstant screen-backup-bank
   \ XXX TODO -- not if an enemy ship is present
 
 : ship-commands ( -- )
-  .debug-info  \ XXX INFORMER
+  ~~  \ XXX INFORMER
   feasible-disembark? >r
   16 [ panel-y 1+ ] cliteral at-xy
   s" Desembarcar" 0 r> ?>option$ type ;
@@ -802,7 +792,7 @@ far-banks 3 + c@ cconstant screen-backup-bank
   \ disembarking position
 
 : island-commands ( -- )
-  .debug-info  \ XXX INFORMER
+  ~~  \ XXX INFORMER
   feasible-embark? >r
   16 [ panel-y 1+ ] cliteral at-xy
   s" emBarcar" 2 r> ?>option$ type
@@ -1874,59 +1864,51 @@ sailor-window-cols 2+ 8 * 4 +
   case
     native-village  of
                         1 border \ XXX INFORMER
-                        .debug-info  \ XXX INFORMER
+                        ~~  \ XXX INFORMER
                         .village
                         endof
     dubloons-found  of
                         2 border \ XXX INFORMER
-                        .debug-info  \ XXX INFORMER
+                        ~~  \ XXX INFORMER
                         4 8 palm2 14 5 palm2
                         endof
       \ XXX TODO -- print dubloons here
     hostile-native  of
                         3 border \ XXX INFORMER
-                        .debug-info  \ XXX INFORMER
+                        ~~  \ XXX INFORMER
                         14 5 palm2 25 8 palm2
-                        .debug-info  \ XXX INFORMER
                         .native
                         endof
 
     just-3-palms-1  of
                         4 border \ XXX INFORMER
-                        .debug-info  \ XXX INFORMER
+                        ~~  \ XXX INFORMER
                         25 8 palm2
-                        .debug-info  \ XXX INFORMER
                         4 8 palm2
-                        .debug-info  \ XXX INFORMER
                         16 5 palm2
-                        .debug-info  \ XXX INFORMER
                         endof
       \ XXX FIXME -- Crash, sometimes.
 
     snake of
                         5 border \ XXX INFORMER
-                        .debug-info  \ XXX INFORMER
+                        ~~  \ XXX INFORMER
       13 5 palm2 5 6 palm2
       18 8 palm2 23 8 palm2
-                        .debug-info  \ XXX INFORMER
       .snake
       endof
 
     just-3-palms-2  of
                         6 border \ XXX INFORMER
-                        .debug-info  \ XXX INFORMER
+                        ~~  \ XXX INFORMER
                         23 8 palm2
-                        .debug-info  \ XXX INFORMER
                         4 8 palm2
-                        .debug-info  \ XXX INFORMER
                         17 5 palm2
-                        .debug-info  \ XXX INFORMER
                         endof
       \ XXX FIXME -- Crash, sometimes.
 
     native-supplies of
                         7 border \ XXX INFORMER
-                        .debug-info  \ XXX INFORMER
+                        ~~  \ XXX INFORMER
                         .supplies  .native  16 4 palm2
                         endof
     native-ammo     of
@@ -1936,12 +1918,12 @@ sailor-window-cols 2+ 8 * 4 +
                         2 border 10 ms \ XXX INFORMER
                         7 border 10 ms \ XXX INFORMER
                         2 border 10 ms \ XXX INFORMER
-                        .debug-info  \ XXX INFORMER
+                        ~~  \ XXX INFORMER
                         .ammo-gift .native 20 5 palm2
                         endof
   endcase
   0 border \ XXX INFORMER
-  .debug-info  \ XXX INFORMER
+  ~~  \ XXX INFORMER
   ;
 
 : current-island-location ( -- )
@@ -2003,9 +1985,8 @@ create island-events-table ( -- a ) here
 here - cell / constant island-events
 
 : island-event ( -- )
-  island-events random island-events-table array>
-  .debug-info
-  perform ;
+  island-events random island-events-table array> ~~
+  perform ~~ ;
 
   \ ============================================================
   section( Enter island location)  \ {{{1
@@ -2015,7 +1996,7 @@ here - cell / constant island-events
 
 : enter-this-island-location ( n -- )
 
-  .debug-info
+  ~~
 
   case
 
@@ -2068,12 +2049,12 @@ here - cell / constant island-events
     \ XXX TODO -- Change the message if the village is visited.
   endof
 
-  just-3-palms-1 of  .debug-info island-event  endof
+  just-3-palms-1 of  ~~ island-event  endof
 
-  just-3-palms-2 of  .debug-info island-event  endof
+  just-3-palms-2 of  ~~ island-event  endof
 
   endcase
-  .debug-info  \ XXX INFORMER
+  ~~  \ XXX INFORMER
  ;
 
 : enter-island-location ( -- )
@@ -2656,28 +2637,33 @@ far>sconstant intro-text-2$
   \ ============================================================
   section( Debugging tools [2])  \ {{{1
 
-: color-debug ( c -- ) attributes columns rot fill ;
-  \ Color the debug info with attribute _c_.
+2variable current-fonts
+create current-attr 0 c,
 
-: do-debug-pause ( -- )
-  100 1 beep 100 10 beep
-  attributes c@
-  [ white red papery + brighty ] cliteral color-debug
-  key drop color-debug ;
-  \ Highlight the debug information, do a pause, then restore
-  \ the previous attributes.
+: before-debug ( -- )
+  ~~save-xy  get-fonts current-fonts 2! text-font
+  attr@ current-attr c!
+  [ white red papery + brighty ] cliteral attr! ;
 
-: (.debug-info) ( -- )
-  get-fonts 2>r text-font
-  home aboard? if     ." SHIP:"  ship-loc ? ship-loc @ sea
-               else   ." LAND:"  crew-loc ? crew-loc @ island
-               then ? ." Stack:" .s
-               last-column column - spaces
-               debug-pause @ if do-debug-pause then
-            2r> set-fonts ;
+' before-debug ' ~~before-info defer!
+
+: after-debug ( -- )
+  attributes columns 2* erase \ hide the info.
+  current-fonts 2@ set-fonts
+  current-attr c@ attr!
+  ~~restore-xy ;
+
+' after-debug ' ~~after-info defer!
+
+: debug-info ( nt line block -- )
+  home columns 2* spaces home
+  drop ." L#" 2 .r space name>string 28 min type cr
+  aboard? if   ." SHIP:" ship-loc ? ship-loc @ sea
+          else ." LAND:" crew-loc ? crew-loc @ island
+          then ? .s 100 1 beep 100 10 beep ;
   \ Display the debug information.
 
-' (.debug-info) ' .debug-info defer!
+' debug-info ' ~~info defer!
 
 variable checkered
 
