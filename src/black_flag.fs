@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.59.1-dev.0+201903190057" ;
+: version$ ( -- ca len ) s" 0.60.0+201903190207" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -103,6 +103,8 @@ need ticks  need ms  need seconds  need ?seconds
   section(   -Data and strings)  \ {{{2
 
 need 2avariable  need avariable    need cavariable  need value
+
+need farcavariable need farc! need farc@ need farc+!
 
 need far>sconstant
 need far>sconstants  need farsconstants  need far,"
@@ -316,8 +318,8 @@ variable pace
   \ --------------------------------------------
   section(   -Crew)  \ {{{2
 
-men avariable stamina
-  \ XXX TODO -- character array in far memory
+men farcavariable stamina ( n -- ca )
+  \ A byte array variable in far memory.
 
   \ Crew names are pun funny names in Spanish:
 
@@ -368,12 +370,14 @@ men 2avariable name ( n -- a )
 
 : name$ ( n -- ca len ) name 2@ far>stringer ;
 
-stock-names avariable used-name ( n -- a )
-  \ An array to hold a true flag when the correspondent name
-  \ in `names$` has been used in `name`. The goal is to prevent
-  \ name duplicates in the crew.
-  \
-  \ XXX TODO -- Store in far memory.
+stock-names farcavariable used-name ( n -- ca )
+  \ A byte array variable in far memory containing byte flags.
+  \ When the correspondent name in `names$` has been used in
+  \ `name`, the flag is true ($FF). The goal is to avoid
+  \ duplicated names in the crew.
+
+: new-names ( -- ) stock-names 0 do 0 i used-name farc! loop ;
+  \ Mark all names unused.
 
 0
   np@ far," en forma"
@@ -537,7 +541,7 @@ far>sconstants number$ ( n -- ca len ) drop
 : game-over? ( -- f ) failure? success? quit-game @ or or ;
   \ Game over?
 
-: condition$ ( n -- ca len ) stamina @ stamina$ ;
+: condition$ ( n -- ca len ) stamina farc@ stamina$ ;
   \ Physical condition of a crew member
 
 : blank-line$ ( -- ca len ) bl columns ruler ;
@@ -1116,20 +1120,20 @@ cyan dup papery + brighty constant sunny-sky-attr
   \ ============================================================
   section( Crew stamina)  \ {{{1
 
-: dead? ( n -- f ) stamina @ 0= ;
+: dead? ( n -- f ) stamina farc@ 0= ;
   \ Is man _n_ dead?
 
 : somebody-alive ( -- n )
   begin  men random dup dead?  while  drop  repeat ;
   \ Return a random alive man _n_.
 
-: is-injured ( n -- ) -1 over stamina +!  dead? alive +! ;
+: is-injured ( n -- ) -1 over stamina farc+!  dead? alive +! ;
   \ Man _n_ is injured.
 
 : injured ( -- n ) somebody-alive dup is-injured ;
   \ A random man _n_ is injured.
 
-: is-dead ( n -- ) stamina off  -1 alive +! ;
+: is-dead ( n -- ) 0 swap stamina farc!  -1 alive +! ;
   \ Man _n_ is dead.
 
 : dead ( -- n ) somebody-alive dup is-dead ;
@@ -1218,7 +1222,7 @@ s" Pulsa una tecla" far>sconstant press-any-key$
   \ x coordinate of the crew member status in the crew report
 
 : set-condition-color ( n -- )
-  stamina @ stamina-attr c@ attr! ;
+  stamina farc@ stamina-attr c@ attr! ;
   \ Set the proper color for the condition of man _n_.
 
 : .crew-member-data ( n -- )
@@ -2453,18 +2457,20 @@ variable price  variable offer
 
 : unused-name ( -- n )
   0  begin  drop  0 [ stock-names 1- ] xliteral random-between
-     dup used-name @ 0= until ;
+     dup used-name farc@ 0= until ;
   \ Return the random identifier _n_ of an unused name.
 
 : new-crew-name ( n -- )
-  unused-name dup used-name on  stock-name$ rot name 2! ;
+  unused-name dup  true swap used-name farc!
+  stock-name$ rot name 2! ;
   \ Choose an unused name for crew member _n_.
 
-: new-crew-names ( -- ) men 0 do  i new-crew-name  loop ;
+: new-crew-names ( -- ) new-names
+                        men 0 do i new-crew-name loop ;
   \ Choose unused names for the crew members.
 
 : init-crew-stamina ( -- )
-  men 0 do  max-stamina i stamina !  loop ;
+  men 0 do  max-stamina i stamina farc!  loop ;
   \ Set the stamina of the crew to its maximum.
 
 : new-crew ( -- ) new-crew-names init-crew-stamina ;

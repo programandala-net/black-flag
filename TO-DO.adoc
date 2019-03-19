@@ -105,10 +105,9 @@ Only the strings printed with graph font 2 must be adapted.
 Simplify the ship damage calculations: Use only one counter and one
 range.
 
-== 2017-01-08
+== 2017-01-08, 2019-03-19
 
-Convert `used-name`, `stamina` and maps to a character array, to save
-memory.
+Convert maps to character arrays in far memory, to save memory.
 
 == Old notes about the abandaned conversion to Master BASIC
 
