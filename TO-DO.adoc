@@ -4,6 +4,12 @@
 
 == 2019-03-19
 
+- Fix: The attack command takes a long time to start.
+- Fix: Make panel keys audible.
+- Fix: Deactivate trading if the village has been attacked.
+- Remove `do-attack-boat` and everything related.
+- Fix the map of the treasure island.
+- Reembark when the treasure has not been found.
 - Improve layout of `score-report`.
 - Fix: Some texts don't fit in `native-window` and overwrite the
   start.
