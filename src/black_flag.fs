@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.60.0+201903190207" ;
+: version$ ( -- ca len ) s" 0.60.1+201903190218" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -2505,10 +2505,9 @@ variable price  variable offer
     s" - La munición se ha terminado." wltype wcr then
   alive @ 0= if
     s" - Toda tu tripulación ha muerto." wltype wcr then
-  max-damage? = if
+  damage max-damage? = if
     s" - El barco está muy dañado y es imposible repararlo."
-    wltype wcr
-  then
+    wltype wcr then
   cash @ 0= if  s" - No te queda dinero." wltype then ;
 
 : happy-end ( -- )
