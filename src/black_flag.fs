@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.60.1+201903190218" ;
+: version$ ( -- ca len ) s" 0.60.2+201903191755" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -1205,7 +1205,7 @@ s" Pulsa una tecla" far>sconstant press-any-key$
 : main-report ( -- )
   begin-report
   0 1 at-xy s" Informe de situación" columns type-center-field
-  0 4 at-xy  18 /tabulate !
+  0 4 at-xy  18 /tabulate c!
   ." Días:"             day        .datum
   ." Hombres:"          alive      .datum
   ." Moral:"            morale     .datum
