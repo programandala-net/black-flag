@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.60.2+201903191755" ;
+: version$ ( -- ca len ) s" 0.60.3+201903192219" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -629,7 +629,7 @@ esc-udg-chars-wordlist 3 set-esc-order
 
 7 12 sailor-window-cols 7 window constant sailor-window
 
-5 3 22 20 window constant the-end-window
+1 2 30 14 window constant end-window
 
   \ ============================================================
   section( Screen)  \ {{{1
@@ -2492,35 +2492,42 @@ variable price  variable offer
   \ XXX TODO
  ;
 
+: (item ( ca len -- ) s" - " wltype wltype wcr ;
+
+: item ( ca len -- ) wcr (item ;
+
 : sad-end ( -- )
   text-font [ white red papery + ] cliteral attr!
-  0 1 at-xy s" FIN DEL JUEGO" columns type-center-field
-  the-end-window current-window !
-  [ black yellow papery + ] cliteral attr!
+  home s" FIN DEL JUEGO" columns type-center-field
+  end-window current-window !
+  [ black yellow papery + ] cliteral attr! wcls
   supplies @ 0= if
-    s" - Las provisiones se han agotado." wltype wcr then
+    s" Las provisiones se han agotado." (item then
   morale @ 0= if
-    s" - La tripulación se ha amotinado." wltype wcr then
+    s" La tripulación se ha amotinado." item then
   ammo @ 0 <= if
-    s" - La munición se ha terminado." wltype wcr then
+    s" La munición se ha agotado." item then
   alive @ 0= if
-    s" - Toda tu tripulación ha muerto." wltype wcr then
-  damage max-damage? = if
-    s" - El barco está muy dañado y es imposible repararlo."
-    wltype wcr then
-  cash @ 0= if  s" - No te queda dinero." wltype then ;
+    s" Toda la tripulación ha muerto." item then
+  max-damage? if 
+    s" El barco está hundiéndose."
+    item then
+  cash @ 0= if
+    s" No te queda dinero." item then ;
+  \ XXX REMARK -- All 6 items could not fit the window, but
+  \ both items about the crew are exclusive, so the maximum
+  \ number of items is 5.
+
 
 : happy-end ( -- )
   s" Lo lograste, capitán." message ;
   \ XXX TODO --
 
 : the-end ( -- )
-  [ black yellow papery + ] cliteral attr! wcls
-  graphics-1  16 1 do  27 i palm2  1 i palm2  7 +loop
+  black attr! cls
   success? if happy-end else sad-end then
-  s" Pulsa una tecla para ver tus puntos" message
+  s" Pulsa una tecla para ver tu puntuación" message
   new-key- 200 30 beep score-report ;
-  \ XXX TODO -- new graphic, based on the cause of the end
 
   \ ============================================================
   section( Intro)  \ {{{1
@@ -2624,6 +2631,9 @@ variable checkered
 : ship-here? ( col row -- f ) sea-length * + ship-loc @ = ;
 
 : loc-color ( f -- ) if red else white then set-ink ;
+
+: end0 ( -- ) supplies off morale off ammo off alive off
+  max-damage damage ! cash off sad-end ;
 
 : .sea ( -- )
   black set-paper cr
