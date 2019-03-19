@@ -4,7 +4,12 @@
 
 == 2019-03-19
 
-Rewrite `trigger` with a calculation and a vector table.
+- Improve layout of `score-report`.
+- Fix: Some texts don't fit in `native-window` and overwrite the
+  start.
+- Create a "…" character and use it instead of "..." to save some
+  space in the texts.
+- Rewrite `trigger` with a calculation and a vector table.
 
 == 2017-11-29
 
