@@ -1,25 +1,29 @@
-== Black Flag 
+== Black Flag
 :author: Marcos Cruz (programandala.net)
-:revdate: 2019-03-15
+:revdate: 2019-03-19
 :linkattrs:
+:toc:
+:toc-title: Contents/Contenido
 
-== Description
+== English
 
-Black Flag is a project under development, a remake of a ZX Spectrum
+=== Description
+
+_Black Flag_ is a project under development, a remake of a ZX Spectrum
 game called
 http://www.worldofspectrum.org/infoseekid.cgi?id=0002639[Jolly
 Roger,role="external"], which was written by Barry Jones in 1984.
 
-Black Flag is written in
+_Black Flag_ is written in
 http://forth-standard.org[Forth,role="external"] with
 http://programandala.net/en.program.solo_forth.html[Solo Forth], for
 ZX Spectrum 128.
 
 Home page: http://programandala.net/en.program.black_flag.html.
 
-== Features
+=== Features
 
-Compared to the original game, Black Flag has the following (planned)
+Compared to the original game, _Black Flag_ has the following (planned)
 features:
 
 - Much, much faster (no surprise, Forth inside!)
@@ -34,7 +38,7 @@ features:
 - Configurable
 - And many more...
 
-== Motivation
+=== Motivation
 
 I find the original game very nice.  In its simplicity (it was written
 in plain Sinclair BASIC in 1984), it combines features of simulation,
@@ -54,8 +58,8 @@ were finally abandoned.
 By the end of 2015, the development status of
 http://programandala.net/en.program.solo_forth.html[Solo Forth] made
 it the perfect choice to resurrect the project.  In Forth there's no
-technical limitation to creativity.  Beside, the development of Black
-Flag became a very useful workbench for the parallel development of
+technical limitation to creativity.  Beside, the development of _Black
+Flag_ became a very useful workbench for the parallel development of
 Solo Forth.
 
 // == Screenshots
@@ -73,7 +77,11 @@ Solo Forth.
 // image::screenshots/black_flag_village.png[Village]
 // image::screenshots/black_flag_trade.png[Trade]
 
-== How to compile and run
+=== How to compile and run
+
+If you cannot wait for the first release, you can build the game
+yourself on a GNU/Linux operating system (in theory, other systems are
+possible as well):
 
 . Make sure the required programs, listed in the header of the
   <Makefile> file, are installed on your system.
@@ -81,18 +89,22 @@ Solo Forth.
   <disk_2_black_flag.mgt> disk image.
 . Start a ZX Spectrum 128 emulator with the Plus D interface.
 . Enter 128 BASIC.
-. Insert the Solo Forth's <disk_0_boot.mgt> disk image into drive 1.
+. Insert the Solo Forth's <disk_0_boot.mgt> disk image into drive 1 of
+  the emulator.
 . Type `run` to load G+DOS and Solo Forth from drive 1.
-. Insert the <disk_2_black_flag.mgt> disk image into drive 1.
+. Insert the <disk_2_black_flag.mgt> disk image into drive 1 of the
+  emulator.
 . Type `1 load` to load block 1 from the current drive. This will
   start the compilation. Messages will be shown during the process.
 . Set your emulator to its maximum speed and wait. When the
   compilation is finished, the screen is cleared and a message is
   displayed.
-. Type `run` to start the game.
 . Save a SZX snapshot with your emulator.
+. Type `run` to start the game.
 
-== Brief history
+////
+
+=== Brief history
 
 2015-11-02: Start modifying the source of the
 http://programandala.net/es.programa.bandera_negra.mbim.html[abandoned
@@ -106,3 +118,90 @@ progress.
 2016-12-20: Version 0.1.0: The language conversion is finished.
 
 2017-02-05: Version 0.48.0: The Git repository is uploaded to GitHub.
+
+////
+
+== Español
+
+=== Descripción
+
+_Black Flag_ (Bandera negra) es un proyecto en desarrollo, una
+reinterpretación de un juego de ZX Spectrum llamado
+http://www.worldofspectrum.org/infoseekid.cgi?id=0002639[Jolly
+Roger,role="external"], que fue escrito por Barry Jones en 1984.
+
+_Black Flag_ está escrito en
+http://forth-standard.org[Forth,role="external"] con
+http://programandala.net/es.programa.solo_forth.html[Solo Forth], para
+ZX Spectrum 128.
+
+Página en red: http://programandala.net/es.programa.black_flag.html.
+
+=== Características
+
+En relación con el juego original, _Black Flag_ tiene las siguientes
+características (previstas):
+
+- Muchísimo más rápido (no es de extrañar, estando escrito en Forth)
+- Aspecto y manejo similares
+- Lógica mejorada
+- Interfaz mejorada
+- Argumento mejorado
+- Gráficos mejorados
+- Efectos de sonido mejorados
+- Nuevas tipografías
+- Multilingüe
+- Configurable
+- Y muchas más...
+
+=== Motivación
+
+El juego original me resulta muy atractivo. Dentro de su sencillez
+(fue escrito en Sinclair BASIC en 1984), combina elementos de simulacíon,
+de estrategia, de aventura de texto y de acción.
+
+Además, un par de pequeños amigos míos lo encontraron también de su
+gusto.  De modo que en 2011-08 decidí traducir el juego original en
+español, y mejorarle la interfaz y otros detalles.  El proyecto se
+llamó http://programandala.net/es.programa.bandera_negra.html[Bandera
+negra].  El desarrollo empezó en Sinclair BASIC para ZX Spectrum 128 y
+más tardé continuó en MasterBASIC para su potente pariente, y bastante
+compatible con Spectrum, la computadora http://worldofsam.org[SAM
+Coupé, role="external"]. Por razones técnicas que se explican en la
+página de ese proyecto, ambas versiones fueron finalmente abandonadas.
+
+A finales de 2015, el estado del desarrollo de
+http://programandala.net/en.program.solo_forth.html[Solo Forth] 
+hacía este sistema la opción ideal para retomar el proyecto.
+En Forth no hay limitaciones técnicas a la creatividada.
+Además, el desarrollo de _Black Flag_ se convirtió en un banco de pruebas
+muy útil durante el desarrollo paralelo de Solo Forth.
+
+=== Cómo compilar y ejecutar
+
+Si no puedes esperar a la publicación de la primera versión, puedes
+construir el programa tú mismo en un sistema operativo GNU/Linux (en
+teoría también es posible en otro tipo de sistemas):
+
+. Asegúrate de que los programas requeridos, que están listados en la
+  cabecerad del fichero <Makefile>, están instalados.
+. Escribe el comando `make` en el directorio del proyecto para
+  construir el fichero de réplica de disquete <disk_2_black_flag.mgt>.
+. Arranca un emulador de ZX Spectrum 128 con la interfaz Plus D.
+. Entra en 128 BASIC.
+. Inserta el fichero réplica de disquete <disk_0_boot.mgt> de Solo
+  Forth en la disquetera 1 del emulador.
+. Escribe el comando de BASIC `run` para cargar G+DOS y Solo Forth
+  desde la disquetera 1.
+. Inserta el fichero de réplica de disquete <disk_2_black_flag.mgt> en
+  la disquetera 1 del emulador.
+. Escribe el comando de Forth `1 load` para cargar el bloque 1 desde
+  el disco actual. Esto iniciará la compilación.  Durante el proceso
+  se mostrarán mensajes de evolución.
+. Pon la velocidad del emulador al máximo y espera. Cuando la
+  compilación haya terminado se limpiará la pantalla y se mostrará un
+  mensaje.
+. Guarda una réplica del sistema en formato SZX con la opción
+  correspondiente del emulador.
+. Escribe `run` para arrancar el juego.
+
