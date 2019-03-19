@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.59.0-dev.0+201903190032" ;
+: version$ ( -- ca len ) s" 0.59.1-dev.0+201903190057" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -168,7 +168,7 @@ game-wordlist  dup >order set-current
   \ Break point.
   \ XXX OLD
 
-'q' ~~quit-key c!  bl ~~resume-key c!  20 ~~y c!  ~~? on
+'q' ~~quit-key c!  bl ~~resume-key c!  20 ~~y c!  ~~? off
 
 : ?break ( -- ) break-key? if cr ." Aborted!" cr quit then ;
 
@@ -779,7 +779,6 @@ far-banks 3 + c@ cconstant screen-backup-bank
   \ XXX TODO -- not if an enemy ship is present
 
 : ship-commands ( -- )
-  ~~  \ XXX INFORMER
   feasible-disembark? >r
   16 [ panel-y 1+ ] cliteral at-xy
   s" Desembarcar" 0 r> ?>option$ type ;
@@ -792,7 +791,6 @@ far-banks 3 + c@ cconstant screen-backup-bank
   \ disembarking position
 
 : island-commands ( -- )
-  ~~  \ XXX INFORMER
   feasible-embark? >r
   16 [ panel-y 1+ ] cliteral at-xy
   s" emBarcar" 2 r> ?>option$ type
@@ -1862,69 +1860,17 @@ sailor-window-cols 2+ 8 * 4 +
 
 : island-location ( n -- )
   case
-    native-village  of
-                        1 border \ XXX INFORMER
-                        ~~  \ XXX INFORMER
-                        .village
-                        endof
-    dubloons-found  of
-                        2 border \ XXX INFORMER
-                        ~~  \ XXX INFORMER
-                        4 8 palm2 14 5 palm2
-                        endof
+    native-village  of .village                         endof
+    dubloons-found  of 4 8 palm2 14 5 palm2             endof
       \ XXX TODO -- print dubloons here
-    hostile-native  of
-                        3 border \ XXX INFORMER
-                        ~~  \ XXX INFORMER
-                        14 5 palm2 25 8 palm2
-                        .native
-                        endof
-
-    just-3-palms-1  of
-                        4 border \ XXX INFORMER
-                        ~~  \ XXX INFORMER
-                        25 8 palm2
-                        4 8 palm2
-                        16 5 palm2
-                        endof
-      \ XXX FIXME -- Crash, sometimes.
-
-    snake of
-                        5 border \ XXX INFORMER
-                        ~~  \ XXX INFORMER
-      13 5 palm2 5 6 palm2
-      18 8 palm2 23 8 palm2
-      .snake
-      endof
-
-    just-3-palms-2  of
-                        6 border \ XXX INFORMER
-                        ~~  \ XXX INFORMER
-                        23 8 palm2
-                        4 8 palm2
-                        17 5 palm2
-                        endof
-      \ XXX FIXME -- Crash, sometimes.
-
-    native-supplies of
-                        7 border \ XXX INFORMER
-                        ~~  \ XXX INFORMER
-                        .supplies  .native  16 4 palm2
-                        endof
-    native-ammo     of
-                        7 border 10 ms \ XXX INFORMER
-                        2 border 10 ms \ XXX INFORMER
-                        7 border 10 ms \ XXX INFORMER
-                        2 border 10 ms \ XXX INFORMER
-                        7 border 10 ms \ XXX INFORMER
-                        2 border 10 ms \ XXX INFORMER
-                        ~~  \ XXX INFORMER
-                        .ammo-gift .native 20 5 palm2
-                        endof
-  endcase
-  0 border \ XXX INFORMER
-  ~~  \ XXX INFORMER
-  ;
+    hostile-native  of 14 5 palm2 25 8 palm2 .native    endof
+    just-3-palms-1  of 25 8 palm2  4 8 palm2 16 5 palm2 endof
+    snake           of 13 5 palm2  5 6 palm2
+                       18 8 palm2 23 8 palm2 .snake     endof
+    just-3-palms-2  of 23 8 palm2  4 8 palm2 17 5 palm2 endof
+    native-supplies of .supplies .native  16 4 palm2    endof
+    native-ammo     of .ammo-gift .native 20 5 palm2    endof
+  endcase ;
 
 : current-island-location ( -- )
   crew-loc @ island @ island-location ;
@@ -1982,11 +1928,10 @@ create island-events-table ( -- a ) here
 ] marsh swamp spider scorpion hunger thirst money
   no-problem no-problem no-danger no-danger noop noop [
 
-here - cell / constant island-events
+here swap - cell / constant island-events
 
 : island-event ( -- )
-  island-events random island-events-table array> ~~
-  perform ~~ ;
+  island-events random island-events-table array> perform ;
 
   \ ============================================================
   section( Enter island location)  \ {{{1
@@ -1995,8 +1940,6 @@ here - cell / constant island-events
   hostile-native crew-loc @ island ! ;
 
 : enter-this-island-location ( n -- )
-
-  ~~
 
   case
 
@@ -2049,13 +1992,11 @@ here - cell / constant island-events
     \ XXX TODO -- Change the message if the village is visited.
   endof
 
-  just-3-palms-1 of  ~~ island-event  endof
+  just-3-palms-1 of island-event endof
 
-  just-3-palms-2 of  ~~ island-event  endof
+  just-3-palms-2 of island-event endof
 
-  endcase
-  ~~  \ XXX INFORMER
- ;
+  endcase ;
 
 : enter-island-location ( -- )
   wipe-message island-scenery panel-commands

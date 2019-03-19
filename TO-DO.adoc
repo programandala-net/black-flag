@@ -11,15 +11,6 @@ Rewrite `trigger` with a calculation and a vector table.
 Check `score +!`: it should not be used in `update-score`; beside,
 it's used already in some events.
 
-== 2017-02-04, 2018-04-30
-
-Fix the crashes when entering the island locations that have 3 palms.
-The problem seems related to the fact that there's no event in those
-locations, and the stack gets unbalanced.
-
-The checks in `island-location` confirm the crash can happen in
-locations `just-3-palms-1` and `just-3-palms-2`, but not always.
-
 == 2017-02-02, 2017-02-04
 
 Improve: Move all string literals to far memory. This step will be
