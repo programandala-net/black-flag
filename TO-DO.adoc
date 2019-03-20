@@ -6,7 +6,6 @@
 
 - Check usage of map offset, e.g. `to-north`.
 - Fix: the graphic of the ship does not change.
-- Factor `s" ." s+`.
 - Fix: after the embarking after the trade, the next scenary is still
   the island.
 - Fix: remove the message left by `init-trade` before the native

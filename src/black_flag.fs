@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.62.4+201903201606" ;
+: version$ ( -- ca len ) s" 0.63.0+201903201622" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -655,6 +655,8 @@ far-banks 3 + c@ cconstant screen-backup-bank
   \ ============================================================
   section( Text output)  \ {{{1
 
+: dot ( ca1 len1 --  ca2 len2 ) s" ." s+ ;
+
 : native-pause ( len -- ) 10 / 2 max ?seconds ;
 
 : native-says ( ca len -- )
@@ -1164,7 +1166,7 @@ cyan dup papery + brighty constant sunny-sky-attr
    7  8 at-xy .\" H\..I  A" ;
 
 : run-aground-message ( -- )
-  s" ¡Has encallado! El barco está " damage$ s+ s" ." s+
+  s" ¡Has encallado! El barco está " damage$ s+ dot
   message ;
 
 : run-aground-damages ( -- )
@@ -1915,7 +1917,7 @@ sailor-window-cols 2+ 8 * 4 +
 
 : dubloons-found ( n -- )
   dup .dubloons  dup cash+!
-  s" Encuentras " rot coins$ s+ s" ." s+ message ;
+  s" Encuentras " rot coins$ s+ dot message ;
   \ Find _n_ dubloons.
 
 : some-dubloons-found ( -- )
@@ -1954,14 +1956,14 @@ here swap - cell / constant island-events
 
   snake of
     s" Una serpiente muerde a "
-    injured name$ s+ s" ." s+ message
+    injured name$ s+ dot message
     \ XXX TODO -- inform if the man is dead
   endof
 
   hostile-native of
     s" Un nativo intenta bloquear el paso y hiere a "
     injured dup >r name$ s+ s" , que resulta " s+
-    r> condition$ s+ s" ." s+ message
+    r> condition$ s+ dot message
   endof
 
   dubloons-here of
@@ -2089,7 +2091,7 @@ cyan dup papery + constant stormy-sky-attr
 
 : storm-report ( -- )
   s" Cuando la mar y el cielo se calman, "
-  s" compruebas el estado del barco: " s+ damage$ s+ s" ." s+
+  s" compruebas el estado del barco: " s+ damage$ s+ dot
   message ;
 
 : storm ( -- ) stormy-sky wipe-panel storm-warning
@@ -2173,16 +2175,16 @@ cyan dup papery + constant stormy-sky-attr
   section( Clues)  \ {{{1
 
 : path-clue$ ( -- ca len )
-  s" Tomar camino " path @ number$ s+ s" ." s+ ;
+  s" Tomar camino " path @ number$ s+ dot ;
 
 : tree-clue$ ( -- ca len )
-  s" Parar en árbol " tree @ number$ s+ s" ." s+ ;
+  s" Parar en árbol " tree @ number$ s+ dot ;
 
 : turn-clue$ ( -- ca len )
   s" Ir a " turn @ hand$ s+ s"  en árbol." s+ ;
 
 : village-clue$ ( -- ca len )
-  s" Atravesar poblado " village @ village$ s+ s" ." s+ ;
+  s" Atravesar poblado " village @ village$ s+ dot ;
 
 : direction-clue$ ( -- ca len )
   s" Ir " direction @ cardinal$ s+ s"  desde poblado." s+ ;
@@ -2219,7 +2221,7 @@ variable price  variable offer
   s" . ¿Qué oferta le haces? (1-" s+ r@ u>str s+ s" )" s+
   message
   1 r> get-digit offer !
-  s" Le ofreces " offer @ coins$ s+ s" ." s+ message ;
+  s" Le ofreces " offer @ coins$ s+ dot message ;
   \ Ask the player for an offer.
   \ XXX TODO -- remove `offer`, use the stack instead
   \ XXX TODO -- rename to `your-offer`
@@ -2263,7 +2265,7 @@ variable price  variable offer
   wipe-panel
   init-trade  s" Yo vender pista de tesoro a tú." native-says
   5 9 random-between price !
-  s" Precio ser " price @ coins$ s+ s" ." s+ native-says
+  s" Precio ser " price @ coins$ s+ dot native-says
   s" ¿Qué dar tú, blanco?" native-says  make-offer
   offer @ price @ 1-  >= if accepted-offer exit then
     \ One dubloon less is accepted.
@@ -2276,7 +2278,7 @@ variable price  variable offer
            endcase
 
   -1 price +!
-  s" ¡No! ¡Yo querer más! Tú darme " price @ coins$ s+ s" ." s+
+  s" ¡No! ¡Yo querer más! Tú darme " price @ coins$ s+ dot
   native-says  one-coin-less ;
 
   \ ============================================================
@@ -2306,7 +2308,7 @@ variable price  variable offer
 : hard-to-kill-native ( -- )
   -native
   s" El nativo muere, pero antes mata a "
-  dead @ name$ s+ s" ." s+ message ;
+  dead @ name$ s+ dot message ;
 
 : dead-native-has-supplies ( -- )
   -native
@@ -2327,7 +2329,7 @@ variable price  variable offer
 
 : attack-native-but-snake-kills ( -- )
   s" Matas al nativo, pero la serpiente mata a "
-  dead name$ s+ s" ." s+ message -native ;
+  dead name$ s+ dot message -native ;
 
 : attack-native-village ( -- )
   s" Un poblado entero es un enemigo muy difícil. "
@@ -2529,7 +2531,7 @@ variable price  variable offer
   \ Draw top and bottom borders of skulls.
 
 s" Viejas leyendas hablan del tesoro "
-s" que esconde la perdida isla de " s+ island-name$ s+ s" ." s+
+s" que esconde la perdida isla de " s+ island-name$ s+ dot
 far>sconstant intro-text-0$
 
 s" Los nativos del archipiélago recuerdan "
