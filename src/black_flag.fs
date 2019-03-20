@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.63.0+201903201622" ;
+: version$ ( -- ca len ) s" 0.64.0+201903201752" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -231,11 +231,14 @@ s" Calavera" far>sconstant island-name$
 
 9 cconstant max-offer
 
-                          0 cconstant sky-top-y
-                          3 cconstant sky-rows
-                          3 cconstant sea-top-y
-                         15 cconstant sea-bottom-y
-sea-bottom-y sea-top-y - 1+ cconstant sea-rows
+                              0 cconstant sky-top-y
+                              3 cconstant sky-rows
+
+                              3 cconstant arena-top-y
+                             15 cconstant arena-bottom-y
+arena-bottom-y arena-top-y - 1+ cconstant arena-rows
+  \ The arena is the main space of the scenary,
+  \ either island or sea.
 
                           3 cconstant treasure-island-top-y
                           5 cconstant treasure-island-rows
@@ -859,8 +862,8 @@ variable east-cloud-x  3 constant /east-cloud
 
 : wave-coords ( -- x y )
   [ columns /wave - ] cliteral random
-  [ sea-top-y       ] cliteral
-  [ sea-bottom-y    ] cliteral random-between ;
+  [ arena-top-y     ] cliteral
+  [ arena-bottom-y  ] cliteral random-between ;
   \ Return random coordinates _x y_ for a sea wave.
 
 : at-wave-coords ( -- ) wave-coords  at-xy ;
@@ -877,12 +880,16 @@ cyan dup papery + brighty constant sunny-sky-attr
   sunny-sky-attr color-sky bright-mask sun-and-clouds ;
   \ Make the sky sunny.
 
-: color-sea ( c -- )
-  [ sea-top-y attr-line ] literal
-  [ sea-rows columns *  ] xliteral rot fill ;
-  \ Color the sea with attribute _c_.
+: color-arena ( c -- )
+  [ arena-top-y attr-line ] literal
+  [ arena-rows columns *  ] xliteral rot fill ;
+  \ Color the arena with attribute _c_.
 
-: wipe-sea ( -- ) [ blue dup papery + ] cliteral color-sea ;
+: wipe-arena ( -- ) 0 arena-top-y at-xy
+                    [ arena-rows columns * ] xliteral spaces ;
+  \ Overwrite the arena with spaces.
+
+: wipe-sea ( -- ) [ blue dup papery + ] cliteral color-arena ;
 
 : new-sunny-sky ( -- ) new-clouds sunny-sky ;
 
@@ -1751,25 +1758,25 @@ sailor-window-cols 2+ 8 * 4 +
   section( Island graphics)  \ {{{1
 
 : wipe-island-scenery ( -- )
-  [ yellow dup papery + ] cliteral color-sea ;
+  [ yellow dup papery + ] cliteral color-arena ;
   \ XXX TODO -- Color only the block occupied by the island.
   \ This will save drawing the blue borders before drawing the
   \ waves.
 
 : north-waves ( -- )
-  0 sea-top-y at-xy ."  kl  mn     nm    klk   nm nm n " ;
+  0 arena-top-y at-xy ."  kl  mn     nm    klk   nm nm n " ;
   \ XXX TODO -- show random waves every time, using a random
   \ 32-chars substring from a main one
 
 : south-waves ( -- )
-  0 [ sea-bottom-y 1- ] cliteral at-xy
+  0 [ arena-bottom-y 1- ] cliteral at-xy
   ."  kl     mn  mn    kl    kl kl  m"
   ."     mn      klmn   mn m  mn     " ;
   \ XXX TODO -- show random waves every time, using a random
   \ 64-chars substring from a main one
 
 : west-waves ( -- )
-  [ sea-top-y sea-rows bounds ] 2literal
+  [ arena-top-y arena-rows bounds ] 2literal
   do  0 i at-xy ."   "  loop
   0  4 at-xy   'm' emit
   0  6 at-xy ." mn"
@@ -1785,7 +1792,7 @@ sailor-window-cols 2+ 8 * 4 +
   \ XXX TODO -- use constants for the base coordinates
 
 : east-waves ( -- )
-  [ sea-top-y sea-rows bounds ] 2literal
+  [ arena-top-y arena-rows bounds ] 2literal
   do  30 i at-xy ."   "  loop
   30  4 at-xy   'm' emit
   30  6 at-xy ." mn"
@@ -2207,7 +2214,7 @@ create clues ( -- a )
   section( Trading)  \ {{{1
 
 : native-speech-balloon ( -- )
-  black set-ink
+  [ black yellow papery + ] cliteral attr!
   100 100 plot  20 10 rdraw  0 30 rdraw  2 2 rdraw
   100 0 rdraw  2 -2 rdraw  0 -60 rdraw  -2 -2 rdraw
   -100 0 rdraw -2 2 rdraw  0 20 rdraw  -20 0 rdraw ;
@@ -2255,11 +2262,12 @@ variable price  variable offer
   \ He accepts one dubloon less.
 
 : init-trade ( -- )
-  graphics-1 [ black yellow papery + ] cliteral attr!
-  16 3 do  0 i at-xy blank-line$ type  loop
-    \ XXX TODO -- improve with `fill`
-  4 4 palm2  .native native-speech-balloon
-  s" Un comerciante nativo te sale al encuentro." message ;
+  [ yellow yellow papery + ] cliteral dup color-arena
+                                          attr! wipe-arena
+  [ black yellow papery + ] cliteral attr!
+  graphics-1 4 4 palm2  .native
+  s" Un comerciante nativo te sale al encuentro." message
+  2 ?seconds native-speech-balloon wipe-message ;
 
 : trade ( -- )
   wipe-panel
@@ -2497,7 +2505,7 @@ variable price  variable offer
     s" La munición se ha agotado." item then
   alive @ 0= if
     s" Toda la tripulación ha muerto." item then
-  max-damage? if 
+  max-damage? if
     s" El barco está hundiéndose."
     item then
   cash @ 0= if

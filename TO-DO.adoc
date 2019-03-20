@@ -8,8 +8,7 @@
 - Fix: the graphic of the ship does not change.
 - Fix: after the embarking after the trade, the next scenary is still
   the island.
-- Fix: remove the message left by `init-trade` before the native
-  starts talking..
+- Store common attributes in constants.
 
 == 2019-03-19
 
