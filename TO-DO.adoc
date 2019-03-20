@@ -24,7 +24,6 @@
   start.
 - Create a "…" character and use it instead of "..." to save some
   space in the texts.
-- Rewrite `trigger` with a calculation and a vector table.
 
 == 2017-11-29
 
