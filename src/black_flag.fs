@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.65.0+201903201857" ;
+: version$ ( -- ca len ) s" 0.66.0+201903201938" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -97,7 +97,7 @@ need odd? need */
   \ --------------------------------------------
   section(   -Time)  \ {{{2
 
-need ticks  need ms  need seconds  need ?seconds
+need ms  need seconds  need ?seconds
 
   \ --------------------------------------------
   section(   -Data and strings)  \ {{{2
@@ -2063,11 +2063,18 @@ here swap - cell / constant island-events
   dup  at-west-rain /west-cloud emits
        at-east-rain /east-cloud emits  60 ms ;
 
+variable storming  storming off
+  \ Flag, activated during the storm.
+
+: ship-rocks? ( -- f ) storming @ 0= 128 and 3 + random 0= ;
+
+: ?.ship ( -- ) ship-rocks? if .ship then ;
+
 : +storm ( -- )
-  graphics-1
+  storming on  graphics-1
   70 0 do  [ white cyan papery + ] cliteral attr!
            ';' rain-drops  ']' rain-drops  '[' rain-drops
-           3 random 0= if .ship then
+           ?.ship
   loop ;
   \ Make the rain effect.
   \ XXX TODO -- random duration
@@ -2080,8 +2087,8 @@ here swap - cell / constant island-events
 cyan dup papery + constant stormy-sky-attr
 
 : -storm ( -- ) stormy-sky-attr attr!
-                 at-west-rain /west-cloud spaces
-                 at-east-rain /east-cloud spaces ;
+                at-west-rain /west-cloud spaces
+                at-east-rain /east-cloud spaces  storming off ;
   \ Erase the rain effect.
   \ Note the sky keeps the stormy color.
   \ XXX TODO -- improve: make the sky sunny after some time
@@ -2103,6 +2110,10 @@ cyan dup papery + constant stormy-sky-attr
 
 : storm ( -- ) stormy-sky wipe-panel storm-warning
                  +storm damages -storm storm-report panel ;
+
+: storm? ( -- f ) 8912 random 0= ;
+
+: ?storm ( -- ) storm? if storm then ;
 
   \ ============================================================
   section( Ship command)  \ {{{1
@@ -2144,14 +2155,6 @@ cyan dup papery + constant stormy-sky-attr
   \
   \ XXX TODO -- use execution table instead? better yet:
   \ `thiscase` structure.
-
-: .ship? ( -- f ) ticks 1024 mod 0= ;
-
-: ?.ship ( -- ) .ship? if .ship then ;
-
-: storm? ( -- f ) 8912 random 0= ;
-
-: ?storm ( -- ) storm? if storm then ;
 
 : ship-command ( -- )
   begin ?.ship ?storm inkey ship-command? until ;

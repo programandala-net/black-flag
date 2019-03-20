@@ -5,7 +5,6 @@
 == 2019-03-20
 
 - Check usage of map offset, e.g. `to-north`.
-- Fix: the graphic of the ship does not change.
 - Fix: after the embarking after the trade, the next scenary is still
   the island.
 - Store common attributes in constants.
