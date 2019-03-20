@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.61.0+201903200105" ;
+: version$ ( -- ca len ) s" 0.62.0+201903200124" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -220,7 +220,7 @@ s" Calavera" far>sconstant island-name$
 
   \ Island location types
 1 cconstant coast
-2 cconstant dubloons-found
+2 cconstant dubloons-here
 3 cconstant hostile-native
 4 cconstant just-3-palms-1
 5 cconstant snake
@@ -1556,7 +1556,7 @@ variable victory
                       make-south-coast make-east-coast ;
 
 : location-random-type ( -- n )
-  dubloons-found just-3-palms-2 random-between ;
+  dubloons-here just-3-palms-2 random-between ;
 
 : populate-island ( -- )
   23 7 do  i island @ coast <>
@@ -1865,7 +1865,7 @@ sailor-window-cols 2+ 8 * 4 +
 : island-location ( n -- )
   case
     native-village  of .village                         endof
-    dubloons-found  of 4 8 palm2 14 5 palm2             endof
+    dubloons-here   of 4 8 palm2 14 5 palm2             endof
       \ XXX TODO -- print dubloons here
     hostile-native  of 14 5 palm2 25 8 palm2 .native    endof
     just-3-palms-1  of 25 8 palm2  4 8 palm2 16 5 palm2 endof
@@ -1911,10 +1911,13 @@ sailor-window-cols 2+ 8 * 4 +
   -1 morale+! ;
   \ XXX TODO -- only if supplies are not enough
 
-: money ( -- )
-  2 5 random-between dup .dubloons dup cash+!
+: dubloons-found ( n -- )
+  dup .dubloons  dup cash+!
   s" Encuentras " rot coins$ s+ s" ." s+ message ;
-  \ XXX TODO -- factor: repeated in `enter-this-island-location`
+  \ Find _n_ dubloons.
+
+: some-dubloons-found ( -- )
+  2 5 random-between dubloons-found ;
 
 : no-problem ( -- )
   s" Sin novedad, capitán." message ;
@@ -1929,7 +1932,7 @@ sailor-window-cols 2+ 8 * 4 +
 
 create island-events-table ( -- a ) here
 
-] marsh swamp spider scorpion hunger thirst money
+] marsh swamp spider scorpion hunger thirst some-dubloons-found
   no-problem no-problem no-danger no-danger noop noop [
 
 here swap - cell / constant island-events
@@ -1959,13 +1962,9 @@ here swap - cell / constant island-events
     r> condition$ s+ s" ." s+ message
   endof
 
-  dubloons-found of
+  dubloons-here of
 
-    1 2 random-between >r
-    s" Encuentras " r@ coins$ s+ s" ." s+ message
-    r@ cash+!
-    r> .dubloons
-    \ XXX TODO -- factor: repeated in `money`
+    1 2 random-between dubloons-found
 
     just-3-palms-1 crew-loc @ island !
       \ XXX FIXME -- This changes the type of location, what
@@ -2088,7 +2087,7 @@ cyan dup papery + constant stormy-sky-attr
 
 : storm-report ( -- )
   s" Cuando la mar y el cielo se calman, "
-  s" compruebas es estado del barco:" s+ damage$ s+ s" ." s+
+  s" compruebas el estado del barco: " s+ damage$ s+ s" ." s+
   message ;
 
 : storm ( -- ) stormy-sky wipe-panel storm-warning
