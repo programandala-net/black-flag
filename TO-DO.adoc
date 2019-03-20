@@ -18,6 +18,9 @@
   difficult will be the trading.
 - Fix calculation: After offering 6 dubloons instead of 9, the native
   asks for 6.
+- Fix the logic: Now the village can be attacked again and again,
+  without advantage. Besides, the trading is still possible...
+- Improve: Make all pauses with `?seconds`.
 
 == 2019-03-19
 
@@ -80,9 +83,19 @@ well.
 
 Improve: Access all reports (a menu) with one key in the panel.
 
-== 2017-01-21
+== 2017-01-21, 2019-03-20
 
 Move the `name` double-cell array to far memory.
+
+2019-03-20: It was tried, but since `far2variable`, `far2@` and
+`far2!` are needed only for this, there's no gain:
+
+|===
+| Free memory space | Before | After | Difference
+
+| data/code         |   1811 |  1792 |        -19
+| name              |  36591 | 36513 |        -78
+|===
 
 == 2017-01-21
 
