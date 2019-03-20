@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.69.0+201903202218" ;
+: version$ ( -- ca len ) s" 0.70.0+201903202250" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -413,9 +413,8 @@ yellow black papery +         3 stamina-attr c!
   np@ far," algo dañado"
   np@ far," casi como nuevo"
   np@ far," impecable"            \ best: perfect
-far>sconstants damage-level$ ( n -- ca len )
-      dup cconstant damage-levels
-       1- cconstant max-damage-level
+far>sconstants >damage$ ( n -- ca len )
+  1- cconstant max-damage
 
   \ --------------------------------------------
   section(   -Village names)  \ {{{2
@@ -515,20 +514,12 @@ far>sconstants number$ ( n -- ca len ) drop
   dup >r number$ s"  " s+ r> dubloons$ s+ ;
   \ Return the text "n doubloons", with letters.
 
-100 constant max-damage
-
-: damage-level ( -- n )
-  damage @ max-damage-level max-damage */ ;
-  \ Return damage index _n_ (0..`max-damage-level`)
-  \ correspondent to the current value of `damage`
-  \ (0..`max-damage`).
-
-: max-damage-level? ( -- f ) damage-level max-damage-level = ;
+: max-damage? ( -- f ) damage @ max-damage = ;
 
 : failure? ( -- f )
   alive @ 0=
   morale @ 0= or
-  max-damage-level? or
+  max-damage? or
   supplies @ 0= or
   cash @ 0= or ;
   \ Failed mission?
@@ -549,7 +540,7 @@ far>sconstants number$ ( n -- ca len ) drop
 : blank-line$ ( -- ca len ) bl columns ruler ;
   \ XXX TODO -- use `emits` instead
 
-: damage$ ( -- ca len ) damage-level damage-level$ ;
+: damage$ ( -- ca len ) damage @ >damage$ ;
   \ Damage description
 
   \ ============================================================
@@ -1155,10 +1146,8 @@ cyan dup papery + brighty constant sunny-sky-attr
   \ ============================================================
   section( Run aground)  \ {{{1
 
-100 constant max-damage
-
 : damaged ( min max -- )
-  random-between damage +!  damage @ max-damage min damage ! ;
+  random-between damage @ + max-damage min damage ! ;
   \ Increase the ship damage with random value in a range.
 
 : .run-aground-reefs ( -- )
@@ -1174,7 +1163,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   message ;
 
 : run-aground-damages ( -- )
-  10 29 damaged injured drop  dead drop
+  1 2 damaged injured drop  dead drop
     \ XXX TODO -- random number of dead and injured
   -4 -1 random-between morale+! ;
 
@@ -2111,7 +2100,7 @@ cyan dup papery + constant stormy-sky-attr
   \ Make the sky stormy.
   \ XXX TODO -- hide the sun
 
-: damages ( -- ) 10 49 damaged ;
+: damages ( -- ) 1 4 damaged ;
 
 : storm-warning ( -- )
   s" De pronto se desata una fuerte tormenta..." message ;
@@ -2521,7 +2510,7 @@ variable price  variable offer
     s" La munición se ha agotado." item then
   alive @ 0= if
     s" Toda la tripulación ha muerto." item then
-  max-damage-level? if
+  max-damage? if
     s" El barco está hundiéndose."
     item then
   cash @ 0= if
@@ -2693,9 +2682,7 @@ variable checkered
   cls graph1-font .font graph2-font .font .udg ;
 
 : .damages ( -- )
-  max-damage 1+ 0 ?do
-    cr i . i damage ! damage-level . damage$ type new-key-
-  loop ;
+  max-damage 1+ 0 ?do cr i . i >damage$ type new-key- loop ;
 
 : ini ( -- ) init-screen init ;
 
