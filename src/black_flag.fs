@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.62.3+201903201553" ;
+: version$ ( -- ca len ) s" 0.62.4+201903201606" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -2218,10 +2218,9 @@ variable price  variable offer
   s" Tienes " cash @ coins$ s+
   s" . ¿Qué oferta le haces? (1-" s+ r@ u>str s+ s" )" s+
   message
-  r> get-digit offer !
+  1 r> get-digit offer !
   s" Le ofreces " offer @ coins$ s+ s" ." s+ message ;
   \ Ask the player for an offer.
-  \ XXX TODO -- check the note about the allowed range
   \ XXX TODO -- remove `offer`, use the stack instead
   \ XXX TODO -- rename to `your-offer`
 
@@ -2265,8 +2264,7 @@ variable price  variable offer
   init-trade  s" Yo vender pista de tesoro a tú." native-says
   5 9 random-between price !
   s" Precio ser " price @ coins$ s+ s" ." s+ native-says
-  \ XXX TODO -- pause or join:
-  1 seconds  s" ¿Qué dar tú, blanco?" native-says  make-offer
+  s" ¿Qué dar tú, blanco?" native-says  make-offer
   offer @ price @ 1-  >= if accepted-offer exit then
     \ One dubloon less is accepted.
   offer @ price @ 4 - <= if rejected-offer exit then

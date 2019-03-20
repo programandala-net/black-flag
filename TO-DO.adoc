@@ -9,7 +9,6 @@
 - Factor `s" ." s+`.
 - Fix: after the embarking after the trade, the next scenary is still
   the island.
-- Fix `make-offer`: the number of dubloons is missing in the text.
 - Fix: remove the message left by `init-trade` before the native
   starts talking..
 
