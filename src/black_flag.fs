@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.64.1+201903201822" ;
+: version$ ( -- ca len ) s" 0.65.0+201903201857" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -2292,9 +2292,9 @@ variable price  variable offer
   \ ============================================================
   section( Attack)  \ {{{1
 
-: impossible ( -- )
-  s" Lo siento, capitán, no puede hacer eso." message
-  2 seconds ;
+  \ : impossible ( -- )
+  \   s" Lo siento, capitán, no puede hacer eso." message
+  \   2 seconds ;
   \ XXX not used yet
 
 : .black-flag ( -- )
@@ -2350,8 +2350,8 @@ variable price  variable offer
   endcase ;
 
 : attack-native ( -- )
-  2 seconds  crew-loc @ island @ attack-native-there
-  3 seconds ;
+  crew-loc @ island @ attack-native-there ;
+  \ XXX TODO -- Sound effect.
 
   \ ============================================================
   section( Command dispatcher on the island)  \ {{{1

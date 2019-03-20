@@ -9,10 +9,13 @@
 - Fix: after the embarking after the trade, the next scenary is still
   the island.
 - Store common attributes in constants.
+- Shorten "intenta bloquear el paso" and other texts.
+- Sound effect in `attack-native`.
+- Fix: increase range of `numbers$` and check the maximum in order to
+  use a generic word ("many", etc).
 
 == 2019-03-19
 
-- Fix: The attack command takes a long time to start.
 - Fix: Deactivate trading if the village has been attacked.
 - Remove `do-attack-boat` and everything related.
 - Fix the map of the treasure island.
