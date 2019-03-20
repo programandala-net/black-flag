@@ -25,11 +25,6 @@
 - Create a "…" character and use it instead of "..." to save some
   space in the texts.
 
-== 2017-11-29
-
-Check `score +!`: it should not be used in `update-score`; beside,
-it's used already in some events.
-
 == 2017-02-02, 2017-02-04
 
 Improve: Move all string literals to far memory. This step will be

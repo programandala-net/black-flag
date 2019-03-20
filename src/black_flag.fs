@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.68.0+201903202212" ;
+: version$ ( -- ca len ) s" 0.69.0+201903202218" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -259,7 +259,6 @@ variable cash             \ counter
 variable damage           \ counter
 variable day              \ counter
 variable morale           \ counter
-variable score            \ counter
 variable sunk-ships       \ counter
 variable supplies         \ counter
 variable trades           \ counter
@@ -1257,13 +1256,12 @@ s" Condición" far>sconstant "condition"$
   begin-report .crew-report-header
   men 0 do  i .crew-member-data  loop  end-report ;
 
-: update-score ( -- )
+: final-score ( -- n )
   found-clues @ 1000 *
   day         @  200 * +
   sunk-ships  @ 1000 * +
   trades      @  200 * +
-                4000 success? and +
-             score +! ;
+                4000 success? and + ;
 
 : score-report ( -- )
   begin-report
@@ -1274,9 +1272,8 @@ s" Condición" far>sconstant "condition"$
   ." Negocios"        tab trades      @ 4 .r ."  x  200" cr cr
   ." Pistas"          tab found-clues @ 4 .r ."  x 1000" cr cr
   ." Tesoro"          tab 4000          4 .r             cr cr
-  update-score
   ." Total"           tab ."        "
-                      score @ 4 .r  end-report ;
+                      final-score 4 .r  end-report ;
   \ XXX TODO -- add subtotals (use constants)
   \ XXX TODO -- draw a ruler above "Total"
 
@@ -1339,12 +1336,10 @@ variable victory
 
   \ ship-loc @ sea @ 13 >=
   \ ship-loc @ sea @ 16 <= and
-  \ if 1 sunk-ships +! 1000 score +! victory on then
+  \ if 1 sunk-ships +! victory on then
     \ XXX OLD
 
-  1 sunk-ships +!  1000 score +!  victory on
-    \ XXX TODO -- use constant to increase the score, and in
-    \ the score report
+  1 sunk-ships +!  victory on
 
   ship-loc @ sea @ case
     13 of  10  endof
@@ -2259,7 +2254,7 @@ variable price  variable offer
 
 : accepted-offer ( -- )
   wipe-message
-  offer @ negate cash+!  200 score +!  1 trades +!
+  offer @ negate cash+!  1 trades +!
   native-tells-clue  4 seconds ;
 
 : new-price ( -- )
@@ -2470,7 +2465,7 @@ variable price  variable offer
   init-clues  aboard on  1 crew-loc !
   men alive !  2 ammo !  5 cash !  10 morale !  10 supplies !
   quit-game off  damage off  day off  found-clues off
-  score off  sunk-ships off  trades off ;
+  sunk-ships off  trades off ;
 
 : unused-name ( -- n )
   0  begin  drop  0 [ stock-names 1- ] xliteral random-between
