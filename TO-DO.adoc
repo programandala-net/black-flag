@@ -1,11 +1,15 @@
 = To-Do list of Black Flag
 :author: Marcos Cruz (programandala.net)
-:revdate: 2019-03-19
+:revdate: 2019-03-20
+
+== 2019-03-20
+
+- Check usage of map offset, e.g. `to-north`.
+- Fix: the graphic of the ship does not change.
 
 == 2019-03-19
 
 - Fix: The attack command takes a long time to start.
-- Fix: Make panel keys audible.
 - Fix: Deactivate trading if the village has been attacked.
 - Remove `do-attack-boat` and everything related.
 - Fix the map of the treasure island.
@@ -136,8 +140,6 @@ Tabla de mejores puntuaciones.
 
 Hacer dos aspectos para el final: éxito y fracaso.
 
-Ampliar `fn number$()` y usarla en la negociación.
-
 Hacer, si no está, que se reciban provisiones, munición y tropa tras
 vencer a un barco.
 
@@ -149,8 +151,6 @@ Borrar serpiente y escorpión cuando mueran.
 
 Hacer variable el dibujo de provisiones.
 
-Poner la pista en el bocadillo.
-
 Reducir moral unas décimas cuando un hombre sea herido o muerto.
 
 Reducir la energía un número proporcional a la gravedad del ataque, no
@@ -160,13 +160,5 @@ Informar de que no se puede desembarcar porque la isla ya ha sido
 visitada.
 
 Revisar los rangos de doblones al comerciar.
-
-Informar de si hay muertos cuando el bote es alcanzado por error.
-Calcular `alive` antes y después de herir a los hombres.
-
-Hacer que el jugador pueda poner nombre a los miembros de la
-tripulación.
-
-Hacer que el jugador pueda elegir nombre al capitán.
 
 Añadir «Fin» a la lista de comandos.
