@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.64.0+201903201752" ;
+: version$ ( -- ca len ) s" 0.64.1+201903201822" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -2325,7 +2325,7 @@ variable price  variable offer
 
 : dead-native-has-dubloons ( -- )
   -native
-  2 3 random-between r>
+  2 3 random-between >r
   s" Encuentras " r@ coins$ s+
   s"  en el cuerpo del nativo muerto." s+ message r> cash+! ;
 
