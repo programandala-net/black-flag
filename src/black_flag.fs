@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.62.1+201903201409" ;
+: version$ ( -- ca len ) s" 0.62.2+201903201502" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -2225,13 +2225,13 @@ variable price  variable offer
   \ XXX TODO -- rename to `your-offer`
 
 : rejected-offer ( -- )
-  2 seconds  s" ¡Tú insultar! ¡Fuera de isla mía!" native-says
-  4 seconds  embark ;
+  2 seconds s" ¡Tú insultar! ¡Fuera de isla mía!" native-says
+  4 seconds ;
 
 : accepted-offer ( -- )
   wipe-message
   offer @ negate cash+!  200 score +!  1 trades +!
-  native-tells-clue  4 seconds  embark ;
+  native-tells-clue  4 seconds ;
 
 : new-price ( -- )
   3 8 random-between dup price ! coins$ 2dup uppers1
@@ -2249,10 +2249,9 @@ variable price  variable offer
 : one-coin-less ( -- )
   make-offer offer @ price @ 1- >=
   if   accepted-offer
-  else offer @ price @ 1- < if rejected-offer then
-  then lower-price ;
-  \ He accepts one dubloon less
-  \ XXX FIXME -- `lower-price` at the end?!
+  else offer @ price @ 1- < if   rejected-offer
+                            else lower-price then then ;
+  \ He accepts one dubloon less.
 
 : init-trade ( -- )
   graphics-1 [ black yellow papery + ] cliteral attr!
@@ -2364,7 +2363,7 @@ variable price  variable offer
     'o' key-left  or-of west? dup
                         if click walk-west     then endof
     'c'              of feasible-trade? dup
-                        if click trade         then endof
+                        if click trade embark  then endof
     'b'              of feasible-embark? dup
                         if click embark        then endof
     'i'              of click main-report      true endof

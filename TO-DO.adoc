@@ -4,12 +4,13 @@
 
 == 2019-03-20
 
-
-- Fix logic of `one-coin-less`.
-- Fix exit from `trade`: `embark` should be called only when `trade`
-  is finished.
 - Check usage of map offset, e.g. `to-north`.
 - Fix: the graphic of the ship does not change.
+- Factor `s" ." s+`.
+- Fix: hide the panel during the trading.
+- Fix: after the embarking after the trade, the next scenary is still
+  the island.
+- Fix: no pause after the first speech in `trade`.
 
 == 2019-03-19
 
