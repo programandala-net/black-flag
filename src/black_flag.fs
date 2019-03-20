@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.62.2+201903201502" ;
+: version$ ( -- ca len ) s" 0.62.3+201903201553" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -655,11 +655,13 @@ far-banks 3 + c@ cconstant screen-backup-bank
   \ ============================================================
   section( Text output)  \ {{{1
 
+: native-pause ( len -- ) 10 / 2 max ?seconds ;
+
 : native-says ( ca len -- )
-  get-fonts 2>r
+  tuck get-fonts 2>r
   native-font native-window current-window !
   [ yellow papery ] cliteral attr! wcls wltype
-  2r> set-fonts ;
+  2r> set-fonts native-pause ;
 
 : wipe-message ( -- )
   message-window current-window !
@@ -2196,9 +2198,8 @@ create clues ( -- a )
 : clue$ ( -- ca len ) 6 random cells clues + perform ;
 
 : native-tells-clue ( -- )
-  s" Bien... Pista ser..." native-says
-  2 seconds  clue$ native-says
-  2 seconds  s" ¡Buen viaje a isla de tesoro!" native-says ;
+  s" Bien... Pista ser..." native-says clue$ native-says
+  s" ¡Buen viaje a isla de tesoro!" native-says ;
 
   \ ============================================================
   section( Trading)  \ {{{1
@@ -2225,8 +2226,7 @@ variable price  variable offer
   \ XXX TODO -- rename to `your-offer`
 
 : rejected-offer ( -- )
-  2 seconds s" ¡Tú insultar! ¡Fuera de isla mía!" native-says
-  4 seconds ;
+  s" ¡Tú insultar! ¡Fuera de isla mía!" native-says ;
 
 : accepted-offer ( -- )
   wipe-message
@@ -2261,6 +2261,7 @@ variable price  variable offer
   s" Un comerciante nativo te sale al encuentro." message ;
 
 : trade ( -- )
+  wipe-panel
   init-trade  s" Yo vender pista de tesoro a tú." native-says
   5 9 random-between price !
   s" Precio ser " price @ coins$ s+ s" ." s+ native-says
