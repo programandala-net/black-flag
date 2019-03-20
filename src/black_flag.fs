@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.66.0+201903201938" ;
+: version$ ( -- ca len ) s" 0.66.1+201903202051" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -518,18 +518,18 @@ far>sconstants number$ ( n -- ca len ) drop
 
 100 constant max-damage
 
-: damage-index ( -- n )
+: damage-level ( -- n )
   damage @ max-damage-level max-damage */ ;
   \ Return damage index _n_ (0..`max-damage-level`)
   \ correspondent to the current value of `damage`
   \ (0..`max-damage`).
 
-: max-damage-index? ( -- f ) damage-index damage-levels = ;
+: max-damage-level? ( -- f ) damage-level max-damage-level = ;
 
 : failure? ( -- f )
   alive @ 0=
   morale @ 0= or
-  max-damage-index? or
+  max-damage-level? or
   supplies @ 0= or
   cash @ 0= or ;
   \ Failed mission?
@@ -550,7 +550,7 @@ far>sconstants number$ ( n -- ca len ) drop
 : blank-line$ ( -- ca len ) bl columns ruler ;
   \ XXX TODO -- use `emits` instead
 
-: damage$ ( -- ca len ) damage-index damage-level$ ;
+: damage$ ( -- ca len ) damage-level damage-level$ ;
   \ Damage description
 
   \ ============================================================
@@ -1161,8 +1161,6 @@ cyan dup papery + brighty constant sunny-sky-attr
 : damaged ( min max -- )
   random-between damage +!  damage @ max-damage min damage ! ;
   \ Increase the ship damage with random value in a range.
-
-: max-damage? ( -- f ) damage @ max-damage = ;
 
 : .run-aground-reefs ( -- )
   [ black blue papery + ] cliteral attr!
@@ -2157,7 +2155,7 @@ cyan dup papery + constant stormy-sky-attr
   \ `thiscase` structure.
 
 : ship-command ( -- )
-  begin ?.ship ?storm inkey ship-command? until ;
+  begin ?.ship ?storm inkey ship-command? game-over? or until ;
 
   \ ============================================================
   section( Misc commands on the island)  \ {{{1
@@ -2508,7 +2506,7 @@ variable price  variable offer
     s" La munición se ha agotado." item then
   alive @ 0= if
     s" Toda la tripulación ha muerto." item then
-  max-damage? if
+  max-damage-level? if
     s" El barco está hundiéndose."
     item then
   cash @ 0= if
@@ -2681,7 +2679,7 @@ variable checkered
 
 : .damages ( -- )
   max-damage 1+ 0 ?do
-    cr i . i damage ! damage-index . damage$ type new-key-
+    cr i . i damage ! damage-level . damage$ type new-key-
   loop ;
 
 : ini ( -- ) init-screen init ;
