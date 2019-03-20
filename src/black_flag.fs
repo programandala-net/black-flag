@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.60.3+201903192219" ;
+: version$ ( -- ca len ) s" 0.61.0+201903200105" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -673,10 +673,13 @@ far-banks 3 + c@ cconstant screen-backup-bank
   \ ============================================================
   section( User input)  \ {{{1
 
+: click ( -- ) 35 0 beep ;
+  \ Sound of a pressed key.
+
 : get-digit ( n1 n2 -- n3 )
   begin   2dup key '0' - dup >r -rot between 0=
-  while   rdrop 100 10 beep
-  repeat  2drop r> ;
+  while   rdrop
+  repeat  2drop r> click ;
   \ Wait for a digit key press, until its value is between _n1_
   \ and _n2_, then return it as _n3_.
   \ XXX TODO -- better sound for fail
@@ -1197,7 +1200,7 @@ s" Pulsa una tecla" far>sconstant press-any-key$
 : end-report ( -- )
   set-report-color
   0 row 2+ at-xy press-any-key$ columns type-center-field
-  new-key- restore-screen ;
+  new-key- click restore-screen ;
   \ Common task at the end of all reports.
 
 : .datum ( a -- ) tabulate @ 2 .r cr cr ;
@@ -1524,9 +1527,6 @@ variable victory
 : attack-ship ( -- ) ammo @ if   (attack-ship)
                             else no-ammo-left then ;
 
-: ?attack-ship? ( -- f )
-  feasible-sea-attack? dup 0exit attack-ship ;
-
   \ ============================================================
   section( Island map)  \ {{{1
 
@@ -1638,7 +1638,7 @@ sailor-window-cols 2+ 8 * 4 +
   \ XXX TODO -- factor
 
 : clue-tried ( x a -- )
-  200 30 beep  wcls  1 seconds  @ = abs found-clues +! ;
+  click  wcls  1 seconds  @ = abs found-clues +! ;
   \ Update the clues found with the given answer _x_ for
   \ clue hold in _a_.
 
@@ -1948,7 +1948,7 @@ here swap - cell / constant island-events
   case
 
   snake of
-    s" Una serpiente ha mordido a "
+    s" Una serpiente muerde a "
     injured name$ s+ s" ." s+ message
     \ XXX TODO -- inform if the man is dead
   endof
@@ -2038,9 +2038,6 @@ here swap - cell / constant island-events
                    wipe-message wipe-panel
                    disembarking-scene enter-island ;
 
-: ?disembark? ( -- f )
-  feasible-disembark? dup 0exit disembark ;
-
   \ ============================================================
   section( Storm)  \ {{{1
 
@@ -2115,24 +2112,21 @@ cyan dup papery + constant stormy-sky-attr
 : sail-east  ( -- )  to-east sail ;
 : sail-west  ( -- )  to-west sail ;
 
-: ?sail-north? ( -- f ) north? dup 0exit  sail-north ;
-: ?sail-south? ( -- f ) south? dup 0exit  sail-south ;
-: ?sail-east?  ( -- f ) east?  dup 0exit  sail-east  ;
-: ?sail-west?  ( -- f ) west?  dup 0exit  sail-west  ;
-
 : ship-command? ( c -- f )
   lower case
-  'n' key-up     or-of  ?sail-north?        endof
-  's' key-down   or-of  ?sail-south?        endof
-  'e' key-right  or-of  ?sail-east?         endof
-  'o' key-left   or-of  ?sail-west?         endof
-  'i'               of  main-report    true endof
-  'a'               of  ?attack-ship?       endof
-  't'               of  crew-report    true endof
-  'p'               of  score-report   true endof
-  'd'               of  ?disembark?         endof
-  'f'               of  quit-game on   true endof
-  'q'               of  quit                endof
+  'n' key-up    or-of north? dup if click sail-north then endof
+  's' key-down  or-of south? dup if click sail-south then endof
+  'e' key-right or-of east?  dup if click sail-east  then endof
+  'o' key-left  or-of west?  dup if click sail-west  then endof
+  'i'              of click main-report true              endof
+  'a'              of feasible-sea-attack? dup
+                      if click attack-ship then           endof
+  't'              of click crew-report true              endof
+  'p'              of click score-report true             endof
+  'd'              of feasible-disembark? dup
+                      if click disembark then             endof
+  'f'              of click quit-game on true             endof
+  'q'              of click quit                          endof
     \ XXX TMP -- 'q' option for debugging
   false swap  endcase ;
   \ If character _c_ is a valid ship command, execute it and
@@ -2225,7 +2219,6 @@ variable price  variable offer
   s" . ¿Qué oferta le haces? (1-" s+ r@ u>str s+ s" )" s+
   message
   r> get-digit offer !
-  200 10 beep
   s" Le ofreces " offer @ coins$ s+ s" ." s+ message ;
   \ Ask the player for an offer.
   \ XXX TODO -- check the note about the allowed range
@@ -2360,32 +2353,27 @@ variable price  variable offer
 : walk-east  ( -- )  to-east walk ;
 : walk-west  ( -- )  to-west walk ;
 
-: ?walk-north? ( -- f ) north? dup 0exit  walk-north ;
-: ?walk-south? ( -- f ) south? dup 0exit  walk-south ;
-: ?walk-east?  ( -- f ) east?  dup 0exit  walk-east  ;
-: ?walk-west?  ( -- f ) west?  dup 0exit  walk-west  ;
-
-: ?trade? ( -- f ) feasible-trade? dup 0exit  trade ;
-
-: ?embark? ( -- f ) feasible-embark? dup 0exit  embark ;
-
-: ?attack-native? ( -- f )
-  feasible-island-attack? dup 0exit  attack-native ;
-
 : island-command? ( c -- f )
   lower case
-    'n' key-up    or-of  ?walk-north?            endof
-    's' key-down  or-of  ?walk-south?            endof
-    'e' key-right or-of  ?walk-east?             endof
-    'o' key-left  or-of  ?walk-west?             endof
-    'c'              of  ?trade?                 endof
-    'b'              of  ?embark?                endof
-    'i'              of  main-report      true   endof
-    'a'              of  ?attack-native?         endof
-    't'              of  crew-report      true   endof
-    'p'              of  score-report     true   endof
-    'f'              of  quit-game on     true   endof
-    'q'              of  quit                    endof
+    'n' key-up    or-of north? dup
+                        if click walk-north    then endof
+    's' key-down  or-of south? dup
+                        if click walk-south    then endof
+    'e' key-right or-of east? dup
+                        if click walk-east     then endof
+    'o' key-left  or-of west? dup
+                        if click walk-west     then endof
+    'c'              of feasible-trade? dup
+                        if click trade         then endof
+    'b'              of feasible-embark? dup
+                        if click embark        then endof
+    'i'              of click main-report      true endof
+    'a'              of feasible-island-attack? dup
+                        if click attack-native then endof
+    't'              of click crew-report      true endof
+    'p'              of click score-report     true endof
+    'f'              of click quit-game on     true endof
+    'q'              of click quit                  endof
       \ XXX TMP -- 'q' option for debugging
   false swap  endcase ;
   \ If character _c_ is a valid command on the island, execute
@@ -2527,7 +2515,7 @@ variable price  variable offer
   black attr! cls
   success? if happy-end else sad-end then
   s" Pulsa una tecla para ver tu puntuación" message
-  new-key- 200 30 beep score-report ;
+  new-key- click score-report ;
 
   \ ============================================================
   section( Intro)  \ {{{1
@@ -2571,7 +2559,7 @@ far>sconstant intro-text-2$
 : intro ( -- )
   blackout black attr!  (intro)
   [ white brighty ] cliteral paint-screen
-  -keys 120 ?seconds ;
+  -keys 120 ?seconds click ;
 
   \ ============================================================
   section( Main)  \ {{{1
@@ -2613,7 +2601,7 @@ create current-attr 0 c,
   drop ." L#" 2 .r space name>string 28 min type cr
   aboard? if   ." SHIP:" ship-loc ? ship-loc @ sea
           else ." LAND:" crew-loc ? crew-loc @ island
-          then ? .s 100 1 beep 100 10 beep ;
+          then ? .s click ;
   \ Display the debug information.
 
 ' debug-info ' ~~info defer!
