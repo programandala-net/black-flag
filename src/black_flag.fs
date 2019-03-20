@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.62.0+201903200124" ;
+: version$ ( -- ca len ) s" 0.62.1+201903201409" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -621,7 +621,7 @@ esc-udg-chars-wordlist 3 set-esc-order
 
 0 21 32 3 window constant panel-window
 
-16 6 11 4 window constant native-window
+16 5 11 6 window constant native-window
 
 7 12 10 7 window constant sailor-window
 
@@ -2062,7 +2062,7 @@ here swap - cell / constant island-events
   \ XXX TODO -- random duration
   \ XXX TODO -- sound effects
   \ XXX TODO -- lightnings
-  \ XXX TODO -- make the enemy ship to move, if present
+  \ XXX TODO -- make the enemy ship move, if present
   \ (use the same graphic of the player ship)
   \ XXX TODO -- move the waves
 
@@ -2252,6 +2252,7 @@ variable price  variable offer
   else offer @ price @ 1- < if rejected-offer then
   then lower-price ;
   \ He accepts one dubloon less
+  \ XXX FIXME -- `lower-price` at the end?!
 
 : init-trade ( -- )
   graphics-1 [ black yellow papery + ] cliteral attr!

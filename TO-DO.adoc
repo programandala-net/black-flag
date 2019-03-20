@@ -4,6 +4,10 @@
 
 == 2019-03-20
 
+
+- Fix logic of `one-coin-less`.
+- Fix exit from `trade`: `embark` should be called only when `trade`
+  is finished.
 - Check usage of map offset, e.g. `to-north`.
 - Fix: the graphic of the ship does not change.
 
