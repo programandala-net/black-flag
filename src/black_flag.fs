@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.67.0+201903202145" ;
+: version$ ( -- ca len ) s" 0.68.0+201903202212" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -1516,18 +1516,25 @@ variable victory
   \               '2' of  1 fire  endof
   \               '3' of  2 fire  endof  endcase ;
   \
-  \ XXX OLD -- First method. More legible, but slower and bigger.
+  \ XXX OLD -- First `trigger` method. Very legible, but slow
+  \ and big.
 
-here ] drop fire fire fire drop [ constant triggers
-  \ Execution table of `trigger`. The three valid keys are
-  \ indexed to `fire` with their corresponding parameter.
-  \ All the rest execute a `drop` to discard a fake parameter.
+  \ here ] drop fire fire fire drop [ constant triggers
+  \   \ Execution table of `trigger`. The three valid keys are
+  \   \ indexed to `fire` with their corresponding parameter.
+  \   \ All the rest execute a `drop` to discard a fake parameter.
 
-: trigger ( -- ) inkey '0' max '4' min '0' - ( 0..4 ) dup 1-
-                 swap ( -1..3 0..4 ) cells triggers + perform ;
+  \ : trigger ( -- ) inkey '0' max '4' min '0' - ( 0..4 ) dup 1-
+  \                  swap ( -1..3 0..4 ) cells triggers + perform ;
   \
-  \ XXX NEW -- This method saves 21 bytes of data/code. Beside
-  \ it's faster.
+  \ XXX OLD -- Second `trigger` method. It saves 21 bytes of
+  \ data/code space from the first method and it's faster.
+
+: trigger ( -- ) 
+  inkey dup '0' '3' between if '0' - fire else drop then ;
+  \
+  \ XXX NEW -- Third `trigger` method. It saves 42 bytes of
+  \ data/code space from the first version and it's faster.
 
 : end-of-battle? ( -- f ) victory @ ammo @ 0= or ;
 
