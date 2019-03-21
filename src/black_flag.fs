@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.71.0+201903210050" ;
+: version$ ( -- ca len ) s" 0.71.1+201903210123" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -475,6 +475,12 @@ far>sconstants hand$ ( n -- ca len ) drop
   \ Return string "doubloon" or "doubloons", depending on _n_.
 
 0
+  np@ far," muchos"
+  np@ far," dieciséis"
+  np@ far," quince"
+  np@ far," catorce"
+  np@ far," trece"
+  np@ far," doce"
   np@ far," once"
   np@ far," diez"
   np@ far," nueve"
@@ -487,7 +493,8 @@ far>sconstants hand$ ( n -- ca len ) drop
   np@ far," dos"
   np@ far," un"
   np@ far," cero"
-far>sconstants number$ ( n -- ca len ) drop
+far>sconstants number$ ( n -- ca len )
+  1- cconstant text-numbers
 
 : highlighted$ ( c -- ca len )
   0 20 rot 1 20 5 chars>string ;
@@ -512,7 +519,7 @@ far>sconstants number$ ( n -- ca len ) drop
   \ remains unchanged.
 
 : coins$ ( n -- ca len )
-  dup >r number$ s"  " s+ r> dubloons$ s+ ;
+  text-numbers min dup >r number$ s"  " s+ r> dubloons$ s+ ;
   \ Return the text "n doubloons", with letters.
 
 : max-damage? ( -- f ) damage @ max-damage = ;

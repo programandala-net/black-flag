@@ -14,8 +14,6 @@
 - Store common attributes in constants.
 - Shorten "intenta bloquear el paso" and other texts.
 - Sound effect in `attack-native`.
-- Fix: increase range of `numbers$` and check the maximum in order to
-  use a generic word ("many", etc).
 - Fix: Redraw the panel after killing a native, to update the
   shortcut.
 - Improve: The more pacific natives are killed on the island, the more
