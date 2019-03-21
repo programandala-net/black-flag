@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.72.1+201903211533" ;
+: version$ ( -- ca len ) s" 0.72.2+201903211551" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -1523,7 +1523,7 @@ variable victory
   \ data/code space from the first method and it's faster.
 
 : trigger ( -- ) 
-  inkey dup '0' '3' between if '0' - fire else drop then ;
+  inkey dup '1' '3' between if '1' - fire else drop then ;
   \
   \ XXX NEW -- Third `trigger` method. It saves 42 bytes of
   \ data/code space from the first version and it's faster.
