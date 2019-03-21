@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.71.1+201903210123" ;
+: version$ ( -- ca len ) s" 0.72.0+201903210201" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -2232,27 +2232,24 @@ create clues ( -- a )
   100 0 rdraw  2 -2 rdraw  0 -60 rdraw  -2 -2 rdraw
   -100 0 rdraw -2 2 rdraw  0 20 rdraw  -20 0 rdraw ;
 
-variable price  variable offer
-  \ XXX TODO -- remove `offer`, use the stack instead
-
-: make-offer ( -- )
-  cash @ max-offer min >r
+: your-offer ( -- n )
+  cash @ max-offer min >r ( R: max )
   s" Tienes " cash @ coins$ s+
   s" . ¿Qué oferta le haces? (1-" s+ r@ u>str s+ s" )" s+
-  message
-  1 r> get-digit offer !
-  s" Le ofreces " offer @ coins$ s+ dot message ;
+  message  1 r> get-digit >r ( R: offer )
+  s" Le ofreces " r@ coins$ s+ dot message r> ;
   \ Ask the player for an offer.
-  \ XXX TODO -- remove `offer`, use the stack instead
-  \ XXX TODO -- rename to `your-offer`
 
 : rejected-offer ( -- )
+  wipe-message
   s" ¡Tú insultar! ¡Fuera de isla mía!" native-says ;
 
-: accepted-offer ( -- )
+: accepted-offer ( n -- )
   wipe-message
-  offer @ negate cash+!  1 trades +!
-  native-tells-clue  4 seconds ;
+  negate cash+!  1 trades +!  native-tells-clue  4 seconds ;
+  \ Accept the offer of _n_ dubloons.
+
+variable price
 
 : new-price ( -- )
   3 8 random-between dup price ! coins$ 2dup uppers1
@@ -2263,15 +2260,15 @@ variable price  variable offer
   -3 -2 random-between price +!
   s" Bueno, tú darme... " price @ coins$ s+
   s"  y no hablar más." s+ native-says
-  make-offer offer @ price @ >= if   accepted-offer
-                                else rejected-offer then ;
+  your-offer dup price @ >= if   accepted-offer
+                            else rejected-offer then ;
   \ The native lowers the price by several dubloons.
 
 : one-coin-less ( -- )
-  make-offer offer @ price @ 1- >=
-  if   accepted-offer
-  else offer @ price @ 1- < if   rejected-offer
-                            else lower-price then then ;
+  your-offer price @ 2dup 1- >= if   drop
+                                     accepted-offer exit then
+                          1- <  if   rejected-offer
+                                else lower-price         then ;
   \ He accepts one dubloon less.
 
 : init-trade ( -- )
@@ -2287,13 +2284,13 @@ variable price  variable offer
   init-trade  s" Yo vender pista de tesoro a tú." native-says
   5 9 random-between price !
   s" Precio ser " price @ coins$ s+ dot native-says
-  s" ¿Qué dar tú, blanco?" native-says  make-offer
-  offer @ price @ 1-  >= if accepted-offer exit then
+  s" ¿Qué dar tú, blanco?" native-says
+  your-offer price @ 2dup
+  1- >= if drop accepted-offer exit then
     \ One dubloon less is accepted.
-  offer @ price @ 4 - <= if rejected-offer exit then
-    \ Too low offer is not accepted.
-
-  \ You offered too few
+  4 - <= if rejected-offer exit then
+    \ A too low offer is rejected.
+  \ You offered too few:
   4 random case 0 of  lower-price             exit  endof
                 1 of  new-price one-coin-less exit  endof
            endcase
