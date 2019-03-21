@@ -1,6 +1,10 @@
 = To-Do list of Black Flag
 :author: Marcos Cruz (programandala.net)
-:revdate: 2019-03-20
+:revdate: 2019-03-21
+
+== 2019-03-21
+
+- Make `sea`, `island`, and `visited` byte arrays.
 
 == 2019-03-20
 

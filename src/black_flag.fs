@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.70.0+201903202250" ;
+: version$ ( -- ca len ) s" 0.71.0+201903210050" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -104,6 +104,7 @@ need ms  need seconds  need ?seconds
 
 need 2avariable  need avariable    need cavariable  need value
 
+need faravariable need far! need far@ need farerase
 need farcavariable need farc! need farc@ need farc+!
 
 need far>sconstant
@@ -312,9 +313,9 @@ variable pace
   \ --------------------------------------------
   section(   -Maps)  \ {{{2
 
-/sea     avariable sea
-/island  avariable island
-/sea     avariable visited    \ flags for islands
+/sea     faravariable sea
+/island  faravariable island
+/sea     faravariable visited    \ flags for islands
   \ XXX TODO -- character arrays in far memory
 
   \ --------------------------------------------
@@ -687,7 +688,7 @@ far-banks 3 + c@ cconstant screen-backup-bank
 21 constant panel-y
  3 constant panel-rows
 
-: reef? ( n -- f ) sea @ reef = ;
+: reef? ( n -- f ) sea far@ reef = ;
   \ Is there a reef at sea map position _n_?
 
 : sail-to? ( n -- f ) ship-loc @ + reef? 0= ;
@@ -706,7 +707,7 @@ far-banks 3 + c@ cconstant screen-backup-bank
 : sail-east?  ( -- f )  to-east sail-to? ;
 : sail-west?  ( -- f )  to-west sail-to? ;
 
-: coast? ( n -- f ) island @ coast = ;
+: coast? ( n -- f ) island far@ coast = ;
   \ Does cell _n_ of the island is coast?
 
 : walk-to? ( n -- f ) crew-loc @ + coast? 0= ;
@@ -746,7 +747,7 @@ far-banks 3 + c@ cconstant screen-backup-bank
   \ XXX TODO -- use a modified  version of "+"?
 
 : feasible-island-attack? ( -- f )
-  crew-loc @ island @
+  crew-loc @ island far@
   dup snake           = if >true exit then
   dup native-village  = if >true exit then
   dup hostile-native  = if >true exit then
@@ -758,7 +759,7 @@ far-banks 3 + c@ cconstant screen-backup-bank
   \ write a wrapper word to do `nip` after the call.
 
 : feasible-sea-attack? ( -- f )
-  ship-loc @ sea @ dup >r 13 <
+  ship-loc @ sea far@ dup >r 13 <
                            r@ shark = or
                            r> treasure-island = or  0=
   ammo @ 0<> and ;
@@ -778,8 +779,8 @@ far-banks 3 + c@ cconstant screen-backup-bank
   16 panel-y at-xy s" Atacar" 0 r> ?>option$ type ;
 
 : feasible-disembark? ( -- f )
-  ship-loc @ visited @ 0=
-  ship-loc @ sea @ treasure-island =  or ;
+  ship-loc @ visited far@ 0=
+  ship-loc @ sea far@ treasure-island =  or ;
   \ XXX TODO -- not if an enemy ship is present
 
 : ship-commands ( -- )
@@ -788,7 +789,7 @@ far-banks 3 + c@ cconstant screen-backup-bank
   s" Desembarcar" 0 r> ?>option$ type ;
 
 : feasible-trade? ( -- f )
-  crew-loc @ island @ native-village = ;
+  crew-loc @ island far@ native-village = ;
 
 ' true alias feasible-embark? ( -- f )
   \ XXX TODO -- only if `crew-loc` is the
@@ -1000,7 +1001,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   19 4 palm1  24 4 palm1  14 4 palm1
   [ black green papery + ] cliteral attr!
   22 9 at-xy .\" \T\U"  \ the treasure
-  ship-loc @ visited @ if
+  ship-loc @ visited far@ if
     s" Llegas nuevamente a la isla de " island-name$ s+ s" ."
   else
     s" Has encontrado la perdida isla de "
@@ -1119,7 +1120,7 @@ cyan dup papery + brighty constant sunny-sky-attr
 
 : sea-scenery ( -- )
   graphics-1
-  sea-and-sky .ship  ship-loc @ sea @ sea-picture ;
+  sea-and-sky .ship  ship-loc @ sea far@ sea-picture ;
 
   \ ============================================================
   section( Crew stamina)  \ {{{1
@@ -1323,18 +1324,18 @@ variable victory
 : sunk ( -- )
   .sunk 2 seconds
 
-  \ ship-loc @ sea @ 13 >=
-  \ ship-loc @ sea @ 16 <= and
+  \ ship-loc @ sea far@ 13 >=
+  \ ship-loc @ sea far@ 16 <= and
   \ if 1 sunk-ships +! victory on then
     \ XXX OLD
 
   1 sunk-ships +!  victory on
 
-  ship-loc @ sea @ case
+  ship-loc @ sea far@ case
     13 of  10  endof
     14 of   9  endof
     15 of   8  endof
-    16 of   7  endof  dup endcase  ship-loc @ sea ! ;
+    16 of   7  endof  dup endcase  ship-loc @ sea far! ;
   \ Sunk the enemy ship
   \
   \ XXX FIXME -- The `case` changes the type of location, what
@@ -1531,7 +1532,7 @@ variable victory
   save-screen (ship-battle) restore-screen ;
 
 : enemy-ship-here? ( -- f )
-  ship-loc @ sea @ 13 16 between ;
+  ship-loc @ sea far@ 13 16 between ;
 
 : (attack-ship) ( -- )
   enemy-ship-here? if   ship-battle
@@ -1543,9 +1544,9 @@ variable victory
   \ ============================================================
   section( Island map)  \ {{{1
 
-: erase-island ( -- ) 0 island /island cells erase ;
+: erase-island ( -- ) 0 island /island cells farerase ;
 
-: is-coast ( n -- ) coast swap island ! ;
+: is-coast ( n -- ) coast swap island far! ;
   \ Make cell _n_ of the island map be coast.
 
 : (make-coast) ( n1 n2 -- ) bounds do  i is-coast  loop ;
@@ -1572,12 +1573,12 @@ variable victory
   dubloons-here just-3-palms-2 random-between ;
 
 : populate-island ( -- )
-  23 7 do  i island @ coast <>
-           if location-random-type i island ! then
+  23 7 do  i island far@ coast <>
+           if location-random-type i island far! then
   loop
-  native-village  19 22 random-between island !
-  native-ammo     13 16 random-between island !
-  native-supplies  7 10 random-between island ! ;
+  native-village  19 22 random-between island far!
+  native-ammo     13 16 random-between island far!
+  native-supplies  7 10 random-between island far! ;
   \ XXX TODO -- improve: adapt to any size:
   \ choose any free non-coast location
 
@@ -1890,7 +1891,7 @@ sailor-window-cols 2+ 8 * 4 +
   endcase ;
 
 : current-island-location ( -- )
-  crew-loc @ island @ island-location ;
+  crew-loc @ island far@ island-location ;
 
 : island-scenery ( -- )
   graphics-1
@@ -1957,7 +1958,7 @@ here swap - cell / constant island-events
   section( Enter island location)  \ {{{1
 
 : be-hostile-native ( -- )
-  hostile-native crew-loc @ island ! ;
+  hostile-native crew-loc @ island far! ;
 
 : enter-this-island-location ( n -- )
 
@@ -1979,7 +1980,7 @@ here swap - cell / constant island-events
 
     1 2 random-between dubloons-found
 
-    just-3-palms-1 crew-loc @ island !
+    just-3-palms-1 crew-loc @ island far!
       \ XXX FIXME -- This changes the type of location, what
       \ makes the picture different.  This is a problem of the
       \ original game.  The dubloons must be independent from
@@ -2016,7 +2017,7 @@ here swap - cell / constant island-events
 
 : enter-island-location ( -- )
   wipe-message island-scenery panel-commands
-  crew-loc @ island @ enter-this-island-location ;
+  crew-loc @ island far@ enter-this-island-location ;
 
   \ ============================================================
   section( Disembark)  \ {{{1
@@ -2036,7 +2037,7 @@ here swap - cell / constant island-events
   [ yellow blue papery + ] cliteral attr! disembarking-boat ;
 
 : on-treasure-island? ( -- f )
-  ship-loc @ sea @ treasure-island = ;
+  ship-loc @ sea far@ treasure-island = ;
 
 : enter-ordinary-island ( -- )
   new-island set-crew-loc wipe-panel enter-island-location ;
@@ -2165,7 +2166,7 @@ cyan dup papery + constant stormy-sky-attr
   section( Misc commands on the island)  \ {{{1
 
 : embark ( -- )
-  ship-loc @ visited on  1 day +!  aboard on
+  true ship-loc @ visited far! 1 day +!  aboard on
   sea-scenery panel ;
   \ XXX TODO -- Improve transition with a blackout, instead of
   \ clearing the scenery and the panel apart. There are other
@@ -2313,7 +2314,7 @@ variable price  variable offer
   \ XXX TODO -- faster: no loop, use "tnop" and "tqrs"
 
 : -native ( -- )
-  just-3-palms-1 crew-loc @ island !  .black-flag ;
+  just-3-palms-1 crew-loc @ island far!  .black-flag ;
   \ XXX TODO -- improve -- don't change the scenery:
   \ first, make natives, animals and things independent from
   \ the location
@@ -2355,7 +2356,7 @@ variable price  variable offer
   endcase ;
 
 : attack-native ( -- )
-  crew-loc @ island @ attack-native-there ;
+  crew-loc @ island far@ attack-native-there ;
   \ XXX TODO -- Sound effect.
 
   \ ============================================================
@@ -2397,7 +2398,7 @@ variable price  variable offer
   \ ============================================================
   section( Setup)  \ {{{1
 
-: add-row-reefs ( n1 n0 -- ) ?do  reef i sea !  loop ;
+: add-row-reefs ( n1 n0 -- ) ?do  reef i sea far!  loop ;
 
 : add-north-reefs ( -- )
   sea-length 0 add-row-reefs ;
@@ -2407,7 +2408,7 @@ variable price  variable offer
   xliteral xliteral add-row-reefs ;
 
 : add-col-reefs ( n1 n0 -- )
-  ?do  reef i sea !  sea-length +loop ;
+  ?do  reef i sea far!  sea-length +loop ;
 
 : add-east-reefs ( -- )
   [ sea-breadth 2- sea-length * 1+ ] xliteral sea-length
@@ -2422,15 +2423,15 @@ variable price  variable offer
 
 : populate-sea ( -- )
   /sea sea-length - sea-length 1+ do
-    i reef? 0= if 2 21 random-between i sea ! then
+    i reef? 0= if 2 21 random-between i sea far! then
   loop
-  treasure-island 94 104 random-between sea ! ;
+  treasure-island 94 104 random-between sea far! ;
   \ XXX TODO -- 21 is shark; these are picture types
 
-: -/sea ( a -- ) 0 swap /sea cells erase ;
-  \ Erase a sea map array _a_.
+: -/sea ( a -- ) /sea cells farerase ;
+  \ Erase a sea map array _a_ in far memory.
 
-: empty-sea ( -- ) sea -/sea  visited -/sea ;
+: empty-sea ( -- ) 0 sea -/sea  0 visited -/sea ;
 
 : new-sea ( -- ) empty-sea add-reefs populate-sea ;
 
@@ -2614,7 +2615,7 @@ create current-attr 0 c,
   drop ." L#" 2 .r space name>string 28 min type cr
   aboard? if   ." SHIP:" ship-loc ? ship-loc @ sea
           else ." LAND:" crew-loc ? crew-loc @ island
-          then ? .s click ;
+          then far@ . .s click ;
   \ Display the debug information.
 
 ' debug-info ' ~~info defer!
@@ -2642,7 +2643,7 @@ variable checkered
     checkered@
     sea-length 0 do
       i j ship-here? loc-color
-      +checkered j sea-length * i + sea @ 2 .r
+      +checkered j sea-length * i + sea far@ 2 .r
       -checkered
     loop  cr checkered!
   -1 +loop  default-colors ;
@@ -2656,7 +2657,7 @@ variable checkered
     checkered@
     island-length 0 do
       i j crew-here? loc-color
-      +checkered j island-length * i + island @ 2 .r
+      +checkered j island-length * i + island far@ 2 .r
       -checkered
     loop  cr checkered!
   -1 +loop  default-colors ;
