@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.72.2+201903211551" ;
+: version$ ( -- ca len ) s" 0.72.3+201903211603" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -1459,7 +1459,6 @@ variable victory
   loop  -cannon-ball ;
 
 : no-ammo-left ( -- )
-  panel-commands
   s" Te quedaste sin munición." message  4 seconds ;
   \ XXX TODO -- the enemy wins; our ship sinks,
   \ or the money and part of the crew are captured
@@ -1536,7 +1535,7 @@ variable victory
   ammo @ ?exit no-ammo-left ;
 
 : ship-battle ( -- )
-  save-screen (ship-battle) restore-screen ;
+  save-screen (ship-battle) restore-screen panel-commands ;
 
 : enemy-ship-here? ( -- f )
   ship-loc @ sea far@ 13 16 between ;
