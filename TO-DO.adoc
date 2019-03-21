@@ -9,6 +9,12 @@
   `one-coin-less`.
 - Fix/Improve: relation of `found-clues` and `native-tells-clue`, with
   the total score.
+- Fix: Redraw the panel after a ship attack.
+- Fix: During the storm, the enemy ship and the palms don't move.
+  Moving the palms would require big changes, but at least the enemy
+  ship could move its sail.
+- Fix: when no ammo is left during the battle, the panel is shown
+  below the final message.
 
 == 2019-03-20
 
