@@ -7,7 +7,6 @@
 - Make `sea`, `island`, and `visited` byte arrays.
 - Check the logic of `trade` at the end: its last word is
   `one-coin-less`.
-- Fix: since v0.71.0 the intro texts are corrupted.
 - Fix/Improve: relation of `found-clues` and `native-tells-clue`, with
   the total score.
 

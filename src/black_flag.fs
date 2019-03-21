@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.72.0+201903210201" ;
+: version$ ( -- ca len ) s" 0.72.1+201903211533" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -2551,6 +2551,13 @@ variable price
 s" Viejas leyendas hablan del tesoro "
 s" que esconde la perdida isla de " s+ island-name$ s+ dot
 far>sconstant intro-text-0$
+
+empty-stringer
+  \ XXX REMARK -- The consecutive concatenation of the
+  \ following three strings in the default 256-byte `stringer`
+  \ (the circular string buffer of Solo Forth) may cause
+  \ overlapping and give a wrong result.  `empty-stringer` fix
+  \ the problem.
 
 s" Los nativos del archipiélago recuerdan "
 s" las antiguas pistas que conducen al tesoro. " s+
