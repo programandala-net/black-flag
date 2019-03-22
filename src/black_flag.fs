@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.73.1+201903220905" ;
+: version$ ( -- ca len ) s" 0.74.0+201903221232" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -1146,20 +1146,29 @@ cyan dup papery + brighty constant sunny-sky-attr
 : dead? ( n -- f ) stamina farc@ 0= ;
   \ Is man _n_ dead?
 
-: somebody-alive ( -- n )
+: somebody ( -- n )
   begin  men random dup dead?  while  drop  repeat ;
-  \ Return a random alive man _n_.
+  \ Return a randomly selected alive man _n_.
+
+: somebody$ ( -- ca len ) somebody name$ ;
+  \ Return the name of a randomly selected alive man _ca len_.
 
 : is-injured ( n -- ) -1 over stamina farc+!  dead? alive +! ;
   \ Man _n_ is injured.
 
-: injured ( -- n ) somebody-alive dup is-injured ;
+: injured ( -- n ) somebody dup is-injured ;
   \ A random man _n_ is injured.
+
+: injured$ ( -- ca len )
+  injured dup name$ s" , que resulta " s+
+              rot condition$ s+ dot ;
+  \ Return the end of a message about an injured man, with its
+  \ current condition.
 
 : is-dead ( n -- ) 0 swap stamina farc!  -1 alive +! ;
   \ Man _n_ is dead.
 
-: dead ( -- n ) somebody-alive dup is-dead ;
+: dead ( -- n ) somebody dup is-dead ;
   \ A random man _n_ is dead.
 
   \ ============================================================
@@ -1884,10 +1893,16 @@ sailor-window-cols 2+ 8 * 4 +
   graphics-1 ;
   \ XXX TODO -- draw graphics depending on the actual ammount
 
+: at-snake ( c -- ) attr! 4 12 at-xy ;
+  \ Set attribute _c_ and move cursor to the snake's position.
+
 : .snake ( -- )
   graphics-2
-  [ black yellow papery + ] cliteral attr!  14 12 at-xy ." xy"
+  [ black yellow papery + ] cliteral at-snake ." xy"
   graphics-1 ;
+
+: -snake ( -- )
+  [ yellow yellow papery + ] cliteral at-snake ."   " ;
 
 : .dubloons ( n -- )
   get-fonts 2>r graphics-2
@@ -1928,13 +1943,10 @@ sailor-window-cols 2+ 8 * 4 +
 : swamp ( -- )
   dead name$ s"  se hunde en un pantano." s+ message ;
 
-: spider ( -- )
-  s" A " injured name$ s+
-  s"  le muerde una araña." s+ message ;
+: spider ( -- ) s" Una araña le pica a " injured$ s+ message ;
 
 : scorpion ( -- )
-  s" A " injured name$ s+ s"  le pica un escorpión." s+
-  message ;
+  s" Un escorpión le pica a " injured$ s+ message ;
 
 : hunger ( -- )
   s" La tripulación está hambrienta." message
@@ -1986,15 +1998,14 @@ here swap - cell / constant island-events
   case
 
   snake of
-    s" Una serpiente muerde a "
-    injured name$ s+ dot message
-    \ XXX TODO -- inform if the man is dead
+    s" Una serpiente "
+    3 random if   s" muerde a " s+ injured$ s+
+             else s" por poco muerde a " s+ somebody$ s+ dot
+             then message
   endof
 
   hostile-native of
-    s" Un nativo intenta bloquear el paso y hiere a "
-    injured dup >r name$ s+ s" , que resulta " s+
-    r> condition$ s+ dot message
+    s" Un nativo ataca y hiere a " injured$ s+ message
   endof
 
   dubloons-here of
@@ -2361,22 +2372,23 @@ variable price
                    default-of  dead-native-has-dubloons  endof
   endcase ;
 
-: attack-native-but-snake-kills ( -- )
-  s" Matas al nativo, pero la serpiente mata a "
-  dead name$ s+ dot message -native ;
+: attack-snake ( -- )
+  5 random
+  if   s" Antes de morir, la serpiente muerde a " injured$ s+
+  else s" Matas la serpiente."
+  then message -snake ;
 
 : attack-native-village ( -- )
   s" Un poblado entero es un enemigo muy difícil. "
   dead name$ s+ s"  muere en el combate." s+ message ;
 
-: attack-native-there ( n -- )
-  case  snake          of  attack-native-but-snake-kills  endof
-        native-village of  attack-native-village          endof
-               default-of  attack-native-anyway           endof
-  endcase ;
+: island-attack-there ( n -- )
+  case snake          of attack-snake          endof
+       native-village of attack-native-village endof
+              default-of attack-native-anyway  endof endcase ;
 
-: attack-native ( -- )
-  crew-loc @ island far@ attack-native-there ;
+: island-attack ( -- )
+  crew-loc @ island far@ island-attack-there ;
   \ XXX TODO -- Sound effect.
 
   \ ============================================================
@@ -2403,7 +2415,7 @@ variable price
                         if click embark        then endof
     'i'              of click main-report      true endof
     'a'              of feasible-island-attack? dup
-                        if click attack-native then endof
+                        if click island-attack then endof
     't'              of click crew-report      true endof
     'p'              of click score-report     true endof
     'f'              of click quit-game on     true endof
@@ -2715,9 +2727,10 @@ variable checkered
 
 : ini ( -- ) init-screen init ;
 
+: c  ( -- ) 4 attr! ;
 : f1 ( -- ) graphics-1 ;
 : f2 ( -- ) graphics-2 ;
-: f  ( -- ) rom-font    set-font ;
+: f  ( -- ) rom-font set-font c ;
 
   \ ============================================================
   section( Graphics)  \ {{{1
