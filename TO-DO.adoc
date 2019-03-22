@@ -1,13 +1,17 @@
 = To-Do list of Black Flag
 :author: Marcos Cruz (programandala.net)
-:revdate: 2019-03-21
+:revdate: 2019-03-22
+
+== 2019-03-22
+
+- Make `sea`, `island`, `visited-sea` and `visited-island` byte arrays
+  to save name-space memory.
 
 == 2019-03-21
 
 - Fix: The enemy ship is shown after been sunk, because the full
   screen is restored. Solution: redraw the scenary without clearing it
   first.
-- Make `sea`, `island`, and `visited` byte arrays.
 - Check the logic of `trade` at the end: its last word is
   `one-coin-less`.
 - Fix/Improve: relation of `found-clues` and `native-tells-clue`, with
@@ -77,7 +81,7 @@ Improve: Print the ship in two colors.
 
 == 2017-01-22
 
-Fix: The disembarking command is available is location that have no
+Fix: The disembarking command is available in location that have no
 island.
 
 == 2017-01-22

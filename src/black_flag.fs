@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.72.3+201903211603" ;
+: version$ ( -- ca len ) s" 0.73.0+201903220306" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -314,9 +314,9 @@ variable pace
   section(   -Maps)  \ {{{2
 
 /sea     faravariable sea
+/sea     faravariable visited-sea    \ flags for visited locations
 /island  faravariable island
-/sea     faravariable visited    \ flags for islands
-  \ XXX TODO -- character arrays in far memory
+/island  faravariable visited-island \ flags for visited locations
 
   \ --------------------------------------------
   section(   -Crew)  \ {{{2
@@ -551,6 +551,13 @@ far>sconstants number$ ( n -- ca len )
 : damage$ ( -- ca len ) damage @ >damage$ ;
   \ Damage description
 
+: been-here? ( -- f )
+  aboard? if   ship-loc @ visited-sea
+          else crew-loc @ visited-island
+          then far@ ;
+
+: first-visit? ( -- f ) been-here? 0= ;
+
   \ ============================================================
   section( UDGs and fonts)  \ {{{1
 
@@ -773,6 +780,10 @@ far-banks 3 + c@ cconstant screen-backup-bank
   \ XXX TODO -- rewrite: use presence of the enemy ship, which
   \ now is associated with certain locations but should be
   \ independent
+  \
+  \ XXX FIXME -- `shark` is one type of location, but sharks
+  \ are displayed in several locations. The logic of the
+  \ original game has some issues.
 
 : feasible-attack? ( -- f )
   aboard? if   feasible-sea-attack?
@@ -786,7 +797,7 @@ far-banks 3 + c@ cconstant screen-backup-bank
   16 panel-y at-xy s" Atacar" 0 r> ?>option$ type ;
 
 : feasible-disembark? ( -- f )
-  ship-loc @ visited far@ 0=
+  ship-loc @ visited-sea far@ 0=
   ship-loc @ sea far@ treasure-island =  or ;
   \ XXX TODO -- not if an enemy ship is present
 
@@ -1008,7 +1019,7 @@ cyan dup papery + brighty constant sunny-sky-attr
   19 4 palm1  24 4 palm1  14 4 palm1
   [ black green papery + ] cliteral attr!
   22 9 at-xy .\" \T\U"  \ the treasure
-  ship-loc @ visited far@ if
+  ship-loc @ visited-sea far@ if
     s" Llegas nuevamente a la isla de " island-name$ s+ s" ."
   else
     s" Has encontrado la perdida isla de "
@@ -1550,7 +1561,11 @@ variable victory
   \ ============================================================
   section( Island map)  \ {{{1
 
-: erase-island ( -- ) 0 island /island cells farerase ;
+: (empty-island ( a -- ) /island cells farerase ;
+  \ Erase an island map array _a_ in far memory.
+
+: empty-island ( -- ) 0 island (empty-island
+                      0 visited-island (empty-island ;
 
 : is-coast ( n -- ) coast swap island far! ;
   \ Make cell _n_ of the island map be coast.
@@ -1594,7 +1609,7 @@ variable victory
   \ except the village
 
 : new-island ( -- )
-  erase-island make-coast populate-island ;
+  empty-island make-coast populate-island ;
 
   \ ============================================================
   section( Treasure quest)  \ {{{1
@@ -2011,8 +2026,9 @@ here swap - cell / constant island-events
   endof
 
   native-village of
-    s" Descubres un poblado nativo." message
-    \ XXX TODO -- Change the message if the village is visited.
+    first-visit? if   s" Descubres un poblado nativo."
+                 else s" Regresas al poblado."
+                 then message
   endof
 
   just-3-palms-1 of island-event endof
@@ -2023,7 +2039,8 @@ here swap - cell / constant island-events
 
 : enter-island-location ( -- )
   wipe-message island-scenery panel-commands
-  crew-loc @ island far@ enter-this-island-location ;
+  crew-loc @ dup island far@ enter-this-island-location
+                 visited-island true swap far! ;
 
   \ ============================================================
   section( Disembark)  \ {{{1
@@ -2172,7 +2189,7 @@ cyan dup papery + constant stormy-sky-attr
   section( Misc commands on the island)  \ {{{1
 
 : embark ( -- )
-  true ship-loc @ visited far! 1 day +!  aboard on
+  true ship-loc @ visited-sea far! 1 day +!  aboard on
   sea-scenery panel ;
   \ XXX TODO -- Improve transition with a blackout, instead of
   \ clearing the scenery and the panel apart. There are other
@@ -2431,10 +2448,11 @@ variable price
   treasure-island 94 104 random-between sea far! ;
   \ XXX TODO -- 21 is shark; these are picture types
 
-: -/sea ( a -- ) /sea cells farerase ;
+: (empty-sea ( a -- ) /sea cells farerase ;
   \ Erase a sea map array _a_ in far memory.
 
-: empty-sea ( -- ) 0 sea -/sea  0 visited -/sea ;
+: empty-sea ( -- ) 0 sea (empty-sea
+                   0 visited-sea (empty-sea ;
 
 : new-sea ( -- ) empty-sea add-reefs populate-sea ;
 
@@ -2555,8 +2573,8 @@ empty-stringer
   \ XXX REMARK -- The consecutive concatenation of the
   \ following three strings in the default 256-byte `stringer`
   \ (the circular string buffer of Solo Forth) may cause
-  \ overlapping and give a wrong result.  `empty-stringer` fix
-  \ the problem.
+  \ overlapping and give a wrong result.  `empty-stringer`
+  \ fixes the problem.
 
 s" Los nativos del archipiélago recuerdan "
 s" las antiguas pistas que conducen al tesoro. " s+
