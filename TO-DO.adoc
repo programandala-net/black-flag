@@ -6,6 +6,10 @@
 
 - Make `sea`, `island`, `visited-sea` and `visited-island` byte arrays
   to save name-space memory.
+- Fix: make `dead` and `injured` return a flag indicating someone has
+  been found, to prevent possible problems. In theory the game ends
+  when no member of the crew is alive, but...
+- Fix: killing the snake kills a missing native.
 
 == 2019-03-21
 
