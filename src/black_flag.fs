@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.73.0+201903220306" ;
+: version$ ( -- ca len ) s" 0.73.1+201903220905" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -2342,7 +2342,7 @@ variable price
 : hard-to-kill-native ( -- )
   -native
   s" El nativo muere, pero antes mata a "
-  dead @ name$ s+ dot message ;
+  dead name$ s+ dot message ;
 
 : dead-native-has-supplies ( -- )
   -native
