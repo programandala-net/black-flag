@@ -46,7 +46,7 @@ need printer need order
 
 wordlist dup constant game-wordlist  dup >order  set-current
 
-: version$ ( -- ca len ) s" 0.74.0+201903221232" ;
+: version$ ( -- ca len ) s" 0.74.1+201903240101" ;
 
 cr section( Black Flag) cr version$ type cr
 
@@ -528,11 +528,8 @@ far>sconstants number$ ( n -- ca len )
   alive @ 0=
   morale @ 0= or
   max-damage? or
-  supplies @ 0= or
-  cash @ 0= or ;
+  supplies @ 0= or ;
   \ Failed mission?
-  \
-  \ XXX TODO -- use `0=` instead of `1 <`
 
 6 constant max-clues
 

@@ -2,6 +2,12 @@
 :author: Marcos Cruz (programandala.net)
 :revdate: 2019-03-22
 
+== 2019-03-24
+
+- Fix and improve `failure?`. 
+  `max-damage? or` is not a definitive condition, because the crew
+  could still disembark.
+
 == 2019-03-22
 
 - Make `sea`, `island`, `visited-sea` and `visited-island` byte arrays
